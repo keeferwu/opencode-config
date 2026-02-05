@@ -14,6 +14,14 @@
       "enabled": true
     }
   },
+  "agent": {
+    "code-simplifier": {
+      "mode": "subagent"
+    },
+    "lang-translation": {
+      "mode": "subagent"
+    }
+  },
   "permission": {
     "skill": "ask"
   },
