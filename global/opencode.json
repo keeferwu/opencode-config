@@ -1,0 +1,48 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "theme": "palenight",
+  "share": "manual",
+  "default_agent": "plan",
+  "autoupdate": false,
+  "instructions": ["CONTRIBUTING.md", "docs/rule.md", "~/.config/opencode/rules/*.md"],
+  "watcher": {
+    "ignore": ["node_modules/**", ".clangd/**", ".cache/**", ".git/**", "*.log"]
+  },
+  "tui": {
+    "scroll_speed": 3,
+    "scroll_acceleration": {
+      "enabled": true
+    }
+  },
+  "permission": {
+    "skill": "ask"
+  },
+  "mcp": {
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "headers": {
+        "CONTEXT7_API_KEY": "ctx7sk-0b2f0794-f690-47bb-aad1-0dd1e68201af"
+      },
+      "enabled": false
+    },
+    "gh_grep": {
+      "type": "remote",
+      "url": "https://mcp.grep.app",
+      "enabled": false
+    },
+    "gitlab": {
+      "type": "local",
+      "command": ["npx", "-y", "@zereight/mcp-gitlab"],
+      "environment": {
+        "GITLAB_API_URL": "http://gitlab.nettech-global.com/api/v4",
+        "GITLAB_PERSONAL_ACCESS_TOKEN": "TBXRKEpWMRT3rXkGctPg",
+        "GITLAB_READ_ONLY_MODE": "false",
+        "USE_GITLAB_WIKI": "false",
+        "USE_MILESTONE": "false",
+        "USE_PIPELINE": "false"
+      },
+      "enabled": false
+    }
+  }
+}
