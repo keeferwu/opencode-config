@@ -1,8 +1,8 @@
 #!/bin/bash
 
-function copy_oac_config()
+function rsync_oac_config()
 {
-    echo "copy oac developer config to $1"
+    echo "rsync oac developer config to $1"
 
     if [ ! -d "$1" ]; then
          mkdir -p "$1"
@@ -25,19 +25,13 @@ function main()
     case "$1" in
     -u )
         echo "update OpenAgentsControl developer"
+        rm -rf .opencode
         curl -fsSL https://raw.githubusercontent.com/darrenhinde/OpenAgentsControl/main/install.sh | bash -s developer
-        ;;
-    -g )
-        echo "copy global config to $HOME/.config/opencode"
-        cp global/* "$HOME/.config/opencode" -a
-        ;;
-    -l )
-        copy_oac_config "${2:-$HOME/.opencode}"
         ;;
     * )
-        curl -fsSL https://raw.githubusercontent.com/darrenhinde/OpenAgentsControl/main/install.sh | bash -s developer
-        cp global/* "$HOME/.config/opencode" -a
-        copy_oac_config "${1:-$HOME/.opencode}"
+        echo "copy global config to $HOME/.config/opencode"
+        cp -auv global/* "$HOME/.config/opencode"
+        rsync_oac_config "${1:-$HOME/.opencode}"
         ;;
     esac
 }
