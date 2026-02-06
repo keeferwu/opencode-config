@@ -1,19 +1,45 @@
 #!/bin/bash
-set -e
 
-TARGET_DIR="${1:-$HOME/.opencode}"
+function copy_oac_config()
+{
+    echo "copy oac developer config to $1"
 
-curl -fsSL https://raw.githubusercontent.com/darrenhinde/OpenAgentsControl/main/install.sh | bash -s developer
+    if [ ! -d "$1" ]; then
+         mkdir -p "$1"
+    fi
 
-cp global/* $HOME/.config/opencode -a
+    if [ ! -f "$1/.env" ]; then
+        cp .opencode/env.example "$1/.env"
+    fi
 
-if [ ! -f "$TARGET_DIR/.env" ]; then
-    cp .opencode/env.example $TARGET_DIR/.env
-fi
+    rsync -av  --exclude='README.md' \
+               --exclude='env.example' \
+               --exclude='command/clean.md' \
+               --exclude='command/test.md' \
+               --exclude='command/validate-repo.md' \
+               .opencode/ "$1"
+}
 
-rsync -av  --exclude='README.md' \
-           --exclude='env.example' \
-           --exclude='command/clean.md' \
-           --exclude='command/test.md' \
-           --exclude='command/validate-repo.md' \
-           .opencode/ $TARGET_DIR
+function main()
+{
+    case "$1" in
+    -u )
+        echo "update OpenAgentsControl developer"
+        curl -fsSL https://raw.githubusercontent.com/darrenhinde/OpenAgentsControl/main/install.sh | bash -s developer
+        ;;
+    -g )
+        echo "copy global config to $HOME/.config/opencode"
+        cp global/* "$HOME/.config/opencode" -a
+        ;;
+    -l )
+        copy_oac_config "${2:-$HOME/.opencode}"
+        ;;
+    * )
+        curl -fsSL https://raw.githubusercontent.com/darrenhinde/OpenAgentsControl/main/install.sh | bash -s developer
+        cp global/* "$HOME/.config/opencode" -a
+        copy_oac_config "${1:-$HOME/.opencode}"
+        ;;
+    esac
+}
+# 调用main函数
+main "$@"
