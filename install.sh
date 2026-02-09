@@ -17,6 +17,7 @@ function rsync_oac_config()
                --exclude='command/clean.md' \
                --exclude='command/test.md' \
                --exclude='command/validate-repo.md' \
+               --exclude='command/openagents' \
                .opencode/ "$1"
 }
 
