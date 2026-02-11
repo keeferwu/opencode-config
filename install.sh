@@ -11,6 +11,7 @@ function rsync_oac_config()
     if [ ! -f "$1/.env" ]; then
         cp .opencode/env.example "$1/.env"
     fi
+    cp openagent.json "$1/opencode.json"
 
     rsync -av  --exclude='README.md' \
                --exclude='env.example' \

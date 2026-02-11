@@ -2,7 +2,6 @@
   "$schema": "https://opencode.ai/config.json",
   "theme": "palenight",
   "share": "manual",
-  "default_agent": "OpenAgent",
   "autoupdate": false,
   "instructions": ["CONTRIBUTING.md", "docs/rule.md", "~/.config/opencode/rules/*.md"],
   "watcher": {
@@ -37,19 +36,6 @@
     "gh_grep": {
       "type": "remote",
       "url": "https://mcp.grep.app",
-      "enabled": false
-    },
-    "gitlab": {
-      "type": "local",
-      "command": ["npx", "-y", "@zereight/mcp-gitlab"],
-      "environment": {
-        "GITLAB_API_URL": "http://gitlab.nettech-global.com/api/v4",
-        "GITLAB_PERSONAL_ACCESS_TOKEN": "TBXRKEpWMRT3rXkGctPg",
-        "GITLAB_READ_ONLY_MODE": "false",
-        "USE_GITLAB_WIKI": "false",
-        "USE_MILESTONE": "false",
-        "USE_PIPELINE": "false"
-      },
       "enabled": false
     }
   }
