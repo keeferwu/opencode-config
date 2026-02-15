@@ -5,13 +5,22 @@ function rsync_oac_config()
     echo "rsync oac developer config to $1"
 
     if [ ! -d "$1" ]; then
-         mkdir -p "$1"
+        echo "$1 does not exist"
+        exit 1
     fi
 
-    if [ ! -f "$1/.env" ]; then
-        cp .opencode/env.example "$1/.env"
+    # 判断 $1 是否以 .opencode 结尾
+    if [[ "$1" == *.opencode ]]; then
+        target="$1"
+    else
+        target="$1/.opencode"
+        mkdir -p "$target"
     fi
-    cp openagent.json "$1/opencode.json"
+
+    if [ ! -f "$target/.env" ]; then
+        cp .opencode/env.example "$target/.env"
+    fi
+    cp openagent.json "$target/opencode.json"
 
     rsync -av  --exclude='README.md' \
                --exclude='env.example' \
@@ -19,7 +28,7 @@ function rsync_oac_config()
                --exclude='command/test.md' \
                --exclude='command/validate-repo.md' \
                --exclude='command/openagents' \
-               .opencode/ "$1"
+               .opencode/ "$target"
 }
 
 function main()

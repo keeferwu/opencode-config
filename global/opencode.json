@@ -29,7 +29,7 @@
       "type": "remote",
       "url": "https://mcp.context7.com/mcp",
       "headers": {
-        "CONTEXT7_API_KEY": "ctx7sk-0b2f0794-f690-47bb-aad1-0dd1e68201af"
+        "CONTEXT7_API_KEY": "your-context7-api-key"
       },
       "enabled": false
     },
