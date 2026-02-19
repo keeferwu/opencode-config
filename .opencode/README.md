@@ -153,6 +153,50 @@ opencode --agent OpenAgent
 
 ---
 
+### Alternative: Claude Code Plugin (BETA)
+
+**Prefer Claude Code?** OpenAgents Control is also available as a Claude Code plugin!
+
+**Installation:**
+
+1. Register the marketplace:
+```bash
+/plugin marketplace add darrenhinde/OpenAgentsControl
+```
+
+2. Install the plugin:
+```bash
+/plugin install oac
+```
+
+3. Download context files:
+```bash
+/oac:setup --core
+```
+
+4. Start building:
+```
+Add a login endpoint
+```
+
+**Features:**
+- ✅ 6-stage workflow with approval gates
+- ✅ Context-aware code generation
+- ✅ 7 specialized subagents (task-manager, context-scout, context-manager, coder-agent, test-engineer, code-reviewer, external-scout)
+- ✅ 9 workflow skills + 6 user commands
+- ✅ Flexible context discovery (.oac config, .claude/context, context, .opencode/context)
+- ✅ Add context from GitHub, worktrees, local files, or URLs
+- ✅ Easy feature planning with `/oac:plan`
+
+**Documentation:**
+- [Plugin README](./plugins/claude-code/README.md) - Complete plugin documentation
+- [First-Time Setup](./plugins/claude-code/FIRST-TIME-SETUP.md) - Step-by-step guide
+- [Quick Start](./plugins/claude-code/QUICK-START.md) - Quick reference
+
+**Status:** BETA - Actively tested and ready for early adopters
+
+---
+
 ## 💡 The Context System: Your Secret Weapon
 
 **The problem with AI code:** It doesn't match your patterns. You spend hours refactoring.
