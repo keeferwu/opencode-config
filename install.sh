@@ -46,12 +46,12 @@ function install_superpowers()
 function main()
 {
     case "$1" in
-    -u )
+    --update )
         echo "update OpenAgentsControl developer"
         rm -rf .opencode
         curl -fsSL https://raw.githubusercontent.com/darrenhinde/OpenAgentsControl/main/install.sh | bash -s developer
         ;;
-    -s )
+    --superpowers )
         if [ ! -d "$2" ]; then
           echo "dir $2 does not exist"
           exit 1
@@ -59,10 +59,15 @@ function main()
         echo "install superpowers to $2/.opencode"
         install_superpowers "$2/.opencode"
         ;;
+    --oac )
+        rsync_oac_config "${2:-$HOME/.opencode}"
+        ;;
     * )
         echo "copy opencode config to $HOME/.config/opencode"
         cp -auv opencode/* "$HOME/.config/opencode"
-        rsync_oac_config "${1:-$HOME/.opencode}"
+        echo "--update: update OpenAgentsControl developer"
+        echo "--oac: install OpenAgentsControl to specified dir, use for existing project"
+        echo "--superpowers: install superpowers to specified dir, use for create new project"
         ;;
     esac
 }
