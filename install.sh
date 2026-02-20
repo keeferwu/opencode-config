@@ -60,8 +60,8 @@ function main()
         install_superpowers "$2/.opencode"
         ;;
     * )
-        echo "copy global config to $HOME/.config/opencode"
-        cp -auv global/* "$HOME/.config/opencode"
+        echo "copy opencode config to $HOME/.config/opencode"
+        cp -auv opencode/* "$HOME/.config/opencode"
         rsync_oac_config "${1:-$HOME/.opencode}"
         ;;
     esac
