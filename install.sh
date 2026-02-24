@@ -64,7 +64,7 @@ function main()
         ;;
     * )
         echo "copy opencode config to $HOME/.config/opencode"
-        cp -auv opencode/* "$HOME/.config/opencode"
+        cp -auv config/* "$HOME/.config/opencode"
         echo "--update: update OpenAgentsControl developer"
         echo "--oac: install OpenAgentsControl to specified dir, use for existing project"
         echo "--superpowers: install superpowers to specified dir, use for create new project"
