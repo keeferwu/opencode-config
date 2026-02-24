@@ -45,6 +45,11 @@ function install_superpowers()
 
 function main()
 {
+    if ! which opencode >/dev/null 2>&1; then
+        echo "install opencode"
+        curl -fsSL https://opencode.ai/install | bash
+    fi
+
     case "$1" in
     --update )
         echo "update OpenAgentsControl developer"
@@ -63,8 +68,13 @@ function main()
         rsync_oac_config "${2:-$HOME/.opencode}"
         ;;
     * )
-        echo "copy opencode config to $HOME/.config/opencode"
-        cp -auv config/* "$HOME/.config/opencode"
+        echo "rsync global config to $HOME/.config/opencode"
+        rsync -av --exclude='skills/mcp-builder' \
+                  --exclude='skills/skill-creator' \
+                  config/ "$HOME/.config/opencode"
+
+        echo ""
+        echo "options:"
         echo "--update: update OpenAgentsControl developer"
         echo "--oac: install OpenAgentsControl to specified dir, use for existing project"
         echo "--superpowers: install superpowers to specified dir, use for create new project"
