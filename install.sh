@@ -40,7 +40,14 @@ function install_superpowers()
     mkdir -p "$1/skills/superpowers"
     cp -auv superpowers/skills/* "$1/skills/superpowers"
 
-    rm superpowers -rf
+    rm -rf superpowers
+}
+
+function update_global_skills()
+{
+    git clone https://github.com/anthropics/skills.git anthropics-skills
+    cp -auv anthropics-skills/skills/* config/skills
+    rm -rf anthropics-skills
 }
 
 function main()
@@ -52,6 +59,8 @@ function main()
 
     case "$1" in
     --update )
+        echo "update global skills"
+        update_global_skills
         echo "update OpenAgentsControl developer"
         rm -rf .opencode
         curl -fsSL https://raw.githubusercontent.com/darrenhinde/OpenAgentsControl/main/install.sh | bash -s developer
@@ -69,9 +78,15 @@ function main()
         ;;
     * )
         echo "rsync global config to $HOME/.config/opencode"
-        rsync -av --exclude='skills/mcp-builder' \
-                  --exclude='skills/skill-creator' \
-                  config/ "$HOME/.config/opencode"
+        rsync -av --exclude='skills' config "$HOME/.config/opencode"
+        mkdir -p "$HOME/.config/opencode/skills"
+        cp -auv config/skills/skill-creator \
+                config/skills/internal-comms \
+                config/skills/pdf \
+                config/skills/docx \
+                config/skills/pptx \
+                config/skills/xlsx \
+        "$HOME/.config/opencode/skills"
 
         echo ""
         echo "options:"
