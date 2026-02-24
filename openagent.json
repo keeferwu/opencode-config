@@ -7,7 +7,7 @@
       "command": ["npx", "-y", "@zereight/mcp-gitlab"],
       "environment": {
         "GITLAB_API_URL": "http://gitlab.nettech-global.com/api/v4",
-        "GITLAB_PERSONAL_ACCESS_TOKEN": "your-personal-access-token",
+        "GITLAB_PERSONAL_ACCESS_TOKEN": "{env:GITLAB_PERSONAL_ACCESS_TOKEN}",
         "GITLAB_READ_ONLY_MODE": "false",
         "USE_GITLAB_WIKI": "false",
         "USE_MILESTONE": "false",
