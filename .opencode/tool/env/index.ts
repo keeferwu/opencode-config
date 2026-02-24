@@ -11,18 +11,29 @@ export interface EnvLoaderConfig {
   verbose?: boolean
   /** Whether to override existing environment variables */
   override?: boolean
+  /** Whether to auto-load .env when this module is imported (default: true) */
+  autoLoad?: boolean
 }
 
 /**
- * Default search paths for .env files
+ * Get default search paths based on current working directory
  */
-const DEFAULT_ENV_PATHS = [
-  './.env',
-  '../.env', 
-  '../../.env',
-  '../plugin/.env',
-  '../../../.env'
-]
+function getDefaultEnvPaths(): string[] {
+  const cwd = process.cwd()
+  return [
+    './.env',
+    resolve(cwd, '.env'),
+    '../.env',
+    resolve(cwd, '../.env'),
+    '../../.env',
+    resolve(cwd, '../../.env'),
+    '../plugin/.env',
+    '../../../.env'
+  ]
+}
+
+let envLoaded = false
+const defaultEnvPaths = getDefaultEnvPaths()
 
 /**
  * Load environment variables from .env files
@@ -33,7 +44,7 @@ const DEFAULT_ENV_PATHS = [
  */
 export async function loadEnvVariables(config: EnvLoaderConfig = {}): Promise<Record<string, string>> {
   const { 
-    searchPaths = DEFAULT_ENV_PATHS, 
+    searchPaths = defaultEnvPaths,
     verbose = false, 
     override = false 
   } = config
@@ -82,6 +93,33 @@ export async function loadEnvVariables(config: EnvLoaderConfig = {}): Promise<Re
 }
 
 /**
+ * Initialize and auto-load environment variables
+ * Called automatically when this module is imported
+ * 
+ * @param config Configuration options
+ * @returns Promise that resolves when loading is complete
+ */
+export async function initEnvLoader(config: EnvLoaderConfig = {}): Promise<Record<string, string>> {
+  const autoLoad = config.autoLoad !== false
+  
+  if (!autoLoad) {
+    return {}
+  }
+  
+  if (envLoaded) {
+    return {}
+  }
+  
+  envLoaded = true
+  return loadEnvVariables({ ...config, verbose: config.verbose ?? false })
+}
+
+// Auto-load environment variables when this module is imported
+initEnvLoader().catch((err) => {
+  console.error('Failed to auto-load environment variables:', err)
+})
+
+/**
  * Get a specific environment variable with automatic .env file loading
  * 
  * @param varName Name of the environment variable
@@ -114,7 +152,7 @@ export async function getRequiredEnvVariable(varName: string, config: EnvLoaderC
   const value = await getEnvVariable(varName, config)
   
   if (!value) {
-    const searchPaths = config.searchPaths || DEFAULT_ENV_PATHS
+    const searchPaths = config.searchPaths || defaultEnvPaths
     throw new Error(`${varName} not found. Please set it in your environment or .env file.
     
 To fix this:
