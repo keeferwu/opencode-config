@@ -17,18 +17,22 @@ function rsync_oac_config()
         mkdir -p "$target"
     fi
 
-    if [ ! -f "$target/.env" ]; then
-        cp .opencode/env.example "$target/.env"
-    fi
-    cp openagent.json "$target/opencode.json"
-
-    rsync -av  --exclude='README.md' \
+    rsync -av  --exclude='bun.lock' \
+               --exclude='.gitignore' \
+               --exclude='node_modules' \
+               --exclude='package.json' \
+               --exclude='README.md' \
                --exclude='env.example' \
                --exclude='command/clean.md' \
                --exclude='command/test.md' \
                --exclude='command/validate-repo.md' \
                --exclude='command/openagents' \
                .opencode/ "$target"
+
+    if [ ! -f "$target/.env" ]; then
+        cp .opencode/env.example "$target/.env"
+    fi
+    cp openagent.json "$target/opencode.json"
 }
 
 function install_superpowers()
@@ -67,8 +71,8 @@ function main()
         ;;
     --superpowers )
         if [ ! -d "$2" ]; then
-          echo "dir $2 does not exist"
-          exit 1
+            echo "dir $2 does not exist"
+            exit 1
         fi
         echo "install superpowers to $2/.opencode"
         install_superpowers "$2/.opencode"
