@@ -78,7 +78,7 @@ function main()
         ;;
     * )
         echo "rsync global config to $HOME/.config/opencode"
-        rsync -av --exclude='skills' config "$HOME/.config/opencode"
+        rsync -av --exclude='skills' config/ "$HOME/.config/opencode"
         mkdir -p "$HOME/.config/opencode/skills"
         cp -auv config/skills/skill-creator \
                 config/skills/internal-comms \

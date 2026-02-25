@@ -38,5 +38,6 @@
       "url": "https://mcp.grep.app",
       "enabled": false
     }
-  }
+  },
+  "plugin": ["@tarquinen/opencode-dcp@latest"]
 }
