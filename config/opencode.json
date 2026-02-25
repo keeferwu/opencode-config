@@ -21,9 +21,6 @@
       "mode": "subagent"
     }
   },
-  "permission": {
-    "skill": "ask"
-  },
   "mcp": {
     "context7": {
       "type": "remote",
