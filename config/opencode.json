@@ -13,11 +13,6 @@
       "enabled": true
     }
   },
-  "server": {
-    "port": 4096,
-    "hostname": "0.0.0.0",
-    "mdns": true
-  },
   "agent": {
     "code-simplifier": {
       "mode": "subagent"
