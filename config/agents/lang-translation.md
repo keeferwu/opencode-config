@@ -2,7 +2,7 @@
 name: lang-translation
 description: Professional translation expert supporting multilingual translation.
 mode: subagent
-temperature: 0.3
+temperature: 0.7
 ---
 
 # Role Definition
