@@ -12,7 +12,7 @@ configure for opencode
 # 更新.opencode (OpenAgentsControl developer)
 ./install.sh --update
 
-# 拷贝.opencode 到指定项目的目录，默认为~/.opencode
+# 拷贝developer 到指定项目的目录，默认为~/.opencode
 ./install.sh --oac <project_dir>
 
 # 安装superpowers到指定项目的目录

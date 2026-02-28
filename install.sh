@@ -17,20 +17,22 @@ function rsync_oac_config()
         mkdir -p "$target"
     fi
 
-    rsync -av  --exclude='bun.lock' \
-               --exclude='.gitignore' \
-               --exclude='node_modules' \
-               --exclude='package.json' \
-               --exclude='README.md' \
+    rsync -av  --exclude='README.md' \
                --exclude='env.example' \
                --exclude='command/clean.md' \
                --exclude='command/test.md' \
                --exclude='command/validate-repo.md' \
                --exclude='command/openagents' \
-               .opencode/ "$target"
+               --exclude='agent/subagents/development' \
+               --exclude='context/development' \
+               --exclude='context/openagents-repo' \
+               --exclude='context/ui' \
+               --exclude='context/core/visual-development.md' \
+               --exclude='context/core/workflows/design-iteration*' \
+               developer/ "$target"
 
     if [ ! -f "$target/.env" ]; then
-        cp .opencode/env.example "$target/.env"
+        cp developer/env.example "$target/.env"
     fi
     cp openagent.json "$target/opencode.json"
 }
@@ -66,8 +68,11 @@ function main()
         echo "update global skills"
         update_global_skills
         echo "update OpenAgentsControl developer"
-        rm -rf .opencode
         curl -fsSL https://raw.githubusercontent.com/darrenhinde/OpenAgentsControl/main/install.sh | bash -s developer
+        if [ -d .opencode ]; then
+            rm -rf developer
+            mv .opencode developer
+        fi
         ;;
     --superpowers )
         if [ ! -d "$2" ]; then
