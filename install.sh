@@ -54,6 +54,9 @@ function update_global_skills()
     git clone https://github.com/anthropics/skills.git anthropics-skills
     cp -auv anthropics-skills/skills/* config/skills
     rm -rf anthropics-skills
+    git clone https://github.com/bahayonghang/drawio-skills.git
+    cp -auv drawio-skills/skills/* config/skills
+    rm -rf drawio-skills
 }
 
 function main()
@@ -95,6 +98,7 @@ function main()
                 config/skills/docx \
                 config/skills/pptx \
                 config/skills/xlsx \
+                config/skills/drawio \
         "$HOME/.config/opencode/skills"
 
         echo ""

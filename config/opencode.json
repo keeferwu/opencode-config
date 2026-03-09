@@ -34,6 +34,11 @@
       "type": "remote",
       "url": "https://mcp.grep.app",
       "enabled": false
+    },
+    "drawio": {
+      "type": "local",
+      "command": ["npx", "-y", "@next-ai-drawio/mcp-server@latest"],
+      "enabled": false
     }
   },
   "plugin": ["@tarquinen/opencode-dcp@latest"]
