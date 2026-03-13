@@ -111,8 +111,21 @@ const _themeCache = new Map()
 export function loadTheme(themeName) {
   if (!themeName || themeName === 'tech-blue') return DEFAULT_THEME
   if (_themeCache.has(themeName)) return _themeCache.get(themeName)
+
+  // Security: reject invalid theme names (path traversal prevention)
+  if (!/^[a-z][a-z0-9-]*$/.test(themeName)) {
+    console.warn(`[loadTheme] Invalid theme name '${themeName}'. Falling back to default.`)
+    return DEFAULT_THEME
+  }
+
   try {
-    const raw = readFileSync(`${THEMES_DIR}/${themeName}.json`, 'utf8')
+    const themePath = resolve(THEMES_DIR, `${themeName}.json`)
+    // Security: verify resolved path stays within THEMES_DIR
+    if (!themePath.startsWith(THEMES_DIR)) {
+      console.warn(`[loadTheme] Theme path escapes themes directory. Falling back to default.`)
+      return DEFAULT_THEME
+    }
+    const raw = readFileSync(themePath, 'utf8')
     const theme = JSON.parse(raw)
     _themeCache.set(themeName, theme)
     return theme
@@ -465,7 +478,11 @@ export function resolveIconShape(icon) {
       return mxPrefix + icon.slice(prefix.length)
     }
   }
-  // If no prefix matches, treat as direct shape reference
+  // Security: validate unprefixed icons to prevent style injection
+  if (!/^[a-zA-Z][a-zA-Z0-9._-]*$/.test(icon)) {
+    console.warn(`[resolveIconShape] Invalid icon name '${icon}'. Ignoring.`)
+    return null
+  }
   return icon
 }
 
@@ -583,8 +600,12 @@ export function generateConnectorStyle(edge, theme, routing = 'orthogonal') {
   // Edge entry/exit routing
   if (edge.style?.exitX !== undefined) parts.push(`exitX=${edge.style.exitX}`)
   if (edge.style?.exitY !== undefined) parts.push(`exitY=${edge.style.exitY}`)
+  if (edge.style?.exitDx !== undefined) parts.push(`exitDx=${edge.style.exitDx}`)
+  if (edge.style?.exitDy !== undefined) parts.push(`exitDy=${edge.style.exitDy}`)
   if (edge.style?.entryX !== undefined) parts.push(`entryX=${edge.style.entryX}`)
   if (edge.style?.entryY !== undefined) parts.push(`entryY=${edge.style.entryY}`)
+  if (edge.style?.entryDx !== undefined) parts.push(`entryDx=${edge.style.entryDx}`)
+  if (edge.style?.entryDy !== undefined) parts.push(`entryDy=${edge.style.entryDy}`)
 
   if (dashed) {
     parts.push('dashed=1')
@@ -648,6 +669,7 @@ export function generateModuleStyle(module, theme) {
 export function buildXml(spec, theme, layout) {
   const { positions, modulePositions } = layout
   const routing = spec.meta?.routing || 'orthogonal'
+  const routedEdges = buildRoutedEdges(spec, layout)
 
   const cells = []
   let nextId = 2
@@ -723,16 +745,25 @@ export function buildXml(spec, theme, layout) {
   }
 
   // Generate edges
-  for (const edge of spec.edges || []) {
+  for (const edge of routedEdges) {
     const sourceId = nodeIdMap.get(edge.from)
     const targetId = nodeIdMap.get(edge.to)
     if (!sourceId || !targetId) continue
 
     const cellId = allocId()
     const style = generateConnectorStyle(edge, theme, routing)
+    const edgeLabel = edge.label ? prepareMathLabel(edge.label) : ''
 
-    let edgeXml = `<mxCell id="${cellId}" style="${style}" edge="1" parent="1" source="${sourceId}" target="${targetId}">`
-    edgeXml += `<mxGeometry relative="1" as="geometry"/>`
+    let edgeXml = `<mxCell id="${cellId}" value="${edgeLabel}" style="${style}" edge="1" parent="1" source="${sourceId}" target="${targetId}">`
+    edgeXml += `<mxGeometry relative="1" as="geometry">`
+    if (edge.waypoints?.length) {
+      edgeXml += '<Array as="points">'
+      for (const point of edge.waypoints) {
+        edgeXml += `<mxPoint x="${point.x}" y="${point.y}"/>`
+      }
+      edgeXml += '</Array>'
+    }
+    edgeXml += `</mxGeometry>`
 
     // Add label if present
     if (edge.label) {
@@ -740,9 +771,12 @@ export function buildXml(spec, theme, layout) {
       const labelX = edge.labelPosition === 'start' ? '0.2'
         : edge.labelPosition === 'end' ? '0.8'
           : '0.5'  // center (default)
+      const labelOffset = edge.__routing?.orientation === 'vertical'
+        ? '<mxPoint x="12" y="0" as="offset"/>'
+        : '<mxPoint x="0" y="-12" as="offset"/>'
       edgeXml += `</mxCell>`
-      edgeXml += `<mxCell id="${labelId}" value="${prepareMathLabel(edge.label)}" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=11;fontColor=${theme.colors?.textMuted || '#64748B'};" vertex="1" connectable="0" parent="${cellId}">`
-      edgeXml += `<mxGeometry x="${labelX}" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>`
+      edgeXml += `<mxCell id="${labelId}" value="${edgeLabel}" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=11;fontColor=${theme.colors?.textMuted || '#64748B'};" vertex="1" connectable="0" parent="${cellId}">`
+      edgeXml += `<mxGeometry x="${labelX}" relative="1" as="geometry">${labelOffset}</mxGeometry>`
       edgeXml += `</mxCell>`
     } else {
       edgeXml += `</mxCell>`
@@ -872,6 +906,278 @@ export function validateLayoutConsistency(spec) {
   return warnings
 }
 
+const FACE_SLOTS = [0.25, 0.5, 0.75, 0.33, 0.66, 0.2, 0.8]
+
+function resolveProfile(spec) {
+  if (spec.meta?.profile) return spec.meta.profile
+  const theme = spec.meta?.theme || ''
+  if (theme === 'academic' || theme === 'academic-color') return 'academic-paper'
+  return 'default'
+}
+
+function detectEdgeFaces(sourcePos, targetPos) {
+  const sourceCenterX = sourcePos.x + sourcePos.width / 2
+  const sourceCenterY = sourcePos.y + sourcePos.height / 2
+  const targetCenterX = targetPos.x + targetPos.width / 2
+  const targetCenterY = targetPos.y + targetPos.height / 2
+  const dx = targetCenterX - sourceCenterX
+  const dy = targetCenterY - sourceCenterY
+  const horizontal = Math.abs(dx) >= Math.abs(dy)
+
+  if (horizontal) {
+    return {
+      orientation: 'horizontal',
+      sourceFace: dx >= 0 ? 'right' : 'left',
+      targetFace: dx >= 0 ? 'left' : 'right'
+    }
+  }
+
+  return {
+    orientation: 'vertical',
+    sourceFace: dy >= 0 ? 'bottom' : 'top',
+    targetFace: dy >= 0 ? 'top' : 'bottom'
+  }
+}
+
+function applyFaceSlot(style, face, slot) {
+  if (face === 'left') {
+    style.exitX = style.exitX ?? 0
+    style.exitY = style.exitY ?? slot
+  } else if (face === 'right') {
+    style.exitX = style.exitX ?? 1
+    style.exitY = style.exitY ?? slot
+  } else if (face === 'top') {
+    style.exitX = style.exitX ?? slot
+    style.exitY = style.exitY ?? 0
+  } else if (face === 'bottom') {
+    style.exitX = style.exitX ?? slot
+    style.exitY = style.exitY ?? 1
+  }
+
+  style.exitDx = style.exitDx ?? 0
+  style.exitDy = style.exitDy ?? 0
+}
+
+function applyTargetFaceSlot(style, face, slot) {
+  if (face === 'left') {
+    style.entryX = style.entryX ?? 0
+    style.entryY = style.entryY ?? slot
+  } else if (face === 'right') {
+    style.entryX = style.entryX ?? 1
+    style.entryY = style.entryY ?? slot
+  } else if (face === 'top') {
+    style.entryX = style.entryX ?? slot
+    style.entryY = style.entryY ?? 0
+  } else if (face === 'bottom') {
+    style.entryX = style.entryX ?? slot
+    style.entryY = style.entryY ?? 1
+  }
+
+  style.entryDx = style.entryDx ?? 0
+  style.entryDy = style.entryDy ?? 0
+}
+
+function getSlot(index) {
+  return FACE_SLOTS[index % FACE_SLOTS.length]
+}
+
+function buildRoutedEdges(spec, layout) {
+  const { positions } = layout
+  const edges = (spec.edges || []).map(edge => ({
+    ...edge,
+    style: { ...(edge.style || {}) },
+    waypoints: edge.waypoints ? edge.waypoints.map(point => ({ ...point })) : undefined
+  }))
+
+  const sourceGroups = new Map()
+  const targetGroups = new Map()
+
+  for (const edge of edges) {
+    const sourcePos = positions.get(edge.from)
+    const targetPos = positions.get(edge.to)
+    if (!sourcePos || !targetPos) continue
+
+    const faces = detectEdgeFaces(sourcePos, targetPos)
+    edge.__routing = faces
+
+    if (edge.waypoints?.length) continue
+
+    const sourceKey = `${edge.from}:${faces.sourceFace}`
+    const targetKey = `${edge.to}:${faces.targetFace}`
+
+    if (!sourceGroups.has(sourceKey)) sourceGroups.set(sourceKey, [])
+    if (!targetGroups.has(targetKey)) targetGroups.set(targetKey, [])
+    sourceGroups.get(sourceKey).push(edge)
+    targetGroups.get(targetKey).push(edge)
+  }
+
+  for (const group of sourceGroups.values()) {
+    group.forEach((edge, index) => {
+      const slot = getSlot(index)
+      applyFaceSlot(edge.style, edge.__routing.sourceFace, slot)
+    })
+  }
+
+  for (const group of targetGroups.values()) {
+    group.forEach((edge, index) => {
+      const slot = getSlot(index)
+      applyTargetFaceSlot(edge.style, edge.__routing.targetFace, slot)
+    })
+  }
+
+  return edges
+}
+
+export function validateConnectionPointPolicy(spec) {
+  const warnings = []
+  for (const edge of spec.edges || []) {
+    const style = edge.style || {}
+    const hasWaypoints = Array.isArray(edge.waypoints) && edge.waypoints.length > 0
+    const cpFields = ['exitX', 'exitY', 'entryX', 'entryY']
+    const dxdyFields = ['exitDx', 'exitDy', 'entryDx', 'entryDy']
+    const cpCount = cpFields.filter(field => style[field] !== undefined).length
+    const dxdyCount = dxdyFields.filter(field => style[field] !== undefined).length
+
+    if (hasWaypoints && (cpCount > 0 || dxdyCount > 0)) {
+      warnings.push(
+        `Edge "${edge.from}->${edge.to}" mixes waypoints with explicit connection points. Remove exit/entry hints when waypoints are present.`
+      )
+    }
+    if (!hasWaypoints && cpCount > 0 && cpCount < cpFields.length) {
+      warnings.push(
+        `Edge "${edge.from}->${edge.to}" defines partial connection points. Non-waypoint edges should set exitX/exitY/entryX/entryY together.`
+      )
+    }
+    if (!hasWaypoints && dxdyCount > 0 && dxdyCount < dxdyFields.length) {
+      warnings.push(
+        `Edge "${edge.from}->${edge.to}" defines partial Dx/Dy offsets. Use all exitDx/exitDy/entryDx/entryDy fields or omit them.`
+      )
+    }
+  }
+  return warnings
+}
+
+export function validateAcademicProfile(spec) {
+  const warnings = []
+  const profile = resolveProfile(spec)
+  if (profile !== 'academic-paper') return warnings
+
+  const theme = spec.meta?.theme || 'academic'
+  if (!['academic', 'academic-color'].includes(theme)) {
+    warnings.push('Academic-paper profile should use academic or academic-color theme.')
+  }
+  if (!spec.meta?.title) {
+    warnings.push('Academic-paper profile requires meta.title for figure captioning.')
+  }
+  if (!spec.meta?.description) {
+    warnings.push('Academic-paper profile should include meta.description for figure context.')
+  }
+
+  const usesIcons = (spec.nodes || []).some(node => node.icon)
+  const connectorTypes = new Set((spec.edges || []).map(edge => edge.type || 'primary'))
+  if ((usesIcons || connectorTypes.size > 1) && !spec.meta?.legend) {
+    warnings.push('Academic-paper profile should include meta.legend when icons or multiple connector styles are used.')
+  }
+
+  const smallFonts = []
+  for (const node of spec.nodes || []) {
+    const fontSize = node.style?.fontSize
+    if (typeof fontSize === 'number' && (fontSize < 8 || fontSize > 10)) {
+      smallFonts.push(`node "${node.id}"`)
+    }
+  }
+  for (const edge of spec.edges || []) {
+    const fontSize = edge.style?.fontSize
+    if (typeof fontSize === 'number' && (fontSize < 8 || fontSize > 10)) {
+      smallFonts.push(`edge "${edge.from}->${edge.to}"`)
+    }
+  }
+  if (smallFonts.length > 0) {
+    warnings.push(`Academic-paper profile expects 8-10pt labels. Out-of-range overrides found on ${smallFonts.join(', ')}.`)
+  }
+
+  return warnings
+}
+
+export function validateEdgeQuality(spec, layout) {
+  const warnings = []
+  const routedEdges = buildRoutedEdges(spec, layout)
+  const corridorMap = new Map()
+
+  for (const edge of routedEdges) {
+    const style = edge.style || {}
+    const sourcePos = layout.positions.get(edge.from)
+    const targetPos = layout.positions.get(edge.to)
+    if (!sourcePos || !targetPos) continue
+
+    const hasWaypoints = edge.waypoints?.length > 0
+    const cpPairs = [
+      ['exitX', 'exitY'],
+      ['entryX', 'entryY']
+    ]
+    for (const [xKey, yKey] of cpPairs) {
+      const x = style[xKey]
+      const y = style[yKey]
+      if (x === undefined || y === undefined) continue
+      const corner = (x === 0 || x === 1) && (y === 0 || y === 1)
+      if (corner) {
+        warnings.push(`Edge "${edge.from}->${edge.to}" uses corner connection point ${xKey}/${yKey}. Use face midpoints or distributed face slots.`)
+      }
+    }
+
+    if (!hasWaypoints) {
+      const sourceCenterX = sourcePos.x + sourcePos.width / 2
+      const sourceCenterY = sourcePos.y + sourcePos.height / 2
+      const targetCenterX = targetPos.x + targetPos.width / 2
+      const targetCenterY = targetPos.y + targetPos.height / 2
+      const horizontalGap = Math.abs(targetCenterX - sourceCenterX) - sourcePos.width / 2 - targetPos.width / 2
+      const verticalGap = Math.abs(targetCenterY - sourceCenterY) - sourcePos.height / 2 - targetPos.height / 2
+      const finalSegment = edge.__routing?.orientation === 'horizontal' ? horizontalGap : verticalGap
+      if (finalSegment < 30) {
+        warnings.push(`Edge "${edge.from}->${edge.to}" has a short final segment (${Math.round(finalSegment)}px). Keep the last segment at least 30px.`)
+      }
+    }
+
+    if (hasWaypoints) {
+      for (let i = 1; i < edge.waypoints.length; i++) {
+        const prev = edge.waypoints[i - 1]
+        const curr = edge.waypoints[i]
+        if (Math.abs(prev.x - curr.x) < 1 && Math.abs(prev.y - curr.y) < 1) {
+          warnings.push(`Edge "${edge.from}->${edge.to}" contains degenerate waypoint ${i}. Consecutive waypoints must differ by at least 1px.`)
+        }
+      }
+    }
+
+    if (edge.__routing) {
+      const faceAxis = edge.__routing.orientation === 'horizontal'
+        ? `${edge.from}:${edge.__routing.sourceFace}:${style.exitY}`
+        : `${edge.from}:${edge.__routing.sourceFace}:${style.exitX}`
+      if (!corridorMap.has(faceAxis)) corridorMap.set(faceAxis, [])
+      corridorMap.get(faceAxis).push(edge)
+    }
+
+    if (edge.label && !hasWaypoints) {
+      const gap = edge.__routing?.orientation === 'horizontal'
+        ? Math.abs((targetPos.x + targetPos.width / 2) - (sourcePos.x + sourcePos.width / 2))
+        : Math.abs((targetPos.y + targetPos.height / 2) - (sourcePos.y + sourcePos.height / 2))
+      if (gap < 60) {
+        warnings.push(`Edge "${edge.from}->${edge.to}" is short for a labeled connector. Increase spacing or offset the label further from the line.`)
+      }
+    }
+  }
+
+  for (const [corridor, group] of corridorMap.entries()) {
+    if (group.length < 2) continue
+    const slots = group.map(edge => edge.__routing?.orientation === 'horizontal' ? edge.style.exitY : edge.style.exitX)
+    const uniqueSlots = new Set(slots.map(slot => Number(slot).toFixed(2)))
+    if (uniqueSlots.size !== group.length) {
+      warnings.push(`Edges sharing corridor "${corridor}" overlap on the same face position. Distribute them across 0.25/0.5/0.75 slots.`)
+    }
+  }
+
+  return warnings
+}
+
 // ============================================================================
 // Main Export Functions
 // ============================================================================
@@ -894,6 +1200,12 @@ export function specToDrawioXml(spec, options = {}) {
   // Check complexity
   const warnings = checkComplexity(spec)
 
+  // Security: always throw on fatal-level warnings regardless of strict mode
+  const fatals = warnings.filter(w => w.level === 'fatal')
+  if (fatals.length > 0) {
+    throw new Error('Safety limit exceeded: ' + fatals.map(e => e.message).join('; '))
+  }
+
   // Strict mode: throw on error-level warnings
   if (options.strict) {
     const errors = warnings.filter(w => w.level === 'error')
@@ -905,11 +1217,21 @@ export function specToDrawioXml(spec, options = {}) {
   // Load theme
   const themeName = spec.meta?.theme || 'tech-blue'
   const theme = options.theme || loadTheme(themeName)
+  const layout = calculateLayout(spec, theme)
 
-  // Run color scheme and layout consistency validation
+  // Run validation passes
   const colorWarnings = validateColorScheme(spec, theme)
   const layoutWarnings = validateLayoutConsistency(spec)
-  const allValidationWarnings = [...colorWarnings, ...layoutWarnings]
+  const connectionPointWarnings = validateConnectionPointPolicy(spec)
+  const edgeWarnings = validateEdgeQuality(spec, layout)
+  const academicWarnings = validateAcademicProfile(spec)
+  const allValidationWarnings = [
+    ...colorWarnings,
+    ...layoutWarnings,
+    ...connectionPointWarnings,
+    ...edgeWarnings,
+    ...academicWarnings
+  ]
 
   if (allValidationWarnings.length > 0) {
     if (!options.silent) {
@@ -926,9 +1248,6 @@ export function specToDrawioXml(spec, options = {}) {
 
   // Merge all warnings for callers that requested them
   warnings.push(...allValidationWarnings.map(msg => ({ level: 'warning', message: msg })))
-
-  // Calculate layout
-  const layout = calculateLayout(spec, theme)
 
   // Build XML
   const xml = buildXml(spec, theme, layout)
@@ -955,7 +1274,7 @@ export function parseSpecYaml(yamlText) {
   }
   let parsed
   try {
-    parsed = yaml.load(yamlText)
+    parsed = yaml.load(yamlText, { schema: yaml.DEFAULT_SCHEMA })
   } catch (err) {
     throw new Error(`Failed to parse YAML specification: ${err.message}`)
   }
@@ -964,7 +1283,106 @@ export function parseSpecYaml(yamlText) {
   spec.nodes = spec.nodes || []
   spec.edges = spec.edges || []
   spec.modules = spec.modules || []
+  validateSpec(spec)
   return spec
+}
+
+/**
+ * Validate spec structure and values for safety and correctness.
+ * Throws descriptive error on first validation failure.
+ * @param {Object} spec - Parsed specification object
+ */
+export function validateSpec(spec) {
+  const VALID_ID = /^[A-Za-z][A-Za-z0-9_-]*$/
+  const VALID_THEME = /^[a-z][a-z0-9-]*$/
+  const VALID_ICON = /^[a-zA-Z][a-zA-Z0-9._-]*$/
+  const VALID_LAYOUTS = ['horizontal', 'vertical', 'hierarchical']
+  const VALID_ROUTINGS = ['orthogonal', 'rounded']
+  const VALID_PROFILES = ['default', 'academic-paper', 'engineering-review']
+
+  // Hard limits
+  const MAX_NODES = 100
+  const MAX_EDGES = 200
+  const MAX_MODULES = 20
+
+  // meta validation
+  if (spec.meta?.theme != null && !VALID_THEME.test(spec.meta.theme)) {
+    throw new Error(`Invalid meta.theme "${spec.meta.theme}": must match /^[a-z][a-z0-9-]*$/`)
+  }
+  if (spec.meta?.layout != null && !VALID_LAYOUTS.includes(spec.meta.layout)) {
+    throw new Error(`Invalid meta.layout "${spec.meta.layout}": must be one of ${VALID_LAYOUTS.join(', ')}`)
+  }
+  if (spec.meta?.routing != null && !VALID_ROUTINGS.includes(spec.meta.routing)) {
+    throw new Error(`Invalid meta.routing "${spec.meta.routing}": must be one of ${VALID_ROUTINGS.join(', ')}`)
+  }
+  if (spec.meta?.profile != null && !VALID_PROFILES.includes(spec.meta.profile)) {
+    throw new Error(`Invalid meta.profile "${spec.meta.profile}": must be one of ${VALID_PROFILES.join(', ')}`)
+  }
+
+  // Hard limit checks
+  if (spec.nodes.length > MAX_NODES) {
+    throw new Error(`Too many nodes (${spec.nodes.length}): maximum is ${MAX_NODES}`)
+  }
+  if (spec.edges.length > MAX_EDGES) {
+    throw new Error(`Too many edges (${spec.edges.length}): maximum is ${MAX_EDGES}`)
+  }
+  if (spec.modules.length > MAX_MODULES) {
+    throw new Error(`Too many modules (${spec.modules.length}): maximum is ${MAX_MODULES}`)
+  }
+
+  // Node validation
+  for (const node of spec.nodes) {
+    if (!node.id || !VALID_ID.test(node.id)) {
+      throw new Error(`Invalid node id "${node.id}": must match /^[A-Za-z][A-Za-z0-9_-]*$/`)
+    }
+    if (!node.label || typeof node.label !== 'string') {
+      throw new Error(`Node "${node.id}" is missing a required string label`)
+    }
+    if (node.type != null && !SHAPE_STYLES[node.type]) {
+      throw new Error(`Node "${node.id}" has unknown type "${node.type}": must be one of ${Object.keys(SHAPE_STYLES).join(', ')}`)
+    }
+    if (node.icon != null && !VALID_ICON.test(node.icon)) {
+      throw new Error(`Node "${node.id}" has invalid icon "${node.icon}": must match /^[a-zA-Z][a-zA-Z0-9._-]*$/`)
+    }
+    if (node.position != null) {
+      if (typeof node.position.x !== 'number' || typeof node.position.y !== 'number') {
+        throw new Error(`Node "${node.id}" position must have numeric x and y`)
+      }
+    }
+  }
+
+  // Edge validation
+  for (const edge of spec.edges) {
+    if (!edge.from || !VALID_ID.test(edge.from)) {
+      throw new Error(`Invalid edge.from "${edge.from}": must match node ID pattern`)
+    }
+    if (!edge.to || !VALID_ID.test(edge.to)) {
+      throw new Error(`Invalid edge.to "${edge.to}": must match node ID pattern`)
+    }
+    if (edge.label != null && typeof edge.label !== 'string') {
+      throw new Error(`Edge "${edge.from}->${edge.to}" label must be a string`)
+    }
+    if (edge.waypoints != null) {
+      if (!Array.isArray(edge.waypoints)) {
+        throw new Error(`Edge "${edge.from}->${edge.to}" waypoints must be an array`)
+      }
+      edge.waypoints.forEach((point, index) => {
+        if (typeof point?.x !== 'number' || typeof point?.y !== 'number') {
+          throw new Error(`Edge "${edge.from}->${edge.to}" waypoint ${index} must have numeric x and y`)
+        }
+      })
+    }
+  }
+
+  // Module validation
+  for (const mod of spec.modules) {
+    if (!mod.id || !VALID_ID.test(mod.id)) {
+      throw new Error(`Invalid module id "${mod.id}": must match /^[A-Za-z][A-Za-z0-9_-]*$/`)
+    }
+    if (!mod.label || typeof mod.label !== 'string') {
+      throw new Error(`Module "${mod.id}" is missing a required string label`)
+    }
+  }
 }
 
 /**
@@ -1064,25 +1482,37 @@ export function checkComplexity(spec) {
   const edgeCount = spec.edges?.length || 0
   const moduleCount = spec.modules?.length || 0
 
-  if (nodeCount > 30) {
+  // Fatal hard caps (security limits — always enforced)
+  if (nodeCount > 100) {
+    warnings.push({ level: 'fatal', message: `Node count (${nodeCount}) exceeds safety limit of 100` })
+  } else if (nodeCount > 30) {
     warnings.push({ level: 'error', message: `Too many nodes (${nodeCount}). Consider splitting into sub-diagrams.` })
   } else if (nodeCount > 20) {
     warnings.push({ level: 'warning', message: `Many nodes (${nodeCount}). Consider splitting for clarity.` })
   }
 
-  if (edgeCount > 50) {
+  if (edgeCount > 200) {
+    warnings.push({ level: 'fatal', message: `Edge count (${edgeCount}) exceeds safety limit of 200` })
+  } else if (edgeCount > 50) {
     warnings.push({ level: 'error', message: `Too many edges (${edgeCount}). Consider hierarchical layout.` })
   } else if (edgeCount > 30) {
     warnings.push({ level: 'warning', message: `Many edges (${edgeCount}). Consider simplifying.` })
   }
 
-  if (moduleCount > 5) {
+  if (moduleCount > 20) {
+    warnings.push({ level: 'fatal', message: `Module count (${moduleCount}) exceeds safety limit of 20` })
+  } else if (moduleCount > 5) {
     warnings.push({ level: 'warning', message: `Many modules (${moduleCount}). Consider zoom layers.` })
   }
 
   // Check label lengths
   for (const node of spec.nodes || []) {
-    if (node.label && node.label.length > 14) {
+    if (node.label && node.label.length > 200) {
+      warnings.push({
+        level: 'fatal',
+        message: `Node "${node.id}" label exceeds 200 characters (${node.label.length} chars)`
+      })
+    } else if (node.label && node.label.length > 14) {
       warnings.push({
         level: 'info',
         message: `Node "${node.id}" label is long (${node.label.length} chars). Consider abbreviation.`

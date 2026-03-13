@@ -1,3 +1,7 @@
+> **DEPRECATED**: The A-H format is superseded by the YAML specification format.
+> See [specification.md](design-system/specification.md) for the current format.
+> The converter (`ah-to-drawio.js`) remains functional for backward compatibility.
+
 # A-H Format Reference
 
 A structured diagram specification format for deterministic, reproducible diagram generation.
