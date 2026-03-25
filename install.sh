@@ -35,7 +35,6 @@ function rsync_oac_config()
     if [ ! -f "$target/.env" ]; then
         cp developer/env.example "$target/.env"
     fi
-    cp openagent.json "$target/opencode.json"
 }
 
 function install_superpowers()
@@ -74,6 +73,7 @@ function main()
         echo "update OpenAgentsControl developer"
         curl -fsSL https://raw.githubusercontent.com/darrenhinde/OpenAgentsControl/main/install.sh | bash -s developer
         if [ -d .opencode ]; then
+            cp developer/opencode.json .opencode
             rm -rf developer
             mv .opencode developer
         fi
