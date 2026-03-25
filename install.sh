@@ -52,10 +52,10 @@ function install_superpowers()
 function update_global_skills()
 {
     git clone https://github.com/anthropics/skills.git anthropics-skills
-    cp -auv anthropics-skills/skills/* config/skills
+    cp -auv anthropics-skills/skills/* skills
     rm -rf anthropics-skills
     git clone https://github.com/bahayonghang/drawio-skills.git
-    cp -auv drawio-skills/skills/* config/skills
+    cp -auv drawio-skills/skills/* skills
     rm -rf drawio-skills
 }
 
@@ -68,7 +68,6 @@ function main()
 
     case "$1" in
     --update )
-        echo "update global skills"
         update_global_skills
         echo "update OpenAgentsControl developer"
         curl -fsSL https://raw.githubusercontent.com/darrenhinde/OpenAgentsControl/main/install.sh | bash -s developer
@@ -89,21 +88,39 @@ function main()
     --oac )
         rsync_oac_config "${2:-$HOME/.opencode}"
         ;;
+    --skills )
+        echo "install skills to $HOME/.agents/skills"
+        # npx skills add Option         Description
+        # -g, --global                  Install to user directory instead of project
+        # -a, --agent <agents...>       Target specific agents (e.g., claude-code, codex). See Available Agents
+        # -s, --skill <skills...>       Install specific skills by name (use '*' for all skills)
+        # -l, --list                    List available skills without installing
+        # --copy                        Copy files instead of symlinking to agent directories
+        # -y, --yes	                    Skip all confirmation prompts
+        # --all	                        Install all skills to all agents without prompts
+
+        # Local path
+        npx skills add ./skills -g -y --skill skill-creator --skill pdf --skill docx \
+                                      --skill pptx --skill xlsx --skill drawio
+
+        # GitHub shorthand (owner/repo)
+        #npx skills add vercel-labs/skills -g -y --skill find-skills
+        #npx skills add anthropics/skills -g -y --skill skill-creator
+
+        # Direct path to a skill in a repo
+        #npx skills add https://github.com/bahayonghang/drawio-skills/tree/main/skills/drawio -g -y
+
+        # Any git URL
+        #npx skills add git@github.com:vercel-labs/agent-skills.git
+        ;;
     * )
-        echo "rsync global config to $HOME/.config/opencode"
-        rsync -av --exclude='skills' config/ "$HOME/.config/opencode"
-        mkdir -p "$HOME/.config/opencode/skills"
-        cp -auv config/skills/skill-creator \
-                config/skills/internal-comms \
-                config/skills/pdf \
-                config/skills/docx \
-                config/skills/pptx \
-                config/skills/xlsx \
-                config/skills/drawio \
-        "$HOME/.config/opencode/skills"
+        echo "copy global config to $HOME/.config/opencode"
+        cp -auv config/* "$HOME/.config/opencode"
+        npx skills update
 
         echo ""
         echo "options:"
+        echo "--skills: install global skills"
         echo "--update: update OpenAgentsControl developer"
         echo "--oac: install OpenAgentsControl to specified dir, use for existing project"
         echo "--superpowers: install superpowers to specified dir, use for create new project"

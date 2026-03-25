@@ -3,11 +3,26 @@
 ### 介绍
 configure for opencode
 
+### Install skills
+
+|Command|Description|
+| ------------------ | ------------ |
+|npx skills add [skills]|Add skills to agents|
+|npx skills list|List installed skills (alias: ls)|
+|npx skills find [query]|Search for skills interactively or by keyword|
+|npx skills remove [skills]|Remove installed skills from agents|
+|npx skills check|Check for available skill updates|
+|npx skills update|Update all installed skills to latest versions|
+|npx skills init [name]|Create a new SKILL.md template|
+
 ### 使用说明
 
 ```
 # 拷贝全局配置opencode 到 ~/.config/opencode
 ./install.sh
+
+# 安装skills 到 ~/.agents/skills
+./install.sh --skills
 
 # 更新.opencode (OpenAgentsControl developer)
 ./install.sh --update
