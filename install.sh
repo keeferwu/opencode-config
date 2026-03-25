@@ -19,6 +19,7 @@ function rsync_oac_config()
 
     rsync -av  --exclude='README.md' \
                --exclude='env.example' \
+               --exclude='config' \
                --exclude='command/clean.md' \
                --exclude='command/test.md' \
                --exclude='command/validate-repo.md' \
