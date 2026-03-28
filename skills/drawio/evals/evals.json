@@ -1,6 +1,6 @@
 {
   "skill_name": "drawio",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "evals": [
     {
       "id": "academic-campus-network",
@@ -131,6 +131,146 @@
         "LaTeX formula is properly formatted",
         "SVG export preserves formula readability",
         "meta.profile is set to academic-paper"
+      ]
+    },
+    {
+      "id": "replicate-warm-approval-palette",
+      "prompt": "Replicate the uploaded approval-flow image. Keep the warm orange fills, brown connectors, and cream background instead of remapping everything to tech-blue.",
+      "expected_output": "A replicated spec that preserves the warm source palette with explicit node, edge, and module color overrides.",
+      "files": [
+        "skills/drawio/evals/fixtures/replicate-warm-approval.svg"
+      ],
+      "assertions": [
+        "meta.source is set to replicated",
+        "meta.replication.colorMode is preserve-original",
+        "meta.replication includes a background color and extracted palette entries",
+        "High-confidence nodes, edges, and modules use explicit hex style overrides",
+        "The output does not collapse back to only default tech-blue palette values"
+      ]
+    },
+    {
+      "id": "replicate-brand-architecture-palette",
+      "prompt": "Recreate the uploaded architecture image and preserve its blue-green brand palette. Keep semantic shapes, but do not normalize colors to the default theme.",
+      "expected_output": "A replicated architecture diagram whose dominant colors stay close to the source brand palette.",
+      "files": [
+        "skills/drawio/evals/fixtures/replicate-brand-architecture.svg"
+      ],
+      "assertions": [
+        "meta.source is set to replicated",
+        "meta.replication.palette captures multiple extracted colors with confidence",
+        "Node styles contain explicit brand-blue and brand-green fills or strokes",
+        "Connector colors are preserved when clearly visible in the source",
+        "Low-confidence elements may fall back to theme tokens instead of inventing colors"
+      ]
+    },
+    {
+      "id": "replicate-academic-highlight-palette",
+      "prompt": "Replicate the uploaded paper figure. Keep the grayscale structure and its single accent highlight while remaining publication-safe.",
+      "expected_output": "A replicated academic figure with grayscale-safe structure and one preserved emphasis color.",
+      "files": [
+        "skills/drawio/evals/fixtures/replicate-academic-highlight.svg"
+      ],
+      "assertions": [
+        "meta.source is set to replicated",
+        "meta.replication.colorMode is preserve-original unless the user requests theme-first",
+        "The canvas and neutral elements remain grayscale-safe",
+        "Only the source accent color is preserved as an explicit override",
+        "The output stays suitable for academic-paper review"
+      ]
+    },
+    {
+      "id": "import-drawio-to-spec-uncompressed",
+      "prompt": "Import the uploaded .drawio file into YAML spec and write sidecars.",
+      "expected_output": "A YAML spec bundle (.spec.yaml + .arch.json) that preserves the module, node labels, and basic connector semantics from the .drawio input.",
+      "files": [
+        "skills/drawio/evals/fixtures/import-simple.drawio"
+      ],
+      "assertions": [
+        "Output spec contains meta.source: edited",
+        "Output spec contains module label Backend",
+        "Output spec contains nodes labeled API and DB",
+        "Node positions are present (x/y) on an 8px grid",
+        "Edge from API to DB imports as dashed/data connector type (or equivalent typed connector)"
+      ]
+    },
+    {
+      "id": "import-drawio-to-spec-compressed",
+      "prompt": "Import the uploaded compressed .drawio file into YAML spec and write sidecars.",
+      "expected_output": "A YAML spec bundle imported from a compressed <diagram> payload that preserves modules, nodes, and connectors.",
+      "files": [
+        "skills/drawio/evals/fixtures/import-simple-compressed.drawio"
+      ],
+      "assertions": [
+        "Importer decodes compressed diagram content into mxGraphModel XML",
+        "Output spec contains nodes labeled API and DB",
+        "Output spec contains module label Backend",
+        "Edge semantics (dashed/data) are preserved into typed connector fields"
+      ]
+    },
+    {
+      "id": "edit-after-import",
+      "prompt": "Import the uploaded .drawio file into YAML spec, rename API to Auth, and export as SVG.",
+      "expected_output": "A regenerated SVG (and sidecars) reflecting the edited label with a validated structure.",
+      "files": [
+        "skills/drawio/evals/fixtures/import-simple.drawio"
+      ],
+      "assertions": [
+        "The resulting spec and export rename API -> Auth",
+        "Output SVG is generated and is readable",
+        "Validation passes with --validate and paper-grade strict warnings when requested"
+      ]
+    },
+    {
+      "id": "mermaid-flowchart-input",
+      "prompt": "Convert this Mermaid flowchart to a draw.io diagram:\n\nflowchart LR\n  A[User Request] --> B[API Gateway]\n  B --> C[Auth Service]\n  B --> D[Order Service]\n  C --> E[(User DB)]\n  D --> F[(Order DB)]",
+      "expected_output": "A tech-blue themed diagram with 6 nodes converted from Mermaid input.",
+      "files": [],
+      "assertions": [
+        "Output uses tech-blue theme",
+        "Contains all 6 nodes from Mermaid input",
+        "Database nodes use database semantic type",
+        "Edges preserve connectivity from Mermaid source",
+        "YAML spec is generated as intermediate representation"
+      ]
+    },
+    {
+      "id": "csv-orgchart-input",
+      "prompt": "Convert this CSV into an org chart diagram:\n\nname,parent,type\nCEO,,user\nVP Engineering,CEO,service\nVP Product,CEO,service\nBackend Lead,VP Engineering,service\nFrontend Lead,VP Engineering,service\nPM Lead,VP Product,service",
+      "expected_output": "A vertical org chart with 6 nodes showing hierarchy.",
+      "files": [],
+      "assertions": [
+        "Output uses vertical layout",
+        "Contains all 6 org chart nodes",
+        "CEO node is a user type",
+        "Parent-child edges are correctly generated",
+        "Hierarchy is visually clear"
+      ]
+    },
+    {
+      "id": "dl-neural-network-types",
+      "prompt": "Create a neural network architecture diagram showing: Input Layer → Conv2D → BatchNorm → MaxPool → Attention Block → Dense Layer → Output, using academic theme.",
+      "expected_output": "An academic-themed neural network diagram using deep learning semantic node types.",
+      "files": [],
+      "assertions": [
+        "Output uses academic or academic-color theme",
+        "Conv2D node uses conv semantic type",
+        "BatchNorm node uses norm semantic type",
+        "MaxPool node uses pool semantic type",
+        "Attention Block uses attention semantic type",
+        "Dense Layer uses matrix semantic type"
+      ]
+    },
+    {
+      "id": "dark-theme-presentation",
+      "prompt": "Create a microservices overview with API Gateway, User Service, Order Service, and PostgreSQL DB using dark theme for a presentation.",
+      "expected_output": "A dark-themed microservices diagram suitable for slides.",
+      "files": [],
+      "assertions": [
+        "Output uses dark theme",
+        "Background color is dark (#0F172A or similar)",
+        "Contains all 4 specified components",
+        "Database node uses database semantic type",
+        "Node text colors provide sufficient contrast against dark background"
       ]
     }
   ]
