@@ -1,6 +1,6 @@
 #!/bin/bash
 
-function rsync_oac_config()
+function rsync_developer_config()
 {
     echo "rsync oac developer config to $1"
 
@@ -37,18 +37,6 @@ function rsync_oac_config()
     fi
 }
 
-function install_superpowers()
-{
-    git clone https://github.com/obra/superpowers.git
-    mkdir -p "$1/plugins"
-    cp superpowers/.opencode/plugins/superpowers.js "$1/plugins"
-
-    mkdir -p "$1/skills/superpowers"
-    cp -auv superpowers/skills/* "$1/skills/superpowers"
-
-    rm -rf superpowers
-}
-
 function update_global_skills()
 {
     git clone https://github.com/anthropics/skills.git anthropics-skills
@@ -77,16 +65,8 @@ function main()
             mv .opencode developer
         fi
         ;;
-    --superpowers )
-        if [ ! -d "$2" ]; then
-            echo "dir $2 does not exist"
-            exit 1
-        fi
-        echo "install superpowers to $2/.opencode"
-        install_superpowers "$2/.opencode"
-        ;;
-    --oac )
-        rsync_oac_config "${2:-$HOME/.opencode}"
+    --developer )
+        rsync_developer_config "${2:-$HOME/.opencode}"
         ;;
     --skills )
         echo "install skills to $HOME/.agents/skills"
@@ -122,8 +102,7 @@ function main()
         echo "options:"
         echo "--skills: install global skills"
         echo "--update: update OpenAgentsControl developer"
-        echo "--oac: install OpenAgentsControl to specified dir, use for existing project"
-        echo "--superpowers: install superpowers to specified dir, use for create new project"
+        echo "--developer: install OpenAgentsControl for specific project"
         ;;
     esac
 }
