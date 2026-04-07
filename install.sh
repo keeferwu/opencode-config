@@ -65,10 +65,12 @@ function main()
             mv .opencode developer
         fi
         ;;
-    --developer )
+    --oac )
         rsync_developer_config "${2:-$HOME/.opencode}"
         ;;
-    --skills )
+    * )
+        echo "copy global config to $HOME/.config/opencode"
+        cp -auv config/* "$HOME/.config/opencode"
         echo "install skills to $HOME/.agents/skills"
         # npx skills add Option         Description
         # -g, --global                  Install to user directory instead of project
@@ -91,17 +93,12 @@ function main()
 
         # Any git URL
         #npx skills add git@github.com:vercel-labs/agent-skills.git
-        ;;
-    * )
-        echo "copy global config to $HOME/.config/opencode"
-        cp -auv config/* "$HOME/.config/opencode"
         npx skills update
 
         echo ""
         echo "options:"
-        echo "--skills: install global skills"
         echo "--update: update OpenAgentsControl developer"
-        echo "--developer: install OpenAgentsControl for specific project"
+        echo "--oac: install OpenAgentsControl for specific project"
         ;;
     esac
 }

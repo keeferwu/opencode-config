@@ -29,5 +29,9 @@
       "enabled": false
     }
   },
-  "plugin": ["@tarquinen/opencode-dcp@latest", "opencode-lazy-loader"]
+  "plugin": [
+      "opencode-lazy-loader",
+      "@tarquinen/opencode-dcp@latest",
+      "superpowers@git+https://github.com/obra/superpowers.git"
+  ]
 }
