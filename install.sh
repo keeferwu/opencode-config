@@ -80,8 +80,7 @@ function main()
         # --all	                        Install all skills to all agents without prompts
 
         # Local path
-        npx skills add ./skills -g -y --skill skill-creator --skill pdf --skill docx \
-                                      --skill pptx --skill xlsx --skill drawio
+        npx skills add ./skills -g -y --skill drawio --skill pdf --skill docx --skill pptx --skill xlsx
 
         # GitHub shorthand (owner/repo)
         #npx skills add vercel-labs/skills -g -y --skill find-skills
