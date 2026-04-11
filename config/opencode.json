@@ -6,6 +6,10 @@
   "watcher": {
     "ignore": ["node_modules/**", ".clangd/**", ".cache/**", ".git/**", "*.log"]
   },
+  "permission": {
+    "*": "allow",
+    "edit": "ask"
+  },
   "agent": {
     "code-simplifier": {
       "mode": "subagent"
