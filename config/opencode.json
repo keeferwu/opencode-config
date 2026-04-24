@@ -9,12 +9,10 @@
   "permission": {
     "external_directory": "allow",
     "bash": {
-      "*": "ask",
+      "*": "allow",
+      "rm *": "ask",
       "git *": "allow",
-      "git push": "deny",
-      "ls": "allow",
-      "find *" : "allow",
-      "grep *" : "allow"
+      "git push": "deny"
     }
   },
   "agent": {
