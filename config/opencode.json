@@ -6,6 +6,17 @@
   "watcher": {
     "ignore": ["node_modules/**", ".clangd/**", ".cache/**", ".git/**", "*.log"]
   },
+  "permission": {
+    "external_directory": "allow",
+    "bash": {
+      "*": "ask",
+      "git *": "allow",
+      "git push": "deny",
+      "ls": "allow",
+      "find *" : "allow",
+      "grep *" : "allow"
+    }
+  },
   "agent": {
     "code-simplifier": {
       "mode": "subagent"

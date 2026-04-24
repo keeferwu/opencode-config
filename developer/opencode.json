@@ -1,17 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "default_agent": "OpenAgent",
-  "permission": {
-    "bash": {
-      "*": "ask",
-      "git *": "allow",
-      "git push": "deny",
-      "npm *": "allow",
-      "rm -rf *": "deny",
-      "sudo *": "ask",
-      "chmod *": "ask"
-    }
-  },
   "mcp": {
     "gitlab": {
       "type": "local",
