@@ -45,6 +45,13 @@ function update_global_skills()
     git clone https://github.com/bahayonghang/drawio-skills.git
     cp -auv drawio-skills/skills/* skills
     rm -rf drawio-skills
+
+    git clone https://github.com/microsoft/markitdown
+    cd markitdown
+    # python should over 3.10
+    pip install -e 'packages/markitdown[all]'
+    cd -
+    rm -rf markitdown
 }
 
 function main()
@@ -69,9 +76,12 @@ function main()
         rsync_developer_config "${2:-$HOME/.opencode}"
         ;;
     * )
-        echo "copy global config to $HOME/.config/opencode"
-        cp -auv config/* "$HOME/.config/opencode"
-        echo "install skills to $HOME/.agents/skills"
+        echo "install global config to $HOME/.config/opencode"
+        mkdir -p "$HOME/.config/opencode/skills"
+        cp opencode.json "$HOME/.config/opencode"
+        cp -auv agents "$HOME/.config/opencode"
+        cp -auv rules "$HOME/.config/opencode"
+        #echo "install skills to $HOME/.agents/skills"
         # npx skills add Option         Description
         # -g, --global                  Install to user directory instead of project
         # -a, --agent <agents...>       Target specific agents (e.g., claude-code, codex). See Available Agents
@@ -93,7 +103,7 @@ function main()
 
         # Any git URL
         #npx skills add git@github.com:vercel-labs/agent-skills.git
-        npx skills update
+        #npx skills update
 
         echo ""
         echo "options:"
