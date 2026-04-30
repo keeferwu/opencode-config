@@ -39,19 +39,17 @@ function rsync_developer_config()
 
 function update_global_skills()
 {
-    git clone https://github.com/anthropics/skills.git anthropics-skills
-    cp -auv anthropics-skills/skills/* skills
-    rm -rf anthropics-skills
     git clone https://github.com/bahayonghang/drawio-skills.git
     cp -auv drawio-skills/skills/* skills
     rm -rf drawio-skills
 
-    git clone https://github.com/microsoft/markitdown
-    cd markitdown
     # python should over 3.10
-    pip install -e 'packages/markitdown[all]'
-    cd -
-    rm -rf markitdown
+    version=$(python3 --version | awk '{print $2}')
+    if printf '%s\n%s\n' "${version}" "3.10" | sort -V -C -r; then
+        git clone https://github.com/microsoft/markitdown
+        pip install -e 'markitdown/packages/markitdown[all]'
+        rm -rf markitdown
+    fi
 }
 
 function main()
@@ -77,11 +75,11 @@ function main()
         ;;
     * )
         echo "install global config to $HOME/.config/opencode"
-        mkdir -p "$HOME/.config/opencode/skills"
         cp opencode.json "$HOME/.config/opencode"
         cp -auv agents "$HOME/.config/opencode"
         cp -auv rules "$HOME/.config/opencode"
-        #echo "install skills to $HOME/.agents/skills"
+
+        echo "install skills to $HOME/.agents/skills"
         # npx skills add Option         Description
         # -g, --global                  Install to user directory instead of project
         # -a, --agent <agents...>       Target specific agents (e.g., claude-code, codex). See Available Agents
@@ -92,15 +90,14 @@ function main()
         # --all	                        Install all skills to all agents without prompts
 
         # Local path
-        npx skills add ./skills -g -y --skill drawio --skill pdf --skill docx --skill pptx --skill xlsx
-
+        npx skills add ./skills -g -y --skill drawio
         # GitHub shorthand (owner/repo)
         #npx skills add vercel-labs/skills -g -y --skill find-skills
-        #npx skills add anthropics/skills -g -y --skill skill-creator
-
+        if ! which markitdown >/dev/null 2>&1; then
+            npx skills add anthropics/skills -g -y --skill pdf --skill docx --skill pptx --skill xlsx
+        fi
         # Direct path to a skill in a repo
         #npx skills add https://github.com/bahayonghang/drawio-skills/tree/main/skills/drawio -g -y
-
         # Any git URL
         #npx skills add git@github.com:vercel-labs/agent-skills.git
         #npx skills update
