@@ -37,19 +37,11 @@ function rsync_developer_config()
     fi
 }
 
-function update_global_skills()
+function update_skills()
 {
     git clone https://github.com/bahayonghang/drawio-skills.git
     cp -auv drawio-skills/skills/* skills
     rm -rf drawio-skills
-
-    # python should over 3.10
-    version=$(python3 --version | awk '{print $2}')
-    if printf '%s\n%s\n' "${version}" "3.10" | sort -V -C -r; then
-        git clone https://github.com/microsoft/markitdown
-        pip install -e 'markitdown/packages/markitdown[all]'
-        rm -rf markitdown
-    fi
 }
 
 function main()
@@ -61,7 +53,7 @@ function main()
 
     case "$1" in
     --update )
-        update_global_skills
+        update_skills
         echo "update OpenAgentsControl developer"
         curl -fsSL https://raw.githubusercontent.com/darrenhinde/OpenAgentsControl/main/install.sh | bash -s developer
         if [ -d .opencode ]; then
@@ -72,6 +64,13 @@ function main()
         ;;
     --oac )
         rsync_developer_config "${2:-$HOME/.opencode}"
+        ;;
+    --markitdown )
+        git clone https://github.com/microsoft/markitdown
+        cd markitdown
+        docker build -t markitdown:latest .
+        cd -
+        rm -rf markitdown
         ;;
     * )
         echo "install global config to $HOME/.config/opencode"
@@ -93,7 +92,9 @@ function main()
         npx skills add ./skills -g -y --skill drawio
         # GitHub shorthand (owner/repo)
         #npx skills add vercel-labs/skills -g -y --skill find-skills
-        if ! which markitdown >/dev/null 2>&1; then
+        if [ -n "$(docker images -q markitdown)" ]; then
+            npx skills add ./skills -g -y --skill markitdown
+        else
             npx skills add anthropics/skills -g -y --skill pdf --skill docx --skill pptx --skill xlsx
         fi
         # Direct path to a skill in a repo
@@ -106,6 +107,7 @@ function main()
         echo "options:"
         echo "--update: update OpenAgentsControl developer"
         echo "--oac: install OpenAgentsControl for specific project"
+        echo "--markitdown: install markitdown docker"
         ;;
     esac
 }
