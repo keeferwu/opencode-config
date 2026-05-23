@@ -78,6 +78,10 @@ function main()
         cp -auv agents "$HOME/.config/opencode"
         cp -auv rules "$HOME/.config/opencode"
 
+        echo "install codegraph"
+        sudo npm install -g @colbymchenry/codegraph
+        npx @colbymchenry/codegraph
+
         echo "install skills to $HOME/.agents/skills"
         # npx skills add Option         Description
         # -g, --global                  Install to user directory instead of project
