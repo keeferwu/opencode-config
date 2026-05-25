@@ -3,6 +3,10 @@
 ### 介绍
 configure for opencode
 
+### Install codegraph
+npx @colbymchenry/codegraph        # zero-install, or:
+sudo npm install -g @colbymchenry/codegraph
+
 ### Install skills
 
 |Command|Description|
@@ -24,6 +28,9 @@ configure for opencode
 
 # 更新.opencode (OpenAgentsControl developer)
 ./install.sh --update
+
+# 安装markitdown (docker)
+./install.sh --markitdown
 
 # 安装developer 到指定项目的目录，默认为~/.opencode
 ./install.sh --oac <project_dir>
