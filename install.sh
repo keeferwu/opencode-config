@@ -37,13 +37,6 @@ function rsync_developer_config()
     fi
 }
 
-function update_skills()
-{
-    git clone https://github.com/bahayonghang/drawio-skills.git
-    cp -auv drawio-skills/skills/* skills
-    rm -rf drawio-skills
-}
-
 function main()
 {
     if ! which opencode >/dev/null 2>&1; then
@@ -53,7 +46,6 @@ function main()
 
     case "$1" in
     --update )
-        update_skills
         echo "update OpenAgentsControl developer"
         curl -fsSL https://raw.githubusercontent.com/darrenhinde/OpenAgentsControl/main/install.sh | bash -s developer
         if [ -d .opencode ]; then
@@ -92,9 +84,9 @@ function main()
         # -y, --yes	                    Skip all confirmation prompts
         # --all	                        Install all skills to all agents without prompts
 
-        # Local path
-        npx skills add ./skills -g -y --skill drawio
         # GitHub shorthand (owner/repo)
+        npx skills add Agents365-ai/drawio-skill -g -y --skill drawio-skill
+        cp -auv ~/.agents/skills/drawio-skill ./skills
         #npx skills add vercel-labs/skills -g -y --skill find-skills
         if [ -n "$(docker images -q markitdown)" ]; then
             npx skills add ./skills -g -y --skill markitdown
