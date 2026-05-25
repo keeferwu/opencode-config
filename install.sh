@@ -64,6 +64,10 @@ function main()
         cd -
         rm -rf markitdown
         ;;
+    --drawio )
+        sudo apt-get install xvfb
+        sudo snap install drawio
+        ;;
     * )
         echo "install global config to $HOME/.config/opencode"
         cp opencode.json "$HOME/.config/opencode"
@@ -104,6 +108,7 @@ function main()
         echo "--update: update OpenAgentsControl developer"
         echo "--oac: install OpenAgentsControl for specific project"
         echo "--markitdown: install markitdown docker"
+        echo "--drawio: install drawio"
         ;;
     esac
 }

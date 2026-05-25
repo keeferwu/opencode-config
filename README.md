@@ -32,6 +32,9 @@ sudo npm install -g @colbymchenry/codegraph
 # 安装markitdown (docker)
 ./install.sh --markitdown
 
+# 安装drawio
+./install.sh --drawio
+
 # 安装developer 到指定项目的目录，默认为~/.opencode
 ./install.sh --oac <project_dir>
 ```
