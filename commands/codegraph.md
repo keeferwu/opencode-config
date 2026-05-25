@@ -6,6 +6,10 @@ description: Initialize project code knowledge graph
 
 Use codegraph create pre-indexed code knowledge graph for a project
 
+## Precondition
+
+Only initialize CodeGraph if the project contains `AGENTS.md` or `AGENT.md` in its root directory. Skip otherwise.
+
 ## Instructions
 
 1. **Check if codegraph is installed**:
