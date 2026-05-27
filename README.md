@@ -3,10 +3,6 @@
 ### 介绍
 configure for opencode
 
-### Install codegraph
-npx @colbymchenry/codegraph        # zero-install, or:
-sudo npm install -g @colbymchenry/codegraph
-
 ### Install skills
 
 |Command|Description|
@@ -35,6 +31,9 @@ sudo npm install -g @colbymchenry/codegraph
 # 安装drawio
 ./install.sh --drawio
 
+# 安装camet 综合openspec 和 supperpowers 的能力用于新项目开发
+./install.sh --camet
+
 # 安装developer 到指定项目的目录，默认为~/.opencode
 ./install.sh --oac <project_dir>
 ```
@@ -43,6 +42,7 @@ sudo npm install -g @colbymchenry/codegraph
 
 |你的需求| 推荐 |
 | ------------------ | ------------ |
+|新项目开发 | camet |
 |强制规范流程 + TDD | Superpowers|
 |学习我的代码风格 + 审批 | OAC|
 |快速原型 | AGENTS.md|

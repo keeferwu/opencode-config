@@ -68,6 +68,13 @@ function main()
         sudo apt-get install xvfb
         sudo snap install drawio
         ;;
+    -- comet )
+        sudo npm install -g @rpamis/comet@latest
+        sudo npm install -g @fission-ai/openspec@latest
+        echo "Install openspec and supperpowers for project:"
+        echo "cd your-project"
+        echo "comet init"
+        ;;
     * )
         echo "install global config to $HOME/.config/opencode"
         cp opencode.json "$HOME/.config/opencode"
@@ -75,8 +82,7 @@ function main()
         cp -auv rules "$HOME/.config/opencode"
 
         echo "install codegraph"
-        sudo npm install -g @colbymchenry/codegraph
-        npx @colbymchenry/codegraph
+        sudo npx @colbymchenry/codegraph
 
         echo "install skills to $HOME/.agents/skills"
         # npx skills add Option         Description
