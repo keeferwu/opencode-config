@@ -45,7 +45,7 @@ function main()
     fi
 
     case "$1" in
-    --update )
+    --oac )
         echo "update OpenAgentsControl developer"
         curl -fsSL https://raw.githubusercontent.com/darrenhinde/OpenAgentsControl/main/install.sh | bash -s developer
         if [ -d .opencode ]; then
@@ -53,8 +53,6 @@ function main()
             rm -rf developer
             mv .opencode developer
         fi
-        ;;
-    --oac )
         rsync_developer_config "${2:-$HOME/.opencode}"
         ;;
     --markitdown )
@@ -68,12 +66,27 @@ function main()
         sudo apt-get install xvfb
         sudo snap install drawio
         ;;
-    -- comet )
+    --comet )
         sudo npm install -g @rpamis/comet@latest
         sudo npm install -g @fission-ai/openspec@latest
         echo "Install openspec and supperpowers for project:"
         echo "cd your-project"
         echo "comet init"
+        ;;
+    --usat )
+        curl -fsSL https://raw.githubusercontent.com/Lum1104/Understand-Anything/main/install.sh | bash -s opencode
+        echo "Create $HOME/.understand-anything/repo"
+        echo "Create link $HOME/.understand-anything-plugin"
+        echo "Create link $HOME/.agents/skills/undstand*"
+        ;;
+    --help )
+        echo ""
+        echo "options:"
+        echo "--oac: install OpenAgentsControl for specific project"
+        echo "--markitdown: install markitdown docker"
+        echo "--drawio: install drawio"
+        echo "--comet: install comet for comet openspec and superpowers"
+        echo "--usat: install understand-anything"
         ;;
     * )
         echo "install global config to $HOME/.config/opencode"
@@ -96,7 +109,6 @@ function main()
 
         # GitHub shorthand (owner/repo)
         npx skills add Agents365-ai/drawio-skill -g -y --skill drawio-skill
-        cp -auv ~/.agents/skills/drawio-skill ./skills
         #npx skills add vercel-labs/skills -g -y --skill find-skills
         if [ -n "$(docker images -q markitdown)" ]; then
             npx skills add ./skills -g -y --skill markitdown
@@ -108,13 +120,6 @@ function main()
         # Any git URL
         #npx skills add git@github.com:vercel-labs/agent-skills.git
         #npx skills update
-
-        echo ""
-        echo "options:"
-        echo "--update: update OpenAgentsControl developer"
-        echo "--oac: install OpenAgentsControl for specific project"
-        echo "--markitdown: install markitdown docker"
-        echo "--drawio: install drawio"
         ;;
     esac
 }

@@ -22,8 +22,8 @@ configure for opencode
 # 安装skills 到 ~/.agents/skills
 ./install.sh
 
-# 更新.opencode (OpenAgentsControl developer)
-./install.sh --update
+#help
+./install.sh --help
 
 # 安装markitdown (docker)
 ./install.sh --markitdown
@@ -34,7 +34,10 @@ configure for opencode
 # 安装comet 综合openspec 和 supperpowers 的能力用于新项目开发
 ./install.sh --comet
 
-# 安装developer 到指定项目的目录，默认为~/.opencode
+# 安装understand anything
+./install.sh --usat
+
+# 安装open agent contrl developer 到指定项目的目录，默认为~/.opencode
 ./install.sh --oac <project_dir>
 ```
 
