@@ -90,12 +90,19 @@ function main()
         ;;
     * )
         echo "install global config to $HOME/.config/opencode"
+        cp AGENTS.md "$HOME/.config/opencode"
+        cp opencode.jsonc "$HOME/.config/opencode"
         cp opencode.json "$HOME/.config/opencode"
         cp -auv agents "$HOME/.config/opencode"
+        cp -auv commands "$HOME/.config/opencode"
         cp -auv rules "$HOME/.config/opencode"
+        cp -auv skills "$HOME/.config/opencode"
 
         echo "install codegraph"
-        sudo npx @colbymchenry/codegraph
+        npx @colbymchenry/codegraph
+        if ! which codegraph >/dev/null 2>&1; then
+            sudo npm install -g @colbymchenry/codegraph
+        fi
 
         echo "install skills to $HOME/.agents/skills"
         # npx skills add Option         Description
@@ -110,11 +117,7 @@ function main()
         # GitHub shorthand (owner/repo)
         npx skills add Agents365-ai/drawio-skill -g -y --skill drawio-skill
         #npx skills add vercel-labs/skills -g -y --skill find-skills
-        if [ -n "$(docker images -q markitdown)" ]; then
-            npx skills add ./skills -g -y --skill markitdown
-        else
-            npx skills add anthropics/skills -g -y --skill pdf --skill docx --skill pptx --skill xlsx
-        fi
+        #npx skills add anthropics/skills -g -y --skill pdf --skill docx --skill pptx --skill xlsx
         # Direct path to a skill in a repo
         #npx skills add https://github.com/bahayonghang/drawio-skills/tree/main/skills/drawio -g -y
         # Any git URL
