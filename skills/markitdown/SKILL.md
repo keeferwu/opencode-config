@@ -7,7 +7,7 @@ description: "Use when the user asks to analyze, summarize, or extract data from
 
 ## Overview
 
-Uses the `markitdown:latest` Docker image (based on microsoft/markitdown) to convert various office documents, images, audio, and other file formats to Markdown, enabling the LLM to parse their contents. The `convert.sh` script automatically builds the image from pip if it doesn't exist.
+Uses the `markitdown:latest` Docker image (based on microsoft/markitdown) to convert various office documents, images, audio, and other file formats to Markdown, enabling the LLM to parse their contents. The `convert.sh` script automatically builds the image from the official repository if it doesn't exist.
 
 ## Supported File Formats
 
@@ -69,7 +69,7 @@ $ # Then analyze and summarize based on the content
 bash <skill-dir>/convert.sh /path/to/file.pdf > /tmp/opencode/output.md
 ```
 
-The script automatically builds the image from pip (`pip install markitdown[all]`) when the Docker image doesn't exist — no manual intervention needed.
+The script automatically clones the official [microsoft/markitdown](https://github.com/microsoft/markitdown) repo and builds the Docker image when it doesn't exist — no manual intervention needed.
 
 ## Common Mistakes
 

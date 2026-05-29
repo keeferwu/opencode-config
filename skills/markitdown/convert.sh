@@ -21,13 +21,11 @@ fi
 
 # Build docker image on demand if missing
 if ! docker images markitdown:latest 2>/dev/null | grep -q markitdown; then
-    echo "Docker image 'markitdown:latest' not found. Building from pip..." >&2
-    docker build -t markitdown:latest - >/dev/null <<DOCKERFILE
-FROM python:3.13-slim
-WORKDIR /app
-RUN pip install --no-cache-dir "markitdown[all]"
-ENTRYPOINT ["markitdown"]
-DOCKERFILE
+    echo "Docker image 'markitdown:latest' not found. Building from official repo..." >&2
+    BUILD_DIR=$(mktemp -d)
+    git clone --depth 1 https://github.com/microsoft/markitdown.git "$BUILD_DIR/markitdown" >&2
+    docker build -t markitdown:latest "$BUILD_DIR/markitdown" >&2
+    rm -rf "$BUILD_DIR"
 fi
 
 docker run --rm -i markitdown:latest < "$INPUT_FILE"
