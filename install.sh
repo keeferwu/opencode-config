@@ -79,6 +79,10 @@ function main()
         echo "Create link $HOME/.understand-anything-plugin"
         echo "Create link $HOME/.agents/skills/undstand*"
         ;;
+    --rtk )
+        curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
+        rtk init -g --opencode
+        ;;
     --help )
         echo ""
         echo "options:"
@@ -87,6 +91,7 @@ function main()
         echo "--drawio: install drawio"
         echo "--comet: install comet for comet openspec and superpowers"
         echo "--usat: install understand-anything"
+        echo "--rtk: install rust token killer"
         ;;
     * )
         echo "install global config to $HOME/.config/opencode"

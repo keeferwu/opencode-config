@@ -37,6 +37,9 @@ configure for opencode
 # 安装understand anything
 ./install.sh --usat
 
+# 安装rust token killer
+./install.sh --rtk
+
 # 安装open agent contrl developer 到指定项目的目录，默认为~/.opencode
 ./install.sh --oac <project_dir>
 ```
