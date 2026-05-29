@@ -41,7 +41,11 @@ function main()
 {
     if ! which opencode >/dev/null 2>&1; then
         echo "install opencode"
-        curl -fsSL https://opencode.ai/install | bash
+        if which node >/dev/null 2>&1; then
+            sudo npm install -g opencode-ai
+        else
+            curl -fsSL https://opencode.ai/install | bash
+        fi
     fi
 
     case "$1" in
