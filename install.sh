@@ -84,18 +84,26 @@ function main()
         echo "Create link $HOME/.agents/skills/undstand*"
         ;;
     --rtk )
+        # base rust
         curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
         rtk init -g --opencode
+        ;;
+    --graphify )
+        # base Python 3.10+
+        pip install graphifyy
+        graphify install --platform opencode
+        graphify opencode install   #安装常驻助手规则 AGENTS.md 到当前项目
         ;;
     --help )
         echo ""
         echo "options:"
         echo "--oac: install OpenAgentsControl for specific project"
-        echo "--markitdown: install markitdown docker"
-        echo "--drawio: install drawio"
-        echo "--comet: install comet for comet openspec and superpowers"
-        echo "--usat: install understand-anything"
-        echo "--rtk: install rust token killer"
+        echo "--markitdown: install markitdown docker, use for translate file to markdown"
+        echo "--drawio: install drawio, use for draw diagram"
+        echo "--comet: install comet, use for comet openspec and superpowers"
+        echo "--usat: install understand-anything, use for understand code"
+        echo "--rtk: install rust token killer, use for save tokens"
+        echo "--graphify: install graphify, use for drawing knowledge maps"
         ;;
     * )
         echo "install global config to $HOME/.config/opencode"

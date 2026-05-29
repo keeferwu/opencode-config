@@ -18,30 +18,12 @@ configure for opencode
 ### 使用说明
 
 ```
-# 拷贝全局配置(superpowers) 到 ~/.config/opencode
+# 拷贝全局配置到 ~/.config/opencode
 # 安装skills 到 ~/.agents/skills
 ./install.sh
 
-#help
+# 查看可安装的增强应用
 ./install.sh --help
-
-# 安装markitdown (docker)
-./install.sh --markitdown
-
-# 安装drawio
-./install.sh --drawio
-
-# 安装comet 综合openspec 和 supperpowers 的能力用于新项目开发
-./install.sh --comet
-
-# 安装understand anything
-./install.sh --usat
-
-# 安装rust token killer
-./install.sh --rtk
-
-# 安装open agent contrl developer 到指定项目的目录，默认为~/.opencode
-./install.sh --oac <project_dir>
 ```
 
 ### comet 使用说明
