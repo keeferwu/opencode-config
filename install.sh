@@ -114,10 +114,14 @@ function main()
         cp -auv commands "$HOME/.config/opencode"
         cp -auv rules "$HOME/.config/opencode"
         cp -auv skills "$HOME/.config/opencode"
+        # remove plugin cache
+        rm -rf $HOME/.cache/opencode/packages/*
 
         echo "install codegraph"
         npx @colbymchenry/codegraph
-        if ! which codegraph >/dev/null 2>&1; then
+        if which codegraph >/dev/null 2>&1; then
+            sudo npm update -g @colbymchenry/codegraph
+        else
             sudo npm install -g @colbymchenry/codegraph
         fi
 
