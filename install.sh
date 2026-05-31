@@ -106,7 +106,7 @@ function main()
         echo "--graphify: install graphify, use for drawing knowledge maps"
         ;;
     * )
-        echo "install global config to $HOME/.config/opencode"
+        echo "Install global config to $HOME/.config/opencode"
         cp AGENTS.md "$HOME/.config/opencode"
         cp opencode.jsonc "$HOME/.config/opencode"
         cp opencode.json "$HOME/.config/opencode"
@@ -117,7 +117,7 @@ function main()
         # remove plugin cache
         rm -rf $HOME/.cache/opencode/packages/*
 
-        echo "install codegraph"
+        echo "Install codegraph"
         npx @colbymchenry/codegraph
         if which codegraph >/dev/null 2>&1; then
             sudo npm update -g @colbymchenry/codegraph
@@ -125,7 +125,7 @@ function main()
             sudo npm install -g @colbymchenry/codegraph
         fi
 
-        echo "install skills to $HOME/.agents/skills"
+        echo "Install skills to $HOME/.agents/skills"
         # npx skills add Option         Description
         # -g, --global                  Install to user directory instead of project
         # -a, --agent <agents...>       Target specific agents (e.g., claude-code, codex). See Available Agents
@@ -137,13 +137,14 @@ function main()
 
         # GitHub shorthand (owner/repo)
         npx skills add Agents365-ai/drawio-skill -g -y --skill drawio-skill
-        #npx skills add vercel-labs/skills -g -y --skill find-skills
         #npx skills add anthropics/skills -g -y --skill pdf --skill docx --skill pptx --skill xlsx
         # Direct path to a skill in a repo
         #npx skills add https://github.com/bahayonghang/drawio-skills/tree/main/skills/drawio -g -y
         # Any git URL
         #npx skills add git@github.com:vercel-labs/agent-skills.git
         #npx skills update
+
+        echo "Start opencode and ask:'check ~/.cache/opencode/packages/opencode-mem@latest work or not'"
         ;;
     esac
 }
