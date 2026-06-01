@@ -107,9 +107,10 @@ function main()
         ;;
     * )
         echo "Install global config to $HOME/.config/opencode"
+        cp opencode.json "$HOME/.config/opencode"
         cp AGENTS.md "$HOME/.config/opencode"
         cp opencode.jsonc "$HOME/.config/opencode"
-        cp opencode.json "$HOME/.config/opencode"
+        cp opencode-mem.jsonc "$HOME/.config/opencode"
         cp -auv agents "$HOME/.config/opencode"
         cp -auv commands "$HOME/.config/opencode"
         cp -auv rules "$HOME/.config/opencode"
