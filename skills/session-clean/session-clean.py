@@ -1,151 +1,116 @@
 #!/usr/bin/env python3
 """OpenCode session cleanup tool.
 
-Default: list all sessions grouped by project as JSON for interactive selection.
-With --list: list all sessions in a simple readable format.
-With --delete: delete selected sessions and auto-clean orphaned diff files.
-
-Usage:
-    python3 session-clean.py                        # List sessions as JSON
-    python3 session-clean.py --list                 # List sessions in readable format
-    python3 session-clean.py --delete SID1 SID2...  # Delete sessions + clean orphans
-    python3 session-clean.py --orphans              # Clean orphaned diff files only
-    python3 session-clean.py --dry-run --delete SID1 SID2...  # Dry run
+Modes:
+    Default:    JSON grouped by project (for interactive Question tool flow)
+    --list:     Human-readable session summary, then STOP
+    --delete:   Delete sessions + auto-clean orphaned diff files
+    --orphans:  Clean orphaned diff files only
+    --dry-run:  Preview without changes (combine with --delete or --orphans)
 """
 
+from __future__ import annotations
+
+import argparse
 import json
-import os
 import sqlite3
-import sys
+from datetime import datetime
+from pathlib import Path
 
-DB_PATH = os.path.expanduser("~/.local/share/opencode/opencode.db")
-DIFF_DIR = os.path.expanduser("~/.local/share/opencode/storage/session_diff")
-
-SESSION_TABLES = [
-    "message",
-    "part",
-    "todo",
-    "session_message",
-    "session_share",
-]
+DB_PATH = Path("~/.local/share/opencode/opencode.db").expanduser()
+DIFF_DIR = Path("~/.local/share/opencode/storage/session_diff").expanduser()
+SESSION_TABLES = ["message", "part", "todo", "session_message", "session_share"]
 
 
-def get_db_conn():
-    conn = sqlite3.connect(DB_PATH)
+def get_connection() -> sqlite3.Connection:
+    if not DB_PATH.exists():
+        print(f"Database not found: {DB_PATH}")
+        raise SystemExit(1)
+    conn = sqlite3.connect(str(DB_PATH))
     conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA foreign_keys = OFF")
     return conn
 
 
-def _fetch_sessions(conn):
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT
-            s.id AS session_id,
-            s.title,
-            s.project_id,
-            s.time_created,
-            s.time_updated,
-            COALESCE(p.name, 'global') AS project_name,
-            COALESCE(p.worktree, '/') AS worktree
+def fetch_sessions(conn: sqlite3.Connection) -> list[dict]:
+    cursor = conn.execute("""
+        SELECT s.id AS session_id, s.title, s.project_id,
+               s.time_created, s.time_updated,
+               COALESCE(p.name, 'global') AS project_name,
+               COALESCE(p.worktree, '/') AS worktree
         FROM session s
         LEFT JOIN project p ON s.project_id = p.id
         ORDER BY s.time_created DESC
     """)
     sessions = cursor.fetchall()
 
-    message_counts = {}
-    part_counts = {}
-    cursor.execute("SELECT session_id, COUNT(*) AS cnt FROM message GROUP BY session_id")
-    for row in cursor.fetchall():
-        message_counts[row["session_id"]] = row["cnt"]
-    cursor.execute("SELECT session_id, COUNT(*) AS cnt FROM part GROUP BY session_id")
-    for row in cursor.fetchall():
-        part_counts[row["session_id"]] = row["cnt"]
+    msg_counts: dict[str, int] = dict(
+        conn.execute("SELECT session_id, COUNT(*) AS cnt FROM message GROUP BY session_id").fetchall()
+    )
+    part_counts: dict[str, int] = dict(
+        conn.execute("SELECT session_id, COUNT(*) AS cnt FROM part GROUP BY session_id").fetchall()
+    )
 
-    result = []
-    for s in sessions:
-        result.append({
-            "session_id": s["session_id"],
-            "title": s["title"],
-            "project_id": s["project_id"] or "global",
-            "project_name": s["project_name"],
-            "worktree": s["worktree"],
-            "time_created": s["time_created"],
-            "time_updated": s["time_updated"],
-            "message_count": message_counts.get(s["session_id"], 0),
-            "part_count": part_counts.get(s["session_id"], 0),
-        })
-    return result
+    return [{
+        "session_id": s["session_id"],
+        "title": s["title"],
+        "project_id": s["project_id"] or "global",
+        "project_name": s["project_name"],
+        "worktree": s["worktree"],
+        "time_created": s["time_created"],
+        "time_updated": s["time_updated"],
+        "message_count": msg_counts.get(s["session_id"], 0),
+        "part_count": part_counts.get(s["session_id"], 0),
+    } for s in sessions]
 
 
-def list_sessions(conn):
-    rows = _fetch_sessions(conn)
-    projects = {}
+def list_sessions(conn: sqlite3.Connection) -> dict:
+    rows = fetch_sessions(conn)
+    projects: dict[str, dict] = {}
     for s in rows:
         pid = s["project_id"]
         if pid not in projects:
-            projects[pid] = {
-                "name": s["project_name"],
-                "worktree": s["worktree"],
-                "sessions": [],
-            }
+            projects[pid] = {"name": s["project_name"], "worktree": s["worktree"], "sessions": []}
         projects[pid]["sessions"].append({
-            "session_id": s["session_id"],
-            "title": s["title"],
-            "time_created": s["time_created"],
-            "time_updated": s["time_updated"],
-            "message_count": s["message_count"],
-            "part_count": s["part_count"],
+            k: s[k] for k in ("session_id", "title", "time_created", "time_updated", "message_count", "part_count")
         })
-
-    return {
-        "projects": projects,
-        "total_sessions": len(rows),
-    }
+    return {"projects": projects, "total_sessions": len(rows)}
 
 
-def list_sessions_readable(conn):
-    import datetime
-    rows = _fetch_sessions(conn)
-    current_project = None
+def list_sessions_readable(conn: sqlite3.Connection) -> None:
+    rows = fetch_sessions(conn)
+    current_project: str | None = None
     for s in rows:
         pid = s["project_id"]
         if pid != current_project:
             current_project = pid
             print(f"\n## {s['project_name']} ({s['worktree']})")
-        created = datetime.datetime.fromtimestamp(s["time_created"] / 1000).strftime("%Y-%m-%d %H:%M")
-        sid_short = s["session_id"][:16]
-        print(f"  {sid_short}  {created}  {s['message_count']:>4} msgs  {s['title']}")
+        created = datetime.fromtimestamp(s["time_created"] / 1000).strftime("%Y-%m-%d %H:%M")
+        print(f"  {s['session_id'][:16]}  {created}  {s['message_count']:>4} msgs  {s['title']}")
     print(f"\nTotal: {len(rows)} sessions")
 
 
-def delete_sessions(conn, session_ids, dry_run=False):
+def delete_sessions(conn: sqlite3.Connection, session_ids: list[str], dry_run: bool = False) -> None:
     if not session_ids:
         print("No sessions to delete.")
         return
 
     for sid in session_ids:
-        cursor = conn.cursor()
-        cursor.execute("SELECT id FROM session WHERE id = ?", (sid,))
-        if not cursor.fetchone():
+        if not conn.execute("SELECT 1 FROM session WHERE id = ?", (sid,)).fetchone():
             print(f"Session {sid} not found in database, skipping.")
             continue
 
         if dry_run:
             for table in SESSION_TABLES:
-                cursor.execute(f"SELECT COUNT(*) FROM {table} WHERE session_id = ?", (sid,))
-                cnt = cursor.fetchone()[0]
+                cnt = conn.execute(f"SELECT COUNT(*) FROM {table} WHERE session_id = ?", (sid,)).fetchone()[0]
                 if cnt > 0:
                     print(f"  [DRY-RUN] Would delete {cnt} rows from {table} for session {sid}")
             print(f"  [DRY-RUN] Would delete session {sid}")
         else:
             for table in SESSION_TABLES:
-                cursor.execute(f"DELETE FROM {table} WHERE session_id = ?", (sid,))
-                deleted = cursor.rowcount
+                deleted = conn.execute(f"DELETE FROM {table} WHERE session_id = ?", (sid,)).rowcount
                 if deleted > 0:
                     print(f"  Deleted {deleted} rows from {table} for session {sid}")
-            cursor.execute("DELETE FROM session WHERE id = ?", (sid,))
+            conn.execute("DELETE FROM session WHERE id = ?", (sid,))
             print(f"  Deleted session {sid}")
 
     if not dry_run:
@@ -153,83 +118,53 @@ def delete_sessions(conn, session_ids, dry_run=False):
         print("Database changes committed.")
 
 
-def clean_orphans(conn, dry_run=False):
-    if not os.path.isdir(DIFF_DIR):
+def clean_orphans(conn: sqlite3.Connection, dry_run: bool = False) -> None:
+    if not DIFF_DIR.is_dir():
         print(f"Session diff directory not found: {DIFF_DIR}")
-        return []
+        return
 
-    cursor = conn.cursor()
-    cursor.execute("SELECT id FROM session")
-    db_session_ids = {row["id"] for row in cursor.fetchall()}
-
-    diff_files = os.listdir(DIFF_DIR)
-    orphaned = []
-    for f in diff_files:
-        sid = f.replace(".json", "")
-        if sid not in db_session_ids:
-            orphaned.append(os.path.join(DIFF_DIR, f))
+    db_ids = {row["id"] for row in conn.execute("SELECT id FROM session").fetchall()}
+    orphaned = [f for f in DIFF_DIR.iterdir() if f.suffix == ".json" and f.stem not in db_ids]
 
     if not orphaned:
         print("No orphaned session diff files found.")
-        return orphaned
+        return
 
     for fp in orphaned:
         if dry_run:
             print(f"  [DRY-RUN] Would remove orphaned file: {fp}")
         else:
-            os.remove(fp)
+            fp.unlink()
             print(f"  Removed orphaned file: {fp}")
 
-    if not dry_run:
-        print(f"Cleaned {len(orphaned)} orphaned file(s).")
-    else:
-        print(f"[DRY-RUN] Would clean {len(orphaned)} orphaned file(s).")
-
-    return orphaned
+    label = "[DRY-RUN] Would clean" if dry_run else "Cleaned"
+    print(f"{label} {len(orphaned)} orphaned file(s).")
 
 
-def main():
-    args = sys.argv[1:]
-    dry_run = "--dry-run" in args
-    orphans_only = "--orphans" in args
-    list_mode = "--list" in args
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="OpenCode session cleanup tool")
+    parser.add_argument("--list", action="store_true", help="List sessions in readable format")
+    parser.add_argument("--delete", nargs="+", default=None, metavar="SID",
+                        help="Delete specified session(s)")
+    parser.add_argument("--orphans", action="store_true", help="Clean orphaned diff files only")
+    parser.add_argument("--dry-run", action="store_true", help="Preview without making changes")
+    return parser.parse_args(argv)
 
-    delete_idx = args.index("--delete") if "--delete" in args else -1
-    session_ids = []
-    if delete_idx >= 0:
-        session_ids = args[delete_idx + 1:]
-        if session_ids and session_ids[0].startswith("--"):
-            session_ids = []
 
-    if orphans_only:
-        conn = get_db_conn()
-        try:
-            clean_orphans(conn, dry_run=dry_run)
-        finally:
-            conn.close()
-        return
+def main() -> None:
+    args = parse_args()
 
-    if list_mode:
-        conn = get_db_conn()
-        try:
-            list_sessions_readable(conn)
-        finally:
-            conn.close()
-        return
-
-    if not session_ids:
-        conn = get_db_conn()
-        try:
-            data = list_sessions(conn)
-        finally:
-            conn.close()
-        print(json.dumps(data, indent=2, ensure_ascii=False))
-        return
-
-    conn = get_db_conn()
+    conn = get_connection()
     try:
-        delete_sessions(conn, session_ids, dry_run=dry_run)
-        clean_orphans(conn, dry_run=dry_run)
+        if args.orphans:
+            clean_orphans(conn, dry_run=args.dry_run)
+        elif args.list:
+            list_sessions_readable(conn)
+        elif args.delete is not None:
+            delete_sessions(conn, args.delete, dry_run=args.dry_run)
+            clean_orphans(conn, dry_run=args.dry_run)
+        else:
+            print(json.dumps(list_sessions(conn), indent=2, ensure_ascii=False))
     finally:
         conn.close()
 
