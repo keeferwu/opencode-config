@@ -118,11 +118,13 @@ function main()
         # remove plugin cache
         rm -rf $HOME/.cache/opencode/packages/*
 
-        echo "Install codegraph"
+        echo "Codegraph for agent"
         npx @colbymchenry/codegraph
         if which codegraph >/dev/null 2>&1; then
+            echo "Update codegraph"
             sudo npm update -g @colbymchenry/codegraph
         else
+            echo "Install codegraph"
             sudo npm install -g @colbymchenry/codegraph
         fi
 
@@ -137,12 +139,11 @@ function main()
         # --all	                        Install all skills to all agents without prompts
 
         # GitHub shorthand (owner/repo)
+        npx skills add vercel-labs/skills -g -y --skill find-skills
         npx skills add Agents365-ai/drawio-skill -g -y --skill drawio-skill
         #npx skills add anthropics/skills -g -y --skill pdf --skill docx --skill pptx --skill xlsx
         # Direct path to a skill in a repo
         #npx skills add https://github.com/bahayonghang/drawio-skills/tree/main/skills/drawio -g -y
-        # Any git URL
-        #npx skills add git@github.com:vercel-labs/agent-skills.git
         #npx skills update
 
         echo "Start opencode and ask:'check ~/.cache/opencode/packages/opencode-mem@latest work or not'"
