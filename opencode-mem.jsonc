@@ -4,7 +4,7 @@
   // ============================================
   
   // Storage location for vector database
-  "storagePath": "~/.cache/opencode-mem/data",
+  "storagePath": "~/.opencode-mem/data",
 
   "userEmailOverride": "",
   "userNameOverride": "",
