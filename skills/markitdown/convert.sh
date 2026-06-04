@@ -19,13 +19,14 @@ if [ ! -f "$INPUT_FILE" ]; then
     exit 1
 fi
 
-# Build docker image on demand if missing
-if ! docker images markitdown:latest 2>/dev/null | grep -q markitdown; then
-    echo "Docker image 'markitdown:latest' not found. Building from official repo..." >&2
-    BUILD_DIR=$(mktemp -d)
-    git clone --depth 1 https://github.com/microsoft/markitdown.git "$BUILD_DIR/markitdown" >&2
-    docker build -t markitdown:latest "$BUILD_DIR/markitdown" >&2
-    rm -rf "$BUILD_DIR"
+if which docker >/dev/null 2>&1; then
+    # Build docker image on demand if missing
+    if ! docker images markitdown:latest 2>/dev/null | grep -q markitdown; then
+        echo "Docker image 'markitdown:latest' not found. Building from official repo..." >&2
+        BUILD_DIR=$(mktemp -d)
+        git clone --depth 1 https://github.com/microsoft/markitdown.git "$BUILD_DIR/markitdown" >&2
+        docker build -t markitdown:latest "$BUILD_DIR/markitdown" >&2
+        rm -rf "$BUILD_DIR"
+    fi
+    docker run --rm -i markitdown:latest < "$INPUT_FILE"
 fi
-
-docker run --rm -i markitdown:latest < "$INPUT_FILE"
