@@ -108,7 +108,6 @@ function main()
     * )
         echo "Install global config to $HOME/.config/opencode"
         cp opencode.json "$HOME/.config/opencode"
-        cp opencode.jsonc "$HOME/.config/opencode"
         cp opencode-mem.jsonc "$HOME/.config/opencode"
         cp -auv agents "$HOME/.config/opencode"
         cp -auv commands "$HOME/.config/opencode"
@@ -126,6 +125,7 @@ function main()
             echo "Install codegraph"
             sudo npm install -g @colbymchenry/codegraph
         fi
+        cp opencode.jsonc "$HOME/.config/opencode"
 
         echo "Install skills to $HOME/.agents/skills"
         # npx skills add Option         Description
