@@ -8,7 +8,7 @@ Initialize or update the codegraph knowledge graph for a project
 
 ## Precondition
 
-Only run CodeGraph if the project contains `AGENTS.md` or `AGENT.md` in its root directory. Skip otherwise.
+Only run CodeGraph if the project contains `AGENTS.md` or `.opencode/AGENTS.md` in its root directory. Skip otherwise.
 
 ## Instructions
 
@@ -23,6 +23,30 @@ Only run CodeGraph if the project contains `AGENTS.md` or `AGENT.md` in its root
    - Otherwise: run `codegraph init -i`
    - Wait for the command to complete
 
-3. **Report status**:
-   - Show a summary of what was done (initialized or synced)
+3. **Ensure codegraph MCP server is configured**:
+   - If `.opencode/opencode.json` not exists in the project root, create it with:
+     ```json
+     {
+       "$schema": "https://opencode.ai/config.json"
+     }
+     ```
+   - If `mcp` field is missing in `.opencode/opencode.json`, add:
+     ```json
+     "mcp": {
+       "codegraph": {
+         "type": "local",
+         "command": [
+           "codegraph",
+           "serve",
+           "--mcp",
+           "--no-watch"
+         ],
+         "enabled": true
+       }
+     }
+     ```
+   - If `mcp` already exists but lacks `codegraph`, merge into the existing `mcp` object
+
+4. **Report status**:
+   - Show a summary of what was done (initialized or synced, .opencode/opencode.json created/modified)
    - Mention that `/codegraph` can be re-run later to update the index

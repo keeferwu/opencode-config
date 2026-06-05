@@ -117,7 +117,7 @@ function main()
         rm -rf $HOME/.cache/opencode/packages/*
 
         echo "Codegraph for agent"
-        npx @colbymchenry/codegraph
+        #npx @colbymchenry/codegraph
         if which codegraph >/dev/null 2>&1; then
             echo "Update codegraph"
             sudo npm update -g @colbymchenry/codegraph
@@ -125,7 +125,6 @@ function main()
             echo "Install codegraph"
             sudo npm install -g @colbymchenry/codegraph
         fi
-        cp opencode.jsonc "$HOME/.config/opencode"
 
         echo "Install skills to $HOME/.agents/skills"
         # npx skills add Option         Description
@@ -140,7 +139,7 @@ function main()
         # GitHub shorthand (owner/repo)
         npx skills add vercel-labs/skills -g -y --skill find-skills
         npx skills add Agents365-ai/drawio-skill -g -y --skill drawio-skill
-        npx skills add mattpocock/skills -g -y --skill diagnose --skill improve-codebase-architecture
+        npx skills add mattpocock/skills -g -y --skill grill-with-docs --skill improve-codebase-architecture
         #npx skills add anthropics/skills -g -y --skill pdf --skill docx --skill pptx --skill xlsx
         # Direct path to a skill in a repo
         #npx skills add https://github.com/bahayonghang/drawio-skills/tree/main/skills/drawio -g -y
