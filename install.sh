@@ -94,6 +94,10 @@ function main()
         graphify install --platform opencode
         graphify opencode install   #安装常驻助手规则 AGENTS.md 到当前项目
         ;;
+    --context7 )
+        # install context7 mcp
+        npx ctx7 setup --opencode
+        ;;
     --help )
         echo ""
         echo "options:"
@@ -104,6 +108,7 @@ function main()
         echo "--usat: install understand-anything, use for understand code"
         echo "--rtk: install rust token killer, use for save tokens"
         echo "--graphify: install graphify, use for drawing knowledge maps"
+        echo "--context7: install context7 mcp, use for up-to-date library docs"
         ;;
     * )
         echo "Install global config to $HOME/.config/opencode"
