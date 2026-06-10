@@ -23,8 +23,8 @@ Only run CodeGraph if the project contains `AGENTS.md` or `.opencode/AGENTS.md` 
    - Otherwise: dispatch a subagent to run `codegraph init -i`
    - The subagent must fully complete the task, do not return early or timeout
    - Since the default bash timeout (120s) is insufficient for large projects:
-    - Pass an explicit `timeout` of **1800000ms** (0.5 hours) to the `codegraph sync` bash call
-    - Pass an explicit `timeout` of **9000000ms** (2.5 hours) to the `codegraph init -i` bash call
+    - Pass an explicit `timeout` of **1800000ms** (30 minutes) to the `codegraph sync` bash call
+    - Pass an explicit `timeout` of **18000000ms** (5 hours) to the `codegraph init -i` bash call
    - If even 2 hours is insufficient, use `codegraph init` (without `-i`) which is faster but indexes fewer relationships, then follow up with `codegraph sync` to catch remaining files.
 
 3. **Ensure codegraph MCP server is configured**:
