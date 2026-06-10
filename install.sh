@@ -147,9 +147,9 @@ function main()
         # --all	                        Install all skills to all agents without prompts
 
         # GitHub shorthand (owner/repo)
-        npx skills add vercel-labs/skills -g -y --skill find-skills
-        npx skills add Agents365-ai/drawio-skill -g -y --skill drawio-skill
-        npx skills add mattpocock/skills -g -y --skill grill-with-docs --skill improve-codebase-architecture
+        npx skills add vercel-labs/skills -g -y --skill find-skills --agent opencode
+        npx skills add Agents365-ai/drawio-skill -g -y --skill drawio-skill --agent opencode
+        npx skills add mattpocock/skills -g -y --skill grill-with-docs --skill improve-codebase-architecture --agent opencode
         #npx skills add anthropics/skills -g -y --skill pdf --skill docx --skill pptx --skill xlsx
         # Direct path to a skill in a repo
         #npx skills add https://github.com/bahayonghang/drawio-skills/tree/main/skills/drawio -g -y
