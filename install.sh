@@ -131,6 +131,11 @@ function main()
             sudo npm install -g @colbymchenry/codegraph
         fi
 
+        if which rtk >/dev/null 2>&1; then
+            echo "Init rtk plugin"
+            rtk init -g --opencode
+        fi
+
         echo "Install skills to $HOME/.agents/skills"
         # npx skills add Option         Description
         # -g, --global                  Install to user directory instead of project
