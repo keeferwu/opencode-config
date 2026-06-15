@@ -51,7 +51,24 @@ Only run CodeGraph if the project contains `AGENTS.md` or `.opencode/AGENTS.md` 
      ```
    - If `mcp` already exists but lacks `codegraph`, merge into the existing `mcp` object
 
-4. **Report status**:
-   - Show a summary of what was done (initialized or synced, `.opencode/opencode.jsonc` created/modified)
+4. **Ensure AGENTS.md has CodeGraph instructions**:
+   - Check whether `AGENTS.md` or `.opencode/AGENTS.md` already contains the CodeGraph usage block (look for `CODEGRAPH_START` marker)
+   - If the block is missing, append the following content to the file:
+     ```
+     <!-- CODEGRAPH_START -->
+     ## CodeGraph
+
+     In repositories indexed by CodeGraph (a `.codegraph/` directory exists at the repo root), reach for it BEFORE grep/find or reading files when you need to understand or locate code:
+
+     - **MCP tools** (when available): `codegraph_explore` answers most code questions in one call — the relevant symbols' verbatim source plus the call paths between them. `codegraph_node` returns one symbol's source + callers, or reads a whole file with line numbers. If the tools are listed but deferred, load them by name via tool search.
+     - **Shell** (always works): `codegraph explore "<symbol names or question>"` and `codegraph node <symbol-or-file>` print the same output.
+
+     If there is no `.codegraph/` directory, skip CodeGraph entirely — indexing is the user's decision.
+     <!-- CODEGRAPH_END -->
+     ```
+   - If neither `AGENTS.md` nor `.opencode/AGENTS.md` exists, skip this step
+
+5. **Report status**:
+   - Show a summary of what was done (initialized or synced, `.opencode/opencode.jsonc` created/modified, AGENTS.md updated)
    - Mention that the work was delegated to a subagent and it completed successfully
    - Mention that `/codegraph` can be re-run later to update the index
