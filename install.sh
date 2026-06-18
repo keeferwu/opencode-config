@@ -83,11 +83,6 @@ function main()
         echo "Create link $HOME/.understand-anything-plugin"
         echo "Create link $HOME/.agents/skills/undstand*"
         ;;
-    --rtk )
-        # base rust
-        curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
-        rtk init -g --opencode
-        ;;
     --graphify )
         # base Python 3.10+
         pip install graphifyy
@@ -106,7 +101,6 @@ function main()
         echo "--drawio: install drawio, use for draw diagram"
         echo "--comet: install comet, use for comet openspec and superpowers"
         echo "--usat: install understand-anything, use for understand code"
-        echo "--rtk: install rust token killer, use for save tokens"
         echo "--graphify: install graphify, use for drawing knowledge maps"
         echo "--context7: install context7 mcp, use for up-to-date library docs"
         ;;
@@ -123,26 +117,18 @@ function main()
 
         #npx @colbymchenry/codegraph
         #rm -rf $HOME/.config/opencode/commands/codebase.md
-        #if which codegraph >/dev/null 2>&1; then
-        #    echo "Update codegraph"
-        #    sudo npm update -g @colbymchenry/codegraph
-        #else
-        #    echo "Install codegraph"
-        #    sudo npm install -g @colbymchenry/codegraph
-        #fi
+        #echo "Install codegraph"
+        #sudo npm install -g @colbymchenry/codegraph
 
         #curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/install.sh | bash
         rm -rf $HOME/.config/opencode/commands/codegraph.md
-        if which codebase-memory-mcp >/dev/null 2>&1; then
-            echo "Update codebase-memory-mcp"
-            sudo npm update -g codebase-memory-mcp
-        else
-            echo "Install codebase-memory-mcp"
-            sudo npm install -g codebase-memory-mcp
-        fi
+        echo "Install codebase-memory-mcp"
+        sudo npm install -g codebase-memory-mcp
 
+        # base rust
+        echo "Install rtk"
+        curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
         if which rtk >/dev/null 2>&1; then
-            echo "Init rtk plugin"
             rtk init -g --opencode
         fi
 
@@ -159,7 +145,7 @@ function main()
         # GitHub shorthand (owner/repo)
         npx skills add vercel-labs/skills -g -y --skill find-skills --agent opencode
         npx skills add Agents365-ai/drawio-skill -g -y --skill drawio-skill --agent opencode
-        npx skills add mattpocock/skills -g -y --skill grill-with-docs --skill improve-codebase-architecture --agent opencode
+        npx skills add mattpocock/skills -g -y --skill improve-codebase-architecture --skill codebase-design --skill grilling --skill domain-modeling --agent opencode
         #npx skills add kepano/obsidian-skills -g -y --agent opencode
         #npx skills add anthropics/skills -g -y --skill pdf --skill docx --skill pptx --skill xlsx --agent opencode
         # Direct path to a skill in a repo
