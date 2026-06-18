@@ -4,19 +4,17 @@ description: Initialize or update project code knowledge graph
 
 # CodeGraph Command
 
-Initialize or update the codegraph knowledge graph for a project
+Initialize or update the codegraph for a project
 
 ## Precondition
 
-Only run CodeGraph if the project contains `AGENTS.md` or `.opencode/AGENTS.md` in its root directory. Skip otherwise.
+Only run if the project contains `AGENTS.md` or `.opencode/AGENTS.md` in its root directory. Skip otherwise.
 
 ## Instructions
 
 1. **Check if codegraph is installed**:
    - Run `command -v codegraph || which codegraph 2>/dev/null` to verify installation
-   - If not found, install it:
-     - Try `npx @colbymchenry/codegraph` first (zero-install via npm)
-     - If that fails, try the direct install script: `curl -fsSL https://raw.githubusercontent.com/colbymchenry/codegraph/main/install.sh | sh`
+   - If not found, install it: `sudo npm install -g @opencode/codegraph`
 
 2. **Run or update the index**:
    - If `.codegraph/` directory exists in the project root: dispatch a subagent to run `codegraph sync`

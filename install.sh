@@ -121,14 +121,24 @@ function main()
         # remove plugin cache
         rm -rf $HOME/.cache/opencode/packages/*
 
-        echo "Codegraph for agent"
         #npx @colbymchenry/codegraph
-        if which codegraph >/dev/null 2>&1; then
-            echo "Update codegraph"
-            sudo npm update -g @colbymchenry/codegraph
+        #rm -rf $HOME/.config/opencode/commands/codebase.md
+        #if which codegraph >/dev/null 2>&1; then
+        #    echo "Update codegraph"
+        #    sudo npm update -g @colbymchenry/codegraph
+        #else
+        #    echo "Install codegraph"
+        #    sudo npm install -g @colbymchenry/codegraph
+        #fi
+
+        #curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/install.sh | bash
+        rm -rf $HOME/.config/opencode/commands/codegraph.md
+        if which codebase-memory-mcp >/dev/null 2>&1; then
+            echo "Update codebase-memory-mcp"
+            sudo npm update -g codebase-memory-mcp
         else
-            echo "Install codegraph"
-            sudo npm install -g @colbymchenry/codegraph
+            echo "Install codebase-memory-mcp"
+            sudo npm install -g codebase-memory-mcp
         fi
 
         if which rtk >/dev/null 2>&1; then
