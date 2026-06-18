@@ -67,11 +67,12 @@ Only run if the project root contains `AGENTS.md` or `.opencode/AGENTS.md`. Skip
      ```
    - If neither `AGENTS.md` nor `.opencode/AGENTS.md` exists, skip this step
 
-4. **Check index status if already configured**:
-   - If `codebase-memory-mcp` MCP configuration already exists before this command runs, check index status instead of re-configuring
-   - Run `codebase-memory-mcp index-status` to check
-   - If index is not up-to-date, run `codebase-memory-mcp index` in the background to trigger a re-index
+4. **Index codebase**:
+   - After configuration is verified (steps 1-3 done), dispatch a subagent to index the codebase
+   - Launch subagent with terminal timeout of 10min
+   - The subagent executes: `codebase-memory-mcp cli index_repository '{"repo_path":"'$(pwd)'"'`
+   - After completion, the subagent returns the execution result (success/failure + output) to the main agent
 
 5. **Report status**:
-   - Show a summary of what was done (`.opencode/opencode.jsonc` created/modified, AGENTS.md updated, index status checked)
+   - Show a summary of what was done (`.opencode/opencode.jsonc` created/modified, AGENTS.md updated, index result)
    - Remind the user to restart opencode to pick up the new configuration
