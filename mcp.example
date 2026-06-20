@@ -1,0 +1,42 @@
+{
+  "mcp": {
+    "codegraph": {
+      "type": "local",
+      "command": [
+        "codegraph",
+        "serve",
+        "--mcp",
+       " --no-watch"
+      ],
+      "enabled": false
+    },
+    "codebase-memory-mcp": {
+      "type": "local",
+      "command": ["codebase-memory-mcp"],
+      "enabled": true
+    },
+    "gitlab-mcp-server": {
+      "type": "local",
+      "command": ["gitlab-mcp-server]",
+      "env": {
+        "GITLAB_URL":  "http://gitlab.nettech-global.com",
+        "GITLAB_TOKEN": "{env:GITLAB_PERSONAL_ACCESS_TOKEN}",
+        "GITLAB_SKIP_TLS_VERIFY": "true"
+      },
+      "enabled": true
+    },
+    "mcp-gitlab": {
+      "type": "local",
+      "command": ["npx", "-y", "@zereight/mcp-gitlab"],
+      "environment": {
+        "GITLAB_API_URL": "http://gitlab.nettech-global.com/api/v4",
+        "GITLAB_PERSONAL_ACCESS_TOKEN": "{env:GITLAB_PERSONAL_ACCESS_TOKEN}",
+        "GITLAB_READ_ONLY_MODE": "false",
+        "USE_GITLAB_WIKI": "false",
+        "USE_MILESTONE": "false",
+        "USE_PIPELINE": "false"
+      },
+      "enabled": false
+    }
+  }
+}
