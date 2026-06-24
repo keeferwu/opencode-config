@@ -90,6 +90,9 @@ function main()
     --context7 )
         # install context7 mcp
         npx ctx7 setup --opencode
+    --cua )
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/trycua/cua/main/libs/cua-driver/scripts/install.sh)"
+        cua-driver mcp-config --client opencode
         ;;
     --help )
         echo ""
@@ -101,6 +104,7 @@ function main()
         echo "--usat: install understand-anything, use for understand code"
         echo "--graphify: install graphify, use for drawing knowledge maps"
         echo "--context7: install context7 mcp, use for up-to-date library docs"
+        echo "--cua: install cua, use for drive native desktop apps in the background"
         ;;
     * )
         echo "Install global config to $HOME/.config/opencode"
