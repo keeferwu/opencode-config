@@ -47,8 +47,9 @@ When the user asks to analyze a supported file:
 
 1. **Verify file exists**: `ls -la <path>` to check the file path
 2. **Convert the file**: Use the docker command to convert to Markdown (image auto-builds if missing)
-3. **Read the result**: Use the Read tool on the generated `.md` file
-4. **Provide analysis**: Feed the Markdown content to the LLM for analysis
+3. **Clean up the container**: The conversion container is removed automatically — `--rm` handles normal exits and `convert.sh` adds a `trap`-based force cleanup for abnormal exits. No manual cleanup is needed when using `convert.sh`.
+4. **Read the result**: Use the Read tool on the generated `.md` file
+5. **Provide analysis**: Feed the Markdown content to the LLM for analysis
 
 ### Complete Example
 
@@ -70,6 +71,16 @@ bash <skill-dir>/convert.sh /path/to/file.pdf > /tmp/opencode/output.md
 ```
 
 The script automatically clones the official [microsoft/markitdown](https://github.com/microsoft/markitdown) repo and builds the Docker image when it doesn't exist — no manual intervention needed.
+
+### Automatic Container Cleanup
+
+`convert.sh` guarantees the conversion container is removed after each run:
+
+- `docker run --rm` removes the container on normal exit
+- A `trap ... EXIT` handler force-removes the container on abnormal exit (errors, signals like Ctrl+C)
+- The container is given a unique name (`markitdown-convert-$$`) so cleanup never affects other containers
+
+When invoking `docker run` directly (without `convert.sh`), keep the `--rm` flag so the container is removed after conversion.
 
 ## Common Mistakes
 

@@ -90,6 +90,7 @@ function main()
     --context7 )
         # install context7 mcp
         npx ctx7 setup --opencode
+        ;;
     --cua )
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/trycua/cua/main/libs/cua-driver/scripts/install.sh)"
         cua-driver mcp-config --client opencode
