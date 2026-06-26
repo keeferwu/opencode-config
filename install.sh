@@ -108,7 +108,10 @@ function main()
         echo "--cua: install cua, use for drive native desktop apps in the background"
         ;;
     * )
-        if [ "$PWD" != "$HOME/.config/opencode" ]
+        # remove plugin cache
+        rm -rf $HOME/.cache/opencode/packages/*
+
+        if [ "$PWD" != "$HOME/.config/opencode" ]; then
             echo "Install global config to $HOME/.config/opencode"
             cp opencode.json "$HOME/.config/opencode"
             cp opencode-mem.jsonc "$HOME/.config/opencode"
@@ -117,8 +120,6 @@ function main()
             cp -auv rules "$HOME/.config/opencode"
             cp -auv skills "$HOME/.config/opencode"
         fi
-        # remove plugin cache
-        rm -rf $HOME/.cache/opencode/packages/*
 
         #npx @colbymchenry/codegraph
         #echo "Install codegraph"

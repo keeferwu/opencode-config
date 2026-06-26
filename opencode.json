@@ -25,10 +25,6 @@
       "git push": "deny"
     }
   },
-  "keybinds": {
-    "history_previous": "ctrl+up",
-    "history_next": "ctrl+down"
-  },
   "agent": {
     "code-simplifier": {
       "mode": "subagent"
