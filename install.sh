@@ -121,6 +121,9 @@ function main()
             cp -auv skills "$HOME/.config/opencode"
         fi
 
+        echo "Install opencode-skill-creator plugin"
+        npx opencode-skill-creator install --global
+
         #npx @colbymchenry/codegraph
         #echo "Install codegraph"
         #npx install @colbymchenry/codegraph
