@@ -30,10 +30,10 @@ function rsync_developer_config()
                --exclude='context/ui' \
                --exclude='context/core/visual-development.md' \
                --exclude='context/core/workflows/design-iteration*' \
-               developer/ "$target"
+               .opencode/ "$target"
 
     if [ ! -f "$target/.env" ]; then
-        cp developer/env.example "$target/.env"
+        cp .opencode/env.example "$target/.env"
     fi
 }
 
@@ -53,9 +53,9 @@ function main()
         echo "update OpenAgentsControl developer"
         curl -fsSL https://raw.githubusercontent.com/darrenhinde/OpenAgentsControl/main/install.sh | bash -s developer
         if [ -d .opencode ]; then
-            mv .opencode developer
+            rsync_developer_config "${2:-$HOME/.opencode}"
+            rm .opencode
         fi
-        rsync_developer_config "${2:-$HOME/.opencode}"
         ;;
     --markitdown )
         git clone https://github.com/microsoft/markitdown
@@ -108,23 +108,23 @@ function main()
         echo "--cua: install cua, use for drive native desktop apps in the background"
         ;;
     * )
-        echo "Install global config to $HOME/.config/opencode"
-        cp opencode.json "$HOME/.config/opencode"
-        cp opencode-mem.jsonc "$HOME/.config/opencode"
-        cp -auv agents "$HOME/.config/opencode"
-        cp -auv commands "$HOME/.config/opencode"
-        cp -auv rules "$HOME/.config/opencode"
-        cp -auv skills "$HOME/.config/opencode"
+        if [ "$PWD" != "$HOME/.config/opencode" ]
+            echo "Install global config to $HOME/.config/opencode"
+            cp opencode.json "$HOME/.config/opencode"
+            cp opencode-mem.jsonc "$HOME/.config/opencode"
+            cp -auv agents "$HOME/.config/opencode"
+            cp -auv commands "$HOME/.config/opencode"
+            cp -auv rules "$HOME/.config/opencode"
+            cp -auv skills "$HOME/.config/opencode"
+        fi
         # remove plugin cache
         rm -rf $HOME/.cache/opencode/packages/*
 
         #npx @colbymchenry/codegraph
-        #rm -rf $HOME/.config/opencode/commands/codebase.md
         #echo "Install codegraph"
-        #sudo npm install -g @colbymchenry/codegraph
+        #npx install @colbymchenry/codegraph
 
         #curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/install.sh | bash
-        rm -rf $HOME/.config/opencode/commands/codegraph.md
         echo "Install codebase-memory-mcp"
         sudo npm install -g codebase-memory-mcp
 
