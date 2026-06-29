@@ -164,8 +164,6 @@ function main()
         # Direct path to a skill in a repo
         #npx skills add https://github.com/bahayonghang/drawio-skills/tree/main/skills/drawio -g -y
         #npx skills update
-
-        echo "Start opencode and ask:'check ~/.cache/opencode/packages/opencode-mem@latest work or not'"
         ;;
     esac
 }
