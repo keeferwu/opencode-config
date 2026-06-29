@@ -92,8 +92,8 @@
    //   OpenAI (API key):          "opencodeProvider": "openai",          "opencodeModel": "gpt-4o-mini"
    //   GitHub Copilot:            "opencodeProvider": "github-copilot",  "opencodeModel": "gpt-4o-mini"
    //
-   "opencodeProvider": "opencode-zen",
-   "opencodeModel": "Big Pickle",
+   "opencodeProvider": "opencode",
+   "opencodeModel": "big-pickle",
 
    // ============================================
    // Auto-Capture Settings (REQUIRES EXTERNAL API)
