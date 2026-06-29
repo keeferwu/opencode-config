@@ -139,6 +139,12 @@ function main()
             rtk init -g --opencode
         fi
 
+        echo "Install no-mistakes"
+        curl -fsSL https://raw.githubusercontent.com/kunchenguid/no-mistakes/main/docs/install.sh | sh
+        if which no-mistakes >/dev/null 2>&1; then
+            no-mistakes init
+        fi
+
         echo "Install skills to $HOME/.agents/skills"
         # npx skills add Option         Description
         # -g, --global                  Install to user directory instead of project
@@ -152,7 +158,7 @@ function main()
         # GitHub shorthand (owner/repo)
         npx skills add vercel-labs/skills -g -y --skill find-skills --agent opencode
         npx skills add Agents365-ai/drawio-skill -g -y --skill drawio-skill --agent opencode
-        npx skills add mattpocock/skills -g -y --skill improve-codebase-architecture --skill codebase-design --skill grilling --skill domain-modeling --agent opencode
+        #npx skills add mattpocock/skills -g -y --skill improve-codebase-architecture --skill codebase-design --skill grilling --skill domain-modeling --agent opencode
         #npx skills add kepano/obsidian-skills -g -y --agent opencode
         #npx skills add anthropics/skills -g -y --skill pdf --skill docx --skill pptx --skill xlsx --agent opencode
         # Direct path to a skill in a repo
