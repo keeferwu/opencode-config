@@ -103,7 +103,7 @@
   // It runs in background without blocking your main session
   // Note: Ollama may not support tool calling. Use OpenAI, Anthropic, or Groq for best results.
   
-  "autoCaptureEnabled": true,
+  "autoCaptureEnabled": false,
   
   // Provider type: "openai-chat" | "openai-responses" | "anthropic"
   // Note: "openai-chat" is a generic OpenAI API-compatible mode.
