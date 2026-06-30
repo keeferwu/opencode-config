@@ -73,14 +73,38 @@ fi
 
 ### Step 2: Classify Error
 
-#### A. Socket connection closed / connect ETIMEDOUT
+#### A. Failed to initialize embedding model (corrupted cache)
+
+Error:
+```
+Failed to initialize embedding model: {"error":"Error: Unable to connect. Is the computer able to access the url? ..."}
+```
+
+Note: This error usually means the model cache files are corrupted. Delete the cache and re-download model.
+
+**Fix — Delete corrupted cache:**
+
+```bash
+CACHE_DIR=~/.opencode-mem/data/.cache
+MODEL_DIR="$CACHE_DIR/Xenova/nomic-embed-text-v1"
+
+if [ -d "$MODEL_DIR" ]; then
+  echo "Removing corrupted model cache..."
+  rm -rf "$MODEL_DIR"
+  echo "Cache cleaned"
+fi
+```
+
+#### B. Socket connection closed / connect ETIMEDOUT
 
 Error:
 ```
 Failed to initialize embedding model: {"error":"Error: The socket connection was closed unexpectedly. ..."}
 ```
 
-**Fix — Download model with wget:**
+**Fix — Download model:**
+
+When executing the download commands below, always set the terminal timeout to **1800000ms (30 minutes)** to allow the large model file to finish downloading.
 
 ```bash
 export HF_ENDPOINT=https://hf-mirror.com
@@ -93,9 +117,9 @@ if [ -f "$MODEL_DIR/onnx/model.onnx" ] || [ -f "$MODEL_DIR/onnx/model_quantized.
 fi
 mkdir -p "$MODEL_DIR/onnx"
 for f in config.json tokenizer.json tokenizer_config.json special_tokens_map.json vocab.txt quantize_config.json README.md; do
-  wget -q --timeout=30 --tries=3 "$HF_ENDPOINT/Xenova/nomic-embed-text-v1/resolve/main/$f" -O "$CACHE_DIR/Xenova/nomic-embed-text-v1/$f"
+  wget -q --timeout=0 --tries=5 "$HF_ENDPOINT/Xenova/nomic-embed-text-v1/resolve/main/$f" -O "$CACHE_DIR/Xenova/nomic-embed-text-v1/$f"
 done
-if ! wget --timeout=30 --tries=3 \
+if ! wget --timeout=0 --tries=5 \
   "$HF_ENDPOINT/Xenova/nomic-embed-text-v1/resolve/main/onnx/model.onnx" \
   -O "$CACHE_DIR/Xenova/nomic-embed-text-v1/onnx/model.onnx"; then
   echo "model.onnx download failed, trying model_quantized.onnx (smaller) ..."
@@ -111,7 +135,7 @@ ls -lh ~/.opencode-mem/data/.cache/Xenova/nomic-embed-text-v1/onnx/
 # Expected: model.onnx ~522 MB, or model_quantized.onnx ~132 MB if fallback was used
 ```
 
-#### B. Session create returned no session id
+#### C. Session create returned no session id
 
 Error:
 ```
@@ -137,7 +161,18 @@ Edit `~/.config/opencode/opencode-mem.jsonc` and replace the provider section:
 ```
 The provider must be one returned by `opencode providers list`. Ensure the provider is already authenticated in opencode.
 
-### Step 3: Report
+### Step 3: Clean Log
+
+After fixing the issue, clear resolved errors from the log to avoid confusion on next diagnosis.
+
+```bash
+if [ -f ~/.opencode-mem/opencode-mem.log ]; then
+  > ~/.opencode-mem/opencode-mem.log
+  echo "Log cleared"
+fi
+```
+
+### Step 4: Report
 
 After completing diagnosis, tell the user with this template:
 
