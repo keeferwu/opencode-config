@@ -3,6 +3,10 @@
   // OpenCode Memory Plugin Configuration
   // ============================================
   
+  // Vector backend: "usearch" (fast, native NAPI) or "exact-scan" (pure JS, no native addon)
+  // Use "exact-scan" to avoid Bun NAPI crash on exit (NAPI FATAL ERROR: Error::New napi_create_error)
+  "vectorBackend": "exact-scan",
+
   // Storage location for vector database
   "storagePath": "~/.opencode-mem/data",
 
