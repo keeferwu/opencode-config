@@ -16,6 +16,12 @@
       "*.log"
     ]
   },
+  "references": {
+    "config": {
+      "path": "~/.config/opencode",
+      "description": "Use for opencode global configuration"
+    }
+  },
   "permission": {
     "external_directory": "allow",
     "bash": {
