@@ -17,13 +17,13 @@ Only run if the project root contains `AGENTS.md` or `.opencode/AGENTS.md`. Skip
    - If not found: `sudo npm install -g codebase-memory-mcp`
 
 2. **Ensure codebase-memory-mcp server is configured**:
-   - If `.opencode/opencode.jsonc` not exists in the project root, create it with:
+   - If `.opencode/opencode.json` not exists in the project root, create it with:
      ```json
      {
        "$schema": "https://opencode.ai/config.json"
      }
      ```
-   - If `mcp` field is missing in `.opencode/opencode.jsonc`, add:
+   - If `mcp` field is missing in `.opencode/opencode.json`, add:
      ```json
      "mcp": {
         "codebase-memory-mcp": {
@@ -74,5 +74,5 @@ Only run if the project root contains `AGENTS.md` or `.opencode/AGENTS.md`. Skip
    - After completion, the subagent returns the execution result (success/failure + output) to the main agent
 
 5. **Report status**:
-   - Show a summary of what was done (`.opencode/opencode.jsonc` created/modified, AGENTS.md updated, index result)
+   - Show a summary of what was done (`.opencode/opencode.json` created/modified, AGENTS.md updated, index result)
    - Remind the user to restart opencode to pick up the new configuration
