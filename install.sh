@@ -65,6 +65,7 @@ function main()
         rm -rf markitdown
         ;;
     --drawio )
+        npx skills add Agents365-ai/drawio-skill -g -y --skill drawio-skill --agent opencode
         sudo apt-get install xvfb
         sudo snap install drawio
         ;;
@@ -81,18 +82,14 @@ function main()
         graphify install --platform opencode
         graphify opencode install   #安装常驻助手规则 AGENTS.md 到当前项目
         ;;
-    --context7 )
-        # install context7 mcp
-        npx ctx7 setup --opencode
-        ;;
     --cua )
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/trycua/cua/main/libs/cua-driver/scripts/install.sh)"
         cua-driver mcp-config --client opencode
         ;;
     --open-code-review )
         sudo npm install -g @alibaba-group/open-code-review
-        if which rtk >/dev/null 2>&1; then
-            npx skills add alibaba/open-code-review --skill open-code-review
+        if which open-code-review >/dev/null 2>&1; then
+            npx skills add alibaba/open-code-review -g -y --skill open-code-review --agent opencode
             ocr config provider          # 选择内置供应商或添加自定义供应商
             ocr config model             # 为当前供应商选择模型
             ocr llm test                 # 测试连通性
@@ -106,7 +103,6 @@ function main()
         echo "--drawio: install drawio, use for draw diagram"
         echo "--comet: install comet, use for comet openspec and superpowers"
         echo "--graphify: install graphify, use for drawing code knowledge maps"
-        echo "--context7: install context7 mcp, use for up-to-date library docs"
         echo "--cua: install cua, use for drive native desktop apps in the background"
         echo "--open-code-review: install open-code-review, use for review code"
         ;;
@@ -151,12 +147,9 @@ function main()
 
         # GitHub shorthand (owner/repo)
         npx skills add vercel-labs/skills -g -y --skill find-skills --agent opencode
-        npx skills add Agents365-ai/drawio-skill -g -y --skill drawio-skill --agent opencode
         #npx skills add mattpocock/skills -g -y --skill improve-codebase-architecture --skill codebase-design --skill grilling --skill domain-modeling --agent opencode
         #npx skills add kepano/obsidian-skills -g -y --agent opencode
         #npx skills add anthropics/skills -g -y --skill pdf --skill docx --skill pptx --skill xlsx --agent opencode
-        # Direct path to a skill in a repo
-        #npx skills add https://github.com/bahayonghang/drawio-skills/tree/main/skills/drawio -g -y
         #npx skills update
         ;;
     esac
