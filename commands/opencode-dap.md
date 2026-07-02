@@ -2,7 +2,7 @@
 description: Install/uninstall @debugtalk/opencode-dap plugin for the project
 ---
 
-# Dap Command
+# Opencode-dap Command
 
 Install or uninstall `@debugtalk/opencode-dap` plugin for a project.
 
