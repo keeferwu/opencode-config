@@ -95,6 +95,15 @@ function main()
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/trycua/cua/main/libs/cua-driver/scripts/install.sh)"
         cua-driver mcp-config --client opencode
         ;;
+    --open-code-review )
+        sudo npm install -g @alibaba-group/open-code-review
+        if which rtk >/dev/null 2>&1; then
+            npx skills add alibaba/open-code-review --skill open-code-review
+            ocr config provider          # 选择内置供应商或添加自定义供应商
+            ocr config model             # 为当前供应商选择模型
+            ocr llm test                 # 测试连通性
+        fi
+        ;;
     --help )
         echo ""
         echo "options:"
@@ -106,6 +115,7 @@ function main()
         echo "--graphify: install graphify, use for drawing knowledge maps"
         echo "--context7: install context7 mcp, use for up-to-date library docs"
         echo "--cua: install cua, use for drive native desktop apps in the background"
+        echo "--open-code-review: install open-code-review, use for review code"
         ;;
     * )
         # remove plugin cache
@@ -134,12 +144,6 @@ function main()
         curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
         if which rtk >/dev/null 2>&1; then
             rtk init -g --opencode
-        fi
-
-        echo "Install no-mistakes"
-        curl -fsSL https://raw.githubusercontent.com/kunchenguid/no-mistakes/main/docs/install.sh | sh
-        if which no-mistakes >/dev/null 2>&1; then
-            no-mistakes init
         fi
 
         echo "Install skills to $HOME/.agents/skills"
