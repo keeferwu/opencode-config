@@ -48,6 +48,14 @@
       },
       "enabled": true
     },
+    "anysearch": {
+      "type": "remote",
+      "url": "https://api.anysearch.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${ANYSEARCH_API_KEY}"
+      },
+      "enabled": false
+    },
     "gh_grep": {
       "type": "remote",
       "url": "https://mcp.grep.app",
