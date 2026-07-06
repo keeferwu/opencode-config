@@ -17,6 +17,7 @@ Only run if the project root contains `AGENTS.md` or `.opencode/AGENTS.md`. Skip
    - If not found: `sudo npm install -g codebase-memory-mcp`
 
 2. **Ensure codebase-memory-mcp server is configured**:
+   - Read `.opencode/opencode.json`.
    - If `.opencode/opencode.json` not exists in the project root, create it with:
      ```json
      {

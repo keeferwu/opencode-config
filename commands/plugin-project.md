@@ -2,13 +2,13 @@
 description: Install/uninstall opencode  plugins for the project
 ---
 
-# Projectplugin Command
+# Plugin-project Command
 
 Install or uninstall opencode plugins for a project.
 
-## Instructions for Agent
+## Arguments for command
 
-When the user runs this command (`/projectplugin`), follow these rules:
+When the user runs this command (`/plugin-project`), follow these rules:
 
 1. **Arguments** — The arguments are optional.
    - `install <plugin>`: Install plugin.
@@ -16,7 +16,7 @@ When the user runs this command (`/projectplugin`), follow these rules:
 2. **`<plugin>`** — The plugin name, switch to `@<org>/<repo>`.
    - `dap` → `@debugtalk/opencode-dap`.
    - `ponytail` → `@dietrichgebert/ponytail`.
-3. **No arguments** — Only display this field message and exit.
+3. **No arguments** — Only display argument message and exit.
 
 ## Precondition
 
@@ -24,6 +24,7 @@ Only run if the project root contains `AGENTS.md` or `.opencode/AGENTS.md`. Exit
 
 ## Install plugin
 
+- Read `.opencode/opencode.json`.
 - If `.opencode/opencode.json` does not exist in the project root, create it with:
   ```json
   {
