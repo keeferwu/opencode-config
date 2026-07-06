@@ -88,7 +88,7 @@ function main()
         ;;
     --open-code-review )
         sudo npm install -g @alibaba-group/open-code-review
-        if which open-code-review >/dev/null 2>&1; then
+        if which ocr >/dev/null 2>&1; then
             npx skills add alibaba/open-code-review -g -y --skill open-code-review --agent opencode
             ocr config provider          # 选择内置供应商或添加自定义供应商
             ocr config model             # 为当前供应商选择模型
