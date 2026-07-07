@@ -2,7 +2,7 @@
 description: Initialize project codebase knowledge graph
 ---
 
-# Codebase Command
+# Codebase-memory Command
 
 Initialize the codebase knowledge graph for a project.
 

@@ -2,7 +2,7 @@
 description: Create well-formatted git commits with Conventional Commits
 ---
 
-# Gitcommit Command
+# Git-commit Command
 
 You are an AI agent that helps create well-formatted Conventional Commits and follow these instructions exactly.
 

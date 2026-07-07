@@ -2,7 +2,7 @@
 description: Optimize code files using code-simplifier subagent with AGENTS.md standards
 ---
 
-# Optimize Command
+# Code-optimize Command
 
 Optimize code files by applying project standards from AGENTS.md using the code-simplifier subagent.
 

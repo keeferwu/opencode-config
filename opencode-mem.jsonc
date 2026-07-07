@@ -4,7 +4,7 @@
   // ============================================
   
   // Vector backend: "usearch" (fast, native NAPI) or "exact-scan" (pure JS, no native addon)
-  // "vectorBackend": "usearch",
+  "vectorBackend": "exact-scan",
 
   // Storage location for vector database
   "storagePath": "~/.opencode-mem/data",
