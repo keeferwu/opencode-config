@@ -86,6 +86,9 @@ function main()
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/trycua/cua/main/libs/cua-driver/scripts/install.sh)"
         cua-driver mcp-config --client opencode
         ;;
+    --caveman )
+        npx -y github:JuliusBrussee/caveman -- --only opencode
+        ;;
     --open-code-review )
         sudo npm install -g @alibaba-group/open-code-review
         if which ocr >/dev/null 2>&1; then
@@ -104,6 +107,7 @@ function main()
         echo "--comet: install comet, use for comet openspec and superpowers"
         echo "--graphify: install graphify, use for drawing code knowledge maps"
         echo "--cua: install cua, use for drive native desktop apps in the background"
+        echo "--caveman: install caveman, use for save token"
         echo "--open-code-review: install open-code-review, use for review code"
         ;;
     * )
