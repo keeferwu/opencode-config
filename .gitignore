@@ -1,7 +1,4 @@
 node_modules
 package.json
 package-lock.json
-dcp.jsonc
 bun.lock
-opencode.json.tui-migration.bak
-opencode-skill-creator-update-check.json

@@ -18,10 +18,9 @@ configure for opencode
 ### 使用说明
 
 ```
-# 拷贝全局配置到 ~/.config/opencode
+git clone https://gitee.com/keeferwu/opencode-config ~/.opencode
 # 安装skills 到 ~/.agents/skills
 ./install.sh
-
 # 查看可安装的增强应用
 ./install.sh --help
 ```

@@ -113,11 +113,9 @@ function main()
     * )
         # remove plugin cache
         rm -rf $HOME/.cache/opencode/packages/*
-
-        if [ "$PWD" != "$HOME/.config/opencode" ]; then
+        if [ "$PWD" != "$HOME/.opencode" ]; then
             echo "Install global config to $HOME/.config/opencode"
             cp opencode.json "$HOME/.config/opencode"
-            cp opencode-mem.jsonc "$HOME/.config/opencode"
             cp -auv agents "$HOME/.config/opencode"
             cp -auv commands "$HOME/.config/opencode"
             cp -auv rules "$HOME/.config/opencode"
