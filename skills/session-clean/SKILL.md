@@ -1,59 +1,127 @@
 ---
 name: session-clean
-description: Use when users ask to list, delete, or manage opencode sessions; when session data accumulates and needs cleanup; when orphaned session diff files waste disk space; triggers include "session cleanup", "delete session", "remove session", "free space", "session management", "clear sessions", "storage cleanup"
+description: Browsing and cleaning OpenCode sessions. Includes paginated listing, preview-before-delete, automated cleanup of DB + storage artifacts. Use when user wants to delete/clean/manage opencode sessions or reduce space.
 ---
 
-# Session Clean
+# session-clean
 
-Manage and clean up opencode sessions from database and storage.
-
-## Quick Reference
-
-| Mode | Command | Behavior |
-|------|---------|----------|
-| Interactive | `session-clean.py` | JSON output -> Question tool for selection |
-| List | `session-clean.py --list` | Readable summary, then STOP |
-| Delete | `session-clean.py --delete SID...` | Delete sessions + auto-clean orphans |
-| Orphans | `session-clean.py --orphans` | Clean orphaned diff files only |
-| Dry-run | `session-clean.py --dry-run --delete/orphans` | Preview without changes |
+Browse and clean OpenCode session data interactively.
 
 ## Workflow
 
-```dot
-digraph session_clean {
-    rankdir=TB
-    "No args -> JSON output" -> "Over 10 sessions?";
-    "Over 10 sessions?" -> "Q1: convenience + project groups" [label="yes"];
-    "Over 10 sessions?" -> "Q2: individual selection" [label="no"];
-    "Q1: convenience + project groups" -> "Q2: individual selection" [label="project or individual picked"];
-    "Q2: individual selection" -> "--delete SID1 SID2...";
-    "--delete SID1 SID2..." -> "Auto-clean orphans";
-    "--list" -> "Show output -> STOP";
-}
+### 1. Entry
+
+Call `./clean_sessions.py stats` to get total counts:
+```
+python3 <skill_dir>/clean_sessions.py stats
+```
+Display: "OpenCode has {total_sessions} sessions, {total_projects} projects"
+
+### 2. Project Page
+
+Call `./clean_sessions.py list_projects` to get all projects.
+
+**If empty:** message "No projects found" and exit.
+
+Otherwise paginate with `question` tool (10 per page). Put all display info in `label`, leave `description` empty:
+
+Format per option: `{label: "<name_or_worktree> — <session_count> sessions", description: ""}`
+
+After the paginated list, add action options:
+- `{label: "next", description: "next page"}`
+- `{label: "prev", description: "prev page"}`
+- `{label: "clean all", description: "clean all projects on current page"}`
+- `{label: "cancel", description: "cancel & exit"}`
+
+**If "clean all" selected:**
+
+1. For each project on current page, call `list_sessions <project_id>` to collect all session IDs across all projects. Track project → sessions mapping.
+2. Call `current_session` to get current session ID.
+3. Filter current session from collected IDs. Report: "Current session (<slug>) excluded — cannot delete active session" if applicable.
+4. If no sessions remain after filtering, message "No sessions to clean" and return to project page (step 2).
+5. **Require user confirmation** (`question`, yes/no): "Clean all: delete <N> sessions from <M> projects on this page?"
+6. If confirmed, show aggregate preview via `preview_delete_sessions <id1,id2,...>`:
+   ```
+   Will delete:
+   - Database session records: <count>
+   - Storage DCP files: <count>
+   - Session diff files: <count>
+   ```
+7. Execute deletion: `python3 <skill_dir>/clean_sessions.py delete_sessions <id1,id2,...>`
+8. Report "Cleaned N sessions from M projects". Return to project page (step 2).
+
+Do NOT delete projects — only sessions under them.
+
+### 3. Session Page
+
+Call `./clean_sessions.py list_sessions <project_id>` to get sessions.
+Call `./clean_sessions.py current_session` to get current session ID.
+
+Display project info + paginated session list (10 per page). Two-step interaction:
+
+**Step 3a — select sessions** (`question` with `multiple: true`):
+
+Session options on this page:
+- `{label: "<slug>: <title>", description: "<preview> — <time_created>"}`
+- `{label: "select all", description: "select all sessions on current page and proceed"}`
+
+User may pick zero, one, or many sessions. If "select all on this page" is in selection, treat as selecting all sessions on current page, then apply current session protection (below), then skip to step 3b. Otherwise, selection stored for step 3b.
+
+**Current session protection:** After user selects (including "select all"), filter out any session matching the current session ID from the selection. If current session was in selection, report: "Current session (<slug>) excluded — cannot delete active session". Proceed with remaining selected sessions. If no sessions remain after filtering, skip to step 3b with 0 selected.
+
+**Step 3b — choose action** (`question`, single-select):
+
+**MANDATORY** — Include page info in `question` text: `"Page {current_page}/{total_pages}"`
+
+- `{label: "delete selected (<N>)", description: "preview then delete"}` — N is count after current session filtering; hidden when 0
+- `{label: "change selection", description: "back to step 3a"}`
+- `{label: "next", description: "next page"}`
+- `{label: "prev", description: "prev page"}`
+- `{label: "cancel", description: "cancel & exit"}`
+- `{label: "back project ", description: "back to project list"}`
+
+Pagination resets selection (new page starts at 3a with no carry-over).
+
+**If project has 0 sessions:** offer `delete project` option (label only). Show preview via `preview_delete_project`, then auto-delete.
+
+### 4. Preview & Execute Deletion
+
+Show preview before deletion, then auto-delete:
+
+**Session preview** — call `preview_delete_sessions <id1,id2,...>`:
+```
+Will delete:
+- Database session records: <count>
+- Storage DCP files: <count>
+- Session diff files: <count>
 ```
 
-**Q1** (only when > 10 sessions): "Delete all" / "Delete all except current" for immediate action; project groups are **navigation only** → Q2; "Select individual sessions" → Q2.
+Then delete: `python3 <skill_dir>/clean_sessions.py delete_sessions <id1,id2,...>`
 
-**Q2** (`multiple: true`): label = `ses_short_id  title`, description = full session_id, message count, creation time. Paginate > 9 per group. Extra: "Delete all in this project" (when filtered) | "Back".
+**Project deletion** — call `preview_delete_project <project_id>`:
+```
+Will delete:
+- Project: <worktree> (<session_count> sessions)
+- Database records: project + <N> sessions (CASCADE)
+- Storage DCP files: <count>
+- Session diff files: <count>
+- Snapshot directory: <path>
+```
 
-> **Q1 project selection is NAVIGATION only. NEVER delete from Q1 alone. Always show Q2 with individual options.**
+Then delete: `python3 <skill_dir>/clean_sessions.py delete_project <project_id>`
 
-## Other Modes
+Report result: "Deleted N sessions" / "Deleted project and N sessions"
 
-- **`--list`**: Display-only. STOP. Never proceed to deletion without user request.
-- **`--delete SID...`**: Deletes from session + child tables (message, part, todo, session_message, session_share), then auto-cleans orphaned diff files.
-- **`--orphans`**: Removes diff files for sessions no longer in DB.
-- **`--dry-run`**: Preview before any destructive operation.
+### 5. Post-deletion
 
-## Red Flags - STOP and Use Dry Run First
-
-- Running delete without `--dry-run`
-- Selecting a project group and assuming that deletes everything (Q1 is navigation only)
-- Cleaning orphans without first previewing
-- `--list` followed by proactive deletion without user request
+After any deletion, return to **project list page** (step 2). Do NOT exit to shell.
 
 ## Notes
 
-- Child records deleted before parent session (referential integrity)
-- Orphan cleanup only removes files for missing sessions - always safe
-- Paginate when > 10 sessions for Question tool compatibility
+- All `question` tool selections accept number input (not raw IDs)
+- Step 3a returns an array of selected labels; map each label back to its session id by page position, then pass `id1,id2,...` to preview/delete commands
+- When mapping labels to ids, the list_sessions output order (DESC time_updated) matches the displayed page order so index aligns
+- Always show project worktree path for identification (not just internal ID)
+- Convert epoch ms timestamps to readable date in display
+- The Python script handles DB operations + file cleanup atomically
+- `ON DELETE CASCADE` in DB handles related tables automatically
