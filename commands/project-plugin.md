@@ -1,14 +1,14 @@
 ---
-description: Install/uninstall opencode  plugins for the project
+description: Install/uninstall opencode plugins for the project
 ---
 
-# Plugin-project Command
+# Project-plugin Command
 
-Install or uninstall opencode plugins for a project.
+Install or uninstall opencode plugins in the project's `.opencode/opencode.json`.
 
 ## Arguments for command
 
-When the user runs this command (`/plugin-project`), follow these rules:
+When the user runs this command (`/project-plugin`), follow these rules:
 
 1. **Arguments** — The arguments are optional.
    - `install <plugin>`: Install plugin.
@@ -20,17 +20,11 @@ When the user runs this command (`/plugin-project`), follow these rules:
 
 ## Precondition
 
-Only run if the project root contains `AGENTS.md` or `.opencode/AGENTS.md`. Exit otherwise.
+Only run if the project root contains `.opencode/opencode.json`. Otherwise ask user whether to create the file (with `{ "$schema": "https://opencode.ai/config.json" }`) or not.
 
 ## Install plugin
 
 - Read `.opencode/opencode.json`.
-- If `.opencode/opencode.json` does not exist in the project root, create it with:
-  ```json
-  {
-    "$schema": "https://opencode.ai/config.json"
-  }
-  ```
 - If the `plugin` array field is missing in `.opencode/opencode.json`, add:
   ```json
   "plugin": [
@@ -44,7 +38,6 @@ Only run if the project root contains `AGENTS.md` or `.opencode/AGENTS.md`. Exit
 - Read `.opencode/opencode.json`.
 - If the `plugin` array contains the `@<org>/<repo>`, remove it.
 - If the `plugin` array becomes empty after removal, remove the `plugin` array field entirely.
-- If the only remaining field is `$schema`, you may optionally delete the file. Otherwise, save the updated config.
 - Skip silently if `.opencode/opencode.json` does not exist.
 
 ## Post-configuration
