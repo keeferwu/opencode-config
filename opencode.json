@@ -5,7 +5,7 @@
   "instructions": [
     "CONTRIBUTING.md",
     "docs/rule.md",
-    "~/.config/opencode/rules/*.md"
+    "~/.opencode/rules/*.md"
   ],
   "watcher": {
     "ignore": [
@@ -15,12 +15,6 @@
       ".git/**",
       "*.log"
     ]
-  },
-  "references": {
-    "config": {
-      "path": "~/.config/opencode",
-      "description": "Use for opencode global configuration"
-    }
   },
   "permission": {
     "external_directory": "allow",

@@ -53,7 +53,7 @@ function main()
         echo "update OpenAgentsControl developer"
         curl -fsSL https://raw.githubusercontent.com/darrenhinde/OpenAgentsControl/main/install.sh | bash -s developer
         if [ -d .opencode ]; then
-            rsync_developer_config "${2:-$HOME/.opencode}"
+            rsync_developer_config "${2:-$HOME/.config/opencode}"
             rm .opencode
         fi
         ;;
