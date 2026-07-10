@@ -7,6 +7,11 @@ description: Browsing and cleaning OpenCode sessions. Includes paginated listing
 
 Browse and clean OpenCode session data interactively.
 
+## Autonomy Rules
+
+- Auto-start on trigger: run `stats` + `list_projects` immediately, show project page.
+- Never ask open-ended questions — only use `question` tool with the fixed options defined in each step.
+
 ## Workflow
 
 ### 1. Entry
@@ -28,29 +33,9 @@ Otherwise paginate with `question` tool (10 per page). Put all display info in `
 Format per option: `{label: "<name_or_worktree> — <session_count> sessions", description: ""}`
 
 After the paginated list, add action options:
-- `{label: "next", description: "next page"}`
-- `{label: "prev", description: "prev page"}`
-- `{label: "clean all", description: "clean all projects on current page"}`
+- `{label: "next", description: "next page"}` — show only when `current_page < total_pages`
+- `{label: "prev", description: "prev page"}` — show only when `current_page > 1`
 - `{label: "cancel", description: "cancel & exit"}`
-
-**If "clean all" selected:**
-
-1. For each project on current page, call `list_sessions <project_id>` to collect all session IDs across all projects. Track project → sessions mapping.
-2. Call `current_session` to get current session ID.
-3. Filter current session from collected IDs. Report: "Current session (<slug>) excluded — cannot delete active session" if applicable.
-4. If no sessions remain after filtering, message "No sessions to clean" and return to project page (step 2).
-5. **Require user confirmation** (`question`, yes/no): "Clean all: delete <N> sessions from <M> projects on this page?"
-6. If confirmed, show aggregate preview via `preview_delete_sessions <id1,id2,...>`:
-   ```
-   Will delete:
-   - Database session records: <count>
-   - Storage DCP files: <count>
-   - Session diff files: <count>
-   ```
-7. Execute deletion: `python3 <skill_dir>/clean_sessions.py delete_sessions <id1,id2,...>`
-8. Report "Cleaned N sessions from M projects". Return to project page (step 2).
-
-Do NOT delete projects — only sessions under them.
 
 ### 3. Session Page
 
@@ -75,8 +60,8 @@ User may pick zero, one, or many sessions. If "select all on this page" is in se
 
 - `{label: "delete selected (<N>)", description: "preview then delete"}` — N is count after current session filtering; hidden when 0
 - `{label: "change selection", description: "back to step 3a"}`
-- `{label: "next", description: "next page"}`
-- `{label: "prev", description: "prev page"}`
+- `{label: "next", description: "next page"}` — show only when `current_page < total_pages`
+- `{label: "prev", description: "prev page"}` — show only when `current_page > 1`
 - `{label: "cancel", description: "cancel & exit"}`
 - `{label: "back project ", description: "back to project list"}`
 
