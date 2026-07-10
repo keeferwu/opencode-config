@@ -101,6 +101,7 @@ function main()
         ;;
     --agentmemory )
         sudo npm install -g @agentmemory/agentmemory
+        curl -fsSL https://install.iii.dev/iii/main/install.sh | VERSION=0.11.2 sh
         npx git-ripper https://github.com/rohitg00/agentmemory/tree/main/plugin/opencode -o ./agentmemory
         ./agentmemory/install.sh
         ;;
@@ -123,6 +124,7 @@ function main()
         echo "--graphify: install graphify, use for drawing code knowledge maps"
         echo "--cua: install cua, use for drive native desktop apps in the background"
         echo "--caveman: install caveman, use for save token"
+        echo "--agentmemory: install agentmemory, use for agent memory"
         echo "--open-code-review: install open-code-review, use for review code"
         ;;
     * )

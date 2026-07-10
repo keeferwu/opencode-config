@@ -6,8 +6,11 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CONFIG_FILE="$HOME/.config/opencode/opencode.json"
 
 if [ ! -f "$CONFIG_FILE" ]; then
-    echo "Error: $CONFIG_FILE not found"
-    exit 1
+    CONFIG_FILE="$HOME/.config/opencode/opencode.jsonc"
+    if [ ! -f "$CONFIG_FILE" ]; then
+        echo "Error: $CONFIG_FILE not found"
+        exit 1
+    fi
 fi
 
 # 1. append mcp config for agentmemory
