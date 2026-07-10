@@ -105,6 +105,14 @@ function main()
         npx git-ripper https://github.com/rohitg00/agentmemory/tree/main/plugin/opencode -o ./agentmemory
         ./agentmemory/install.sh
         ;;
+    --omniroute )
+        sudo npm install -g omniroute
+        if which omniroute >/dev/null 2>&1; then
+            omniroute setup opencode
+            echo "run omniroute, login web create apikey"
+            echo "run opencode auth login --provider omniroute"
+        fi
+        ;;
     --open-code-review )
         sudo npm install -g @alibaba-group/open-code-review
         if which ocr >/dev/null 2>&1; then
@@ -125,6 +133,7 @@ function main()
         echo "--cua: install cua, use for drive native desktop apps in the background"
         echo "--caveman: install caveman, use for save token, similar tool ponytail"
         echo "--agentmemory: install agentmemory, use for agent memory"
+        echo "--omniroute: install omniroute, use for llm proxy"
         echo "--open-code-review: install open-code-review, use for review code"
         ;;
     * )
