@@ -6,15 +6,25 @@ description: Manage opencode-mem memory plugin — search/add/delete/list memori
 
 opencode-mem is the memory plugin for opencode. It uses vector embeddings to provide long-term memory and user profile learning.
 
+## Precondition: Plugin Load Check
+
+Before any action, verify opencode-mem plugin is loaded:
+
+```bash
+opencode debug info | grep -q opencode-mem
+```
+If plugin not loaded (grep fail or no output), exit immediately — do nothing.
+
 ## Instructions for Agent
 
 When the user runs this command (`/opencode-mem`), follow these rules:
 
-1. **No arguments** — Show a brief summary of available commands and the Web UI URL. Ask the user what they want to do.
-2. **`help`** — Display the **Usage Reference**.
-3. **`doctor`** — Skip everything else; run the **Error Diagnosis** workflow below.
-4. **`web`** — Read `~/.config/opencode/opencode-mem.jsonc`, extract `webServerPort` (default: 4747), then open `http://localhost:<port>` in the default browser.
-5. **Any other arguments** — Convert and execute as the corresponding `memory` command:
+1. **Run precondition check**. If plugin not loaded, exit silently.
+2. **No arguments** — Show a brief summary of available commands and the Web UI URL. Ask the user what they want to do.
+3. **`help`** — Display the **Usage Reference**.
+4. **`doctor`** — Skip everything else; run the **Error Diagnosis** workflow below.
+5. **`web`** — Read `~/.config/opencode/opencode-mem.jsonc`, extract `webServerPort` (default: 4747), then open `http://localhost:<port>` in the default browser.
+6. **Any other arguments** — Convert and execute as the corresponding `memory` command:
    - `/opencode-mem search <query>` → `memory search <query>`
    - `/opencode-mem add <content>` → `memory add <content>`
    - `/opencode-mem list` → `memory list`

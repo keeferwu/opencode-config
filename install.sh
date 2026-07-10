@@ -99,6 +99,11 @@ function main()
             fi
         fi
         ;;
+    --agentmemory )
+        sudo npm install -g @agentmemory/agentmemory
+        npx git-ripper https://github.com/rohitg00/agentmemory/tree/main/plugin/opencode -o ./agentmemory
+        ./agentmemory/install.sh
+        ;;
     --open-code-review )
         sudo npm install -g @alibaba-group/open-code-review
         if which ocr >/dev/null 2>&1; then
