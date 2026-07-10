@@ -10,17 +10,18 @@ Install or uninstall opencode plugins in the project's `.opencode/opencode.json`
 
 When the user runs this command (`/project-plugin`), follow these rules:
 
-1. **Arguments** — The arguments are optional.
+1. **No $ARGUMENTS** — Only display the argument list(`Arguments provided`,`<plugin>`) and stop.
+2. **Arguments provided** — Proceed based on the arguments:
    - `install <plugin>`: Install plugin.
    - `uninstall <plugin>`: Uninstall plugin.
-2. **`<plugin>`** — The plugin name, switch to `@<org>/<repo>`.
+3. **`<plugin>`** — The plugin name, switch to `@<org>/<repo>`.
    - `dap` → `@debugtalk/opencode-dap`.
    - `ponytail` → `@dietrichgebert/ponytail`.
-3. **No arguments** — Only display argument message and exit.
 
 ## Precondition
 
-Only run if the project root contains `.opencode/opencode.json`. Otherwise ask user whether to create the file (with `{ "$schema": "https://opencode.ai/config.json" }`) or not.
+Using `read` tool to check whether the project root contains `.opencode/opencode.json`.
+If file does not exist, use `question` tool to ask user whether to create the file (with `{ "$schema": "https://opencode.ai/config.json" }`) or not.
 
 ## Install plugin
 

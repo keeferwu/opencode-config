@@ -41,7 +41,8 @@ Rules:
 
 ## Precondition
 
-Only run if the project root contains `.opencode/opencode.json`. Otherwise ask user whether to create the file (with `{ "$schema": "https://opencode.ai/config.json" }`) or not.
+Using `read` tool to check whether the project root contains `.opencode/opencode.json`.
+If file does not exist, use `question` tool to ask user whether to create the file (with `{ "$schema": "https://opencode.ai/config.json" }`) or not.
 
 ## Add reference
 
