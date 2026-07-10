@@ -123,7 +123,7 @@ function main()
         echo "--comet: install comet, use for comet openspec and superpowers"
         echo "--graphify: install graphify, use for drawing code knowledge maps"
         echo "--cua: install cua, use for drive native desktop apps in the background"
-        echo "--caveman: install caveman, use for save token"
+        echo "--caveman: install caveman, use for save token, similar tool ponytail"
         echo "--agentmemory: install agentmemory, use for agent memory"
         echo "--open-code-review: install open-code-review, use for review code"
         ;;
