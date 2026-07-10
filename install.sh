@@ -88,6 +88,16 @@ function main()
         ;;
     --caveman )
         npx -y github:JuliusBrussee/caveman -- --only opencode
+        config_file="$HOME/.config/opencode/opencode.json"
+        if ! grep -q '"cavecrew-builder"' "$config_file" 2>/dev/null; then
+            if command -v jq &>/dev/null; then
+                jq '.agent["cavecrew-builder"] = {"mode": "subagent"} |
+                    .agent["cavecrew-investigator"] = {"mode": "subagent"} |
+                    .agent["cavecrew-reviewer"] = {"mode": "subagent"}' \
+                    "$config_file" > "${config_file}.tmp"
+                mv "${config_file}.tmp" "$config_file"
+            fi
+        fi
         ;;
     --open-code-review )
         sudo npm install -g @alibaba-group/open-code-review
