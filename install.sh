@@ -188,6 +188,11 @@ function main()
             else
                 echo "jq not installed, skipping provider config. Add provider manually."
             fi
+            echo "配置文件：/usr/lib/node_modules/omniroute/.env"
+            echo "开启API认证：REQUIRE_API_KEY=true"
+            echo "显示完整API：ALLOW_API_KEY_REVEAL=true"
+            echo "设置登录密码：INITIAL_PASSWORD=CHANGEME"
+            echo "每日请求限额：DEFAULT_RATE_LIMIT_PER_DAY=1000"
         fi
         ;;
     --open-code-review )
