@@ -33,6 +33,8 @@ Ubuntu20.04的libc6无法通过apt升级到2.32+。
 4. patchelf 改 iii 的 interpreter 和 rpath
 
 ```bash
+    mkdir -p ~/.agentmemory/bin
+    ln -s ~/local/bin/iii ~/.agentmemory/bin/iii
     patchelf --set-interpreter ~/.agentmemory/glibc/ld-linux-x86-64.so.2 \
              --set-rpath ~/.agentmemory/glibc \
              ~/.agentmemory/bin/iii

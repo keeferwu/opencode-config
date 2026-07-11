@@ -34,7 +34,9 @@ fi
 # 3. copy files
 mkdir -p "$HOME/.config/opencode/plugins"
 mkdir -p "$HOME/.config/opencode/commands"
+mkdir -p "$HOME/.agentmemory"
 
+cp "$SCRIPT_DIR/preferences.json" "$HOME/.agentmemory/"
 cp "$SCRIPT_DIR/agentmemory-capture.ts" "$HOME/.config/opencode/plugins/"
 cp "$SCRIPT_DIR/commands/"*.md "$HOME/.config/opencode/commands/" 2>/dev/null || true
 

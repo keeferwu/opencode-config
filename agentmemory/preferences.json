@@ -1,0 +1,6 @@
+{
+  "skipSplash": true,
+  "skipNpxHint": true,
+  "skipGlobalInstall": true,
+  "skipConsoleInstall": true
+}
