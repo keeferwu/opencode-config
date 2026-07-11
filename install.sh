@@ -46,6 +46,52 @@ function rsync_developer_config()
     fi
 }
 
+function default_config_install()
+{
+    # remove plugin cache
+    rm -rf $HOME/.cache/opencode/packages/*
+    if [ "$PWD" != "$HOME/.opencode" ]; then
+        echo "Install global config to $HOME/.config/opencode"
+        cp opencode.json "$HOME/.config/opencode"
+        cp -auv agents "$HOME/.config/opencode"
+        cp -auv commands "$HOME/.config/opencode"
+        cp -auv rules "$HOME/.config/opencode"
+        cp -auv skills "$HOME/.config/opencode"
+    fi
+
+    #npx @colbymchenry/codegraph
+    #echo "Install codegraph"
+    #npx install @colbymchenry/codegraph
+
+    #curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/install.sh | bash
+    echo "Install codebase-memory-mcp"
+    sudo npm install -g codebase-memory-mcp
+
+    # base rust
+    echo "Install rtk"
+    curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
+    if which rtk >/dev/null 2>&1; then
+        rtk init -g --opencode
+    fi
+
+    echo "Install skills to $HOME/.agents/skills"
+    # npx skills add Option         Description
+    # -g, --global                  Install to user directory instead of project
+    # -a, --agent <agents...>       Target specific agents (e.g., claude-code, codex). See Available Agents
+    # -s, --skill <skills...>       Install specific skills by name (use '*' for all skills)
+    # -l, --list                    List available skills without installing
+    # --copy                        Copy files instead of symlinking to agent directories
+    # -y, --yes	                    Skip all confirmation prompts
+    # --all	                        Install all skills to all agents without prompts
+
+    # GitHub shorthand (owner/repo)
+    npx skills add vercel-labs/skills -g -y --skill find-skills --agent opencode
+    #npx skills add mattpocock/skills -g -y --skill improve-codebase-architecture --skill codebase-design --skill grilling --skill domain-modeling --agent opencode
+    #npx skills add kepano/obsidian-skills -g -y --agent opencode
+    #npx skills add anthropics/skills -g -y --skill pdf --skill docx --skill pptx --skill xlsx --agent opencode
+    #npx skills update
+}
+
 function main()
 {
     if ! which opencode >/dev/null 2>&1; then
@@ -58,6 +104,9 @@ function main()
     fi
 
     case "$1" in
+    * )
+        default_config_install
+        ;;
     --oac )
         echo "update OpenAgentsControl developer"
         curl -fsSL https://raw.githubusercontent.com/darrenhinde/OpenAgentsControl/main/install.sh | bash -s developer
@@ -163,50 +212,6 @@ function main()
         echo "--agentmemory: install agentmemory, use for agent memory"
         echo "--omniroute: install omniroute, use for llm proxy"
         echo "--open-code-review: install open-code-review, use for review code"
-        ;;
-    * )
-        # remove plugin cache
-        rm -rf $HOME/.cache/opencode/packages/*
-        if [ "$PWD" != "$HOME/.opencode" ]; then
-            echo "Install global config to $HOME/.config/opencode"
-            cp opencode.json "$HOME/.config/opencode"
-            cp -auv agents "$HOME/.config/opencode"
-            cp -auv commands "$HOME/.config/opencode"
-            cp -auv rules "$HOME/.config/opencode"
-            cp -auv skills "$HOME/.config/opencode"
-        fi
-
-        #npx @colbymchenry/codegraph
-        #echo "Install codegraph"
-        #npx install @colbymchenry/codegraph
-
-        #curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/install.sh | bash
-        echo "Install codebase-memory-mcp"
-        sudo npm install -g codebase-memory-mcp
-
-        # base rust
-        echo "Install rtk"
-        curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
-        if which rtk >/dev/null 2>&1; then
-            rtk init -g --opencode
-        fi
-
-        echo "Install skills to $HOME/.agents/skills"
-        # npx skills add Option         Description
-        # -g, --global                  Install to user directory instead of project
-        # -a, --agent <agents...>       Target specific agents (e.g., claude-code, codex). See Available Agents
-        # -s, --skill <skills...>       Install specific skills by name (use '*' for all skills)
-        # -l, --list                    List available skills without installing
-        # --copy                        Copy files instead of symlinking to agent directories
-        # -y, --yes	                    Skip all confirmation prompts
-        # --all	                        Install all skills to all agents without prompts
-
-        # GitHub shorthand (owner/repo)
-        npx skills add vercel-labs/skills -g -y --skill find-skills --agent opencode
-        #npx skills add mattpocock/skills -g -y --skill improve-codebase-architecture --skill codebase-design --skill grilling --skill domain-modeling --agent opencode
-        #npx skills add kepano/obsidian-skills -g -y --agent opencode
-        #npx skills add anthropics/skills -g -y --skill pdf --skill docx --skill pptx --skill xlsx --agent opencode
-        #npx skills update
         ;;
     esac
 }
