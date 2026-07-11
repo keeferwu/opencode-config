@@ -41,8 +41,8 @@ Rules:
 
 ## Precondition
 
-Using `read` tool to check whether the project root contains `.opencode/opencode.json`.
-If file does not exist, use `question` tool to ask user whether to create the file (with `{ "$schema": "https://opencode.ai/config.json" }`) or not.
+- **⚠️ MUST use `read` or `ls` tool to check whether the project root contains `.opencode/opencode.json` — DO NOT use `glob` as substitutes.**
+- If file does not exist, use `question` tool to ask user whether to create the file (with `{ "$schema": "https://opencode.ai/config.json" }`) or not.
 
 ## Add reference
 
