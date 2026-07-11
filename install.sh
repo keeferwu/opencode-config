@@ -1,5 +1,14 @@
 #!/bin/bash
 
+CONFIG_FILE="$HOME/.config/opencode/opencode.json"
+if [ ! -f "$CONFIG_FILE" ]; then
+    CONFIG_FILE="$HOME/.config/opencode/opencode.jsonc"
+    if [ ! -f "$CONFIG_FILE" ]; then
+        echo "Error: $CONFIG_FILE not found"
+        exit 1
+    fi
+fi
+
 function rsync_developer_config()
 {
     echo "rsync oac developer config to $1"
@@ -88,14 +97,13 @@ function main()
         ;;
     --caveman )
         npx -y github:JuliusBrussee/caveman -- --only opencode
-        config_file="$HOME/.config/opencode/opencode.json"
-        if ! grep -q '"cavecrew-builder"' "$config_file" 2>/dev/null; then
+        if ! grep -q '"cavecrew-builder"' "$CONFIG_FILE" 2>/dev/null; then
             if command -v jq &>/dev/null; then
                 jq '.agent["cavecrew-builder"] = {"mode": "subagent"} |
                     .agent["cavecrew-investigator"] = {"mode": "subagent"} |
                     .agent["cavecrew-reviewer"] = {"mode": "subagent"}' \
-                    "$config_file" > "${config_file}.tmp"
-                mv "${config_file}.tmp" "$config_file"
+                    "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
+                mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
             fi
         fi
         ;;
@@ -107,10 +115,30 @@ function main()
         ;;
     --omniroute )
         sudo npm install -g omniroute
-        if which omniroute >/dev/null 2>&1; then
-            omniroute setup opencode
-            echo "run omniroute, login web create apikey"
-            echo "run opencode auth login --provider omniroute"
+        #if which omniroute >/dev/null 2>&1; then
+        #    omniroute setup opencode
+        #    echo "run omniroute, login web create apikey"
+        #    echo "run opencode auth login --provider omniroute"
+        #fi
+        # use config provider instead of plugin
+        if ! grep -q '"omniroute"' "$CONFIG_FILE" 2>/dev/null; then
+            if command -v jq &>/dev/null; then
+                jq '.provider.omniroute = {
+                    "npm": "@ai-sdk/openai-compatible",
+                    "name": "OmniRoute",
+                    "options": {
+                        "baseURL": "http://localhost:20128/v1",
+                        "apiKey": "your api key"
+                    },
+                    "models": {
+                        "auto": {"name": "Auto-Combo"}
+                    }
+                }' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
+                mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
+                echo "Added omniroute provider with auto model to $CONFIG_FILE"
+            else
+                echo "jq not installed, skipping provider config. Add provider manually."
+            fi
         fi
         ;;
     --open-code-review )
