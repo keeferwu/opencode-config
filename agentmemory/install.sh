@@ -41,3 +41,10 @@ cp "$SCRIPT_DIR/agentmemory-capture.ts" "$HOME/.config/opencode/plugins/"
 cp "$SCRIPT_DIR/commands/"*.md "$HOME/.config/opencode/commands/" 2>/dev/null || true
 
 echo "agentmemory install complete"
+
+echo "配置文件：~/.agentmemory/.env"
+echo "启动自动注入：AGENTMEMORY_INJECT_CONTEXT=true"
+echo "启动知识图谱： GRAPH_EXTRACTION_ENABLED=true"
+echo "启用记忆合并： CONSOLIDATION_ENABLED=true + LLM API Key"
+echo "启动自动遗忘： LLM API Key"
+
