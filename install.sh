@@ -104,9 +104,6 @@ function main()
     fi
 
     case "$1" in
-    * )
-        default_config_install
-        ;;
     --oac )
         echo "update OpenAgentsControl developer"
         curl -fsSL https://raw.githubusercontent.com/darrenhinde/OpenAgentsControl/main/install.sh | bash -s developer
@@ -177,7 +174,7 @@ function main()
                     "name": "OmniRoute",
                     "options": {
                         "baseURL": "http://localhost:20128/v1",
-                        "apiKey": "your api key"
+                        "apiKey": "sk_omniroute"
                     },
                     "models": {
                         "auto": {"name": "Auto-Combo"}
@@ -217,6 +214,9 @@ function main()
         echo "--agentmemory: install agentmemory, use for agent memory"
         echo "--omniroute: install omniroute, use for llm proxy"
         echo "--open-code-review: install open-code-review, use for review code"
+        ;;
+    * )
+        default_config_install
         ;;
     esac
 }
