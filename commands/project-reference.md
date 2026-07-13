@@ -1,10 +1,10 @@
 ---
-description: Add/remove references for the project
+description: Add/remove references to project
 ---
 
 # Project-reference Command
 
-Add, remove, or list references in the project's `.opencode/opencode.json`.
+Add, remove, or list references to project's opencode config.
 
 ## Arguments for command
 

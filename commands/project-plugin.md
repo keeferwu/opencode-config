@@ -1,45 +1,39 @@
 ---
-description: Install/uninstall opencode plugins for the project
+description: Install/uninstall opencode plugins to project
 ---
 
 # Project-plugin Command
 
-Install or uninstall opencode plugins in the project's `.opencode/opencode.json`.
+Install or uninstall opencode plugins to project's opencode config.
 
 ## Arguments for command
 
 When the user runs this command (`/project-plugin`), follow these rules:
 
-1. **No $ARGUMENTS** — Only display the argument list(`Arguments provided`,`<plugin>`) and stop.
-2. **Arguments provided** — Proceed based on the arguments:
+1. **No $ARGUMENTS** — Only display the argument list(`Argument requirements`,`<plugin>`) and stop.
+2. **Argument requirements** — Proceed based on the arguments:
    - `install <plugin>`: Install plugin.
    - `uninstall <plugin>`: Uninstall plugin.
 3. **`<plugin>`** — The plugin name, switch to `@<org>/<repo>`.
    - `dap` → `@debugtalk/opencode-dap`.
    - `ponytail` → `@dietrichgebert/ponytail`.
 
-## Precondition
-
-- **⚠️ MUST use `read` or `ls` tool to check whether the project root contains `.opencode/opencode.json` — DO NOT use `glob` as substitutes.**
-- If file does not exist, use `question` tool to ask user whether to create the file (with `{ "$schema": "https://opencode.ai/config.json" }`) or not.
-
 ## Install plugin
 
-- Read `.opencode/opencode.json`.
-- If the `plugin` array field is missing in `.opencode/opencode.json`, add:
-  ```json
-  "plugin": [
+Run bash command:
 
-  ]
-  ```
-- If `plugin` array field already exists but lacks the `@<org>/<repo>`, merge it into the existing array.
+```bash
+opencode plugin @<org>/<repo> --force
+```
+
+`@<org>/<repo>` is provided by `/project-plugin` argument.
 
 ## Uninstall plugin
 
+- If `.opencode/opencode.json` does not exist, skip silently.
 - Read `.opencode/opencode.json`.
-- If the `plugin` array contains the `@<org>/<repo>`, remove it.
-- If the `plugin` array becomes empty after removal, remove the `plugin` array field entirely.
-- Skip silently if `.opencode/opencode.json` does not exist.
+  - If the `plugin` array contains the `@<org>/<repo>`, remove it.
+  - If the `plugin` array becomes empty after removal, remove the `plugin` array field entirely.
 
 ## Post-configuration
 
