@@ -161,6 +161,7 @@ function main()
         ;;
     --omniroute )
         sudo npm install -g omniroute
+        sudo npm install -g @ai-sdk/openai-compatible
         #if which omniroute >/dev/null 2>&1; then
         #    omniroute setup opencode
         #    echo "run omniroute, login web create apikey"
@@ -177,7 +178,7 @@ function main()
                         "apiKey": "sk_omniroute"
                     },
                     "models": {
-                        "auto": {"name": "Auto-Combo"}
+                        "auto": { "name": "auto-combo" }
                     }
                 }' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
                 mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
