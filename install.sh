@@ -46,6 +46,66 @@ function rsync_developer_config()
     fi
 }
 
+function omniroute_provider_config()
+{
+    if ! jq -e '.provider.omniroute' "$CONFIG_FILE" >/dev/null 2>&1; then
+        if command -v jq &>/dev/null; then
+            jq '.provider.omniroute = {
+                "npm": "@ai-sdk/openai-compatible",
+                "name": "OmniRoute",
+                "options": {
+                  "baseURL": "http://localhost:20128/v1",
+                  "apiKey": "omniroute_key",
+                  "timeout": 120000,
+                  "headerTimeout": 30000,
+                  "chunkTimeout": 60000
+                },
+                "models": {
+                  "auto": {
+                    "name": "Auto-Combo",
+                    "tool_call": true,
+                    "reasoning": true,
+                    "interleaved": { "field": "reasoning_content" }
+                  }
+                }
+            }' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
+            mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
+            echo "Added omniroute provider with auto model to $CONFIG_FILE"
+        else
+            echo "jq not installed, skipping provider config. Add provider manually."
+        fi
+    fi
+    read -p "Do you want to configure omniroute MCP server? (y/N) " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        if ! jq -e '.mcp.omniroute' "$CONFIG_FILE" >/dev/null 2>&1; then
+            if command -v jq &>/dev/null; then
+                jq '.mcp.omniroute = {
+                    "type": "remote",
+                    "url": "http://localhost:20128/api/mcp/sse",
+                    "headers": {
+                        "Authorization": "Bearer omniroute_management_key"
+                    },
+                    "enabled": false
+                }' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
+                mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
+                echo "Added omniroute MCP server to $CONFIG_FILE"
+            else
+                echo "jq not installed, skipping MCP config. Add MCP config manually."
+            fi
+        else
+            echo "omniroute MCP server already configured, skipping."
+        fi
+    fi
+    echo ""
+    echo "Config file: /usr/lib/node_modules/omniroute/.env"
+    echo "  Enable API auth:    REQUIRE_API_KEY=true"
+    echo "  Reveal full API key: ALLOW_API_KEY_REVEAL=true"
+    echo "  Login password: INITIAL_PASSWORD=CHANGEME"
+    echo "  Daily request limit: DEFAULT_RATE_LIMIT_PER_DAY=1000"
+    echo ""
+}
+
 function default_config_install()
 {
     # remove plugin cache
@@ -170,33 +230,7 @@ function main()
         #    echo "run opencode auth login --provider omniroute"
         #fi
         # use config provider instead of plugin
-        if ! grep -q '"omniroute"' "$CONFIG_FILE" 2>/dev/null; then
-            if command -v jq &>/dev/null; then
-                jq '.provider.omniroute = {
-                    "npm": "@ai-sdk/openai-compatible",
-                    "name": "OmniRoute",
-                    "options": {
-                        "baseURL": "http://localhost:20128/v1",
-                        "apiKey": "sk_omniroute"
-                    },
-                    "models": {
-                        "auto": { "name": "auto-combo" }
-                    }
-                }' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
-                mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
-                echo "Added omniroute provider with auto model to $CONFIG_FILE"
-            else
-                echo "jq not installed, skipping provider config. Add provider manually."
-            fi
-            echo ""
-            echo "Config file: /usr/lib/node_modules/omniroute/.env"
-            echo "  Enable API auth:    REQUIRE_API_KEY=true"
-            echo "  Reveal full API key: ALLOW_API_KEY_REVEAL=true"
-            echo "  Login password: INITIAL_PASSWORD=CHANGEME"
-            echo "  Daily request limit: DEFAULT_RATE_LIMIT_PER_DAY=1000"
-            echo ""
-            echo "Reset auto routing:  sqlite3 ~/.omniroute/storage.sqlite \"DELETE FROM key_value WHERE namespace='lkgp' AND key='auto:auto'\""
-        fi
+        omniroute_provider_config
         ;;
     --open-code-review )
         sudo npm install -g @alibaba-group/open-code-review
