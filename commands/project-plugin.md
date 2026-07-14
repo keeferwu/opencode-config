@@ -6,12 +6,15 @@ description: Install/uninstall opencode plugins to project
 
 Install or uninstall opencode plugins to project's opencode config.
 
-## Arguments for command
+## Instructions for Agent
 
 When the user runs this command (`/project-plugin`), follow these rules:
 
-1. **No $ARGUMENTS** — Only display the argument list(`Argument requirements`,`<plugin>`) and stop.
-2. **Argument requirements** — Proceed based on the arguments:
+1. **No arguments** — Read `.opencode/opencode.json` via the `read` tool:
+   - If file exists, list the current `plugin` array contents, then display the `Arguments` and `<plugin>` sections below and stop.
+   - If file does not exist, directly display the `Arguments` and `<plugin>` sections below and stop.
+   - Do NOT perform any other operations.
+2. **Arguments** — Proceed based on the arguments:
    - `install <plugin>`: Install plugin.
    - `uninstall <plugin>`: Uninstall plugin.
 3. **`<plugin>`** — The plugin name, switch to `@<org>/<repo>`.
@@ -23,7 +26,7 @@ When the user runs this command (`/project-plugin`), follow these rules:
 Run bash command:
 
 ```bash
-opencode plugin @<org>/<repo> --force
+opencode plugin @<org>/<repo>@latest --force
 ```
 
 `@<org>/<repo>` is provided by `/project-plugin` argument.
