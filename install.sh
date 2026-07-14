@@ -191,6 +191,7 @@ function main()
             echo "显示完整API：ALLOW_API_KEY_REVEAL=true"
             echo "设置登录密码：INITIAL_PASSWORD=CHANGEME"
             echo "每日请求限额：DEFAULT_RATE_LIMIT_PER_DAY=1000"
+            echo "auto无法路由：sqlite3 ~/.omniroute/storage.sqlite "DELETE FROM key_value WHERE namespace='lkgp' AND key='auto:auto'""
         fi
         ;;
     --open-code-review )
