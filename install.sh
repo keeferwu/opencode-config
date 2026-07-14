@@ -52,7 +52,8 @@ function default_config_install()
     rm -rf $HOME/.cache/opencode/packages/*
     if [ "$PWD" != "$HOME/.opencode" ]; then
         echo "Install global config to $HOME/.config/opencode"
-        cp opencode.json "$HOME/.config/opencode"
+        cp opencode.jsonc "$HOME/.config/opencode"
+        cp tui.json "$HOME/.config/opencode"
         cp -auv agents "$HOME/.config/opencode"
         cp -auv commands "$HOME/.config/opencode"
         cp -auv rules "$HOME/.config/opencode"
@@ -72,6 +73,7 @@ function default_config_install()
     curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
     if which rtk >/dev/null 2>&1; then
         rtk init -g --opencode
+        sudo cp $HOME/.local/bin/rtk /usr/local/bin/
     fi
 
     echo "Install skills to $HOME/.agents/skills"
@@ -186,12 +188,14 @@ function main()
             else
                 echo "jq not installed, skipping provider config. Add provider manually."
             fi
-            echo "配置文件：/usr/lib/node_modules/omniroute/.env"
-            echo "开启API认证：REQUIRE_API_KEY=true"
-            echo "显示完整API：ALLOW_API_KEY_REVEAL=true"
-            echo "设置登录密码：INITIAL_PASSWORD=CHANGEME"
-            echo "每日请求限额：DEFAULT_RATE_LIMIT_PER_DAY=1000"
-            echo "auto无法路由：sqlite3 ~/.omniroute/storage.sqlite "DELETE FROM key_value WHERE namespace='lkgp' AND key='auto:auto'""
+            echo ""
+            echo "Config file: /usr/lib/node_modules/omniroute/.env"
+            echo "  Enable API auth:    REQUIRE_API_KEY=true"
+            echo "  Reveal full API key: ALLOW_API_KEY_REVEAL=true"
+            echo "  Login password: INITIAL_PASSWORD=CHANGEME"
+            echo "  Daily request limit: DEFAULT_RATE_LIMIT_PER_DAY=1000"
+            echo ""
+            echo "Reset auto routing:  sqlite3 ~/.omniroute/storage.sqlite \"DELETE FROM key_value WHERE namespace='lkgp' AND key='auto:auto'\""
         fi
         ;;
     --open-code-review )
