@@ -6,11 +6,13 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CONFIG_FILE="$HOME/.config/opencode/opencode.json"
 
 if [ ! -f "$CONFIG_FILE" ]; then
-    CONFIG_FILE="$HOME/.config/opencode/opencode.jsonc"
-    if [ ! -f "$CONFIG_FILE" ]; then
-        echo "Error: $CONFIG_FILE not found"
-        exit 1
-    fi
+    mkdir -p "$(dirname "$CONFIG_FILE")"
+    cat > "$CONFIG_FILE" << 'EOF'
+{
+  "$schema": "https://opencode.ai/config.json"
+}
+EOF
+    echo "Created $CONFIG_FILE"
 fi
 
 # 1. set mcp config for agentmemory
