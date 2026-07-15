@@ -49,6 +49,9 @@ function rsync_developer_config()
 
 function omniroute_provider_config()
 {
+    # chunkTimeout：SSEchunk之间的最大等待时间（应对OmniRoute冷启动时的长延迟）
+    # headerTimeout：响应头等待时间
+    # timeout：整体请求超时时间
     if ! jq -e '.provider.omniroute' "$CONFIG_FILE" >/dev/null 2>&1; then
         if command -v jq &>/dev/null; then
             jq '.provider.omniroute = {
@@ -56,7 +59,10 @@ function omniroute_provider_config()
                 "name": "OmniRoute",
                 "options": {
                   "baseURL": "http://localhost:20128/v1",
-                  "apiKey": "omniroute_key"
+                  "apiKey": "omniroute_key",
+                  "timeout": 120000,
+                  "headerTimeout": 30000,
+                  "chunkTimeout": 60000
                 },
                 "models": {
                   "auto": {
