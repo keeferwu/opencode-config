@@ -127,16 +127,19 @@ function default_config_install()
     #echo "Install codegraph"
     #npx install @colbymchenry/codegraph
 
-    #curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/install.sh | bash
-    echo "Install codebase-memory-mcp"
-    sudo npm install -g codebase-memory-mcp
+    if ! command -v codebase-memory-mcp >/dev/null 2>&1; then
+        echo "Install codebase-memory-mcp"
+        #curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/install.sh | bash
+        sudo npm install -g codebase-memory-mcp
+        sudo codebase-memory-mcp --help
+    fi
 
-    # base rust
-    echo "Install rtk"
-    curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
-    if which rtk >/dev/null 2>&1; then
+    if command -v rtk >/dev/null 2>&1; then
         rtk init -g --opencode
         sudo cp $HOME/.local/bin/rtk /usr/local/bin/
+    else
+        echo "Install rtk"
+        curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
     fi
 
     echo "Install skills to $HOME/.agents/skills"
@@ -159,18 +162,24 @@ function default_config_install()
 
 function main()
 {
-    if ! which opencode >/dev/null 2>&1; then
-        echo "install opencode"
-        if which node >/dev/null 2>&1; then
-            sudo npm install -g opencode-ai
+    if ! command -v opencode >/dev/null 2>&1; then
+        read -p "opencode is not installed. Do you want to install it? (y/N) " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            echo "Install opencode"
+            if command -v node >/dev/null 2>&1; then
+                sudo npm install -g opencode-ai
+            else
+                curl -fsSL https://opencode.ai/install | bash
+            fi
         else
-            curl -fsSL https://opencode.ai/install | bash
+            echo "Skip opencode installation"
         fi
     fi
 
     case "$1" in
     --oac )
-        echo "update OpenAgentsControl developer"
+        echo "Install OpenAgentsControl developer..."
         curl -fsSL https://raw.githubusercontent.com/darrenhinde/OpenAgentsControl/main/install.sh | bash -s developer
         if [ -d .opencode ]; then
             rsync_developer_config "${2:-$HOME/.config/opencode}"
@@ -178,6 +187,7 @@ function main()
         fi
         ;;
     --markitdown )
+        echo "Install markitdown docker..."
         git clone https://github.com/microsoft/markitdown
         cd markitdown
         docker build -t markitdown:latest .
@@ -185,28 +195,31 @@ function main()
         rm -rf markitdown
         ;;
     --drawio )
+        echo "Install drawio desktop and skill..."
         npx skills add Agents365-ai/drawio-skill -g -y --skill drawio-skill --agent opencode
         sudo apt-get install xvfb
         sudo snap install drawio
         ;;
     --comet )
+        echo "Install openspec and supperpowers for project..."
         sudo npm install -g @rpamis/comet@latest
         sudo npm install -g @fission-ai/openspec@latest
-        echo "Install openspec and supperpowers for project:"
-        echo "cd your-project"
-        echo "comet init"
+        echo "cd project directory and run: comet init"
         ;;
     --graphify )
+        echo "Install graphify..."
         # base Python 3.10+
         pip install graphifyy
         graphify install --platform opencode
         graphify opencode install   #安装常驻助手规则 AGENTS.md 到当前项目
         ;;
     --cua )
+        echo "Install computer use agent..."
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/trycua/cua/main/libs/cua-driver/scripts/install.sh)"
         cua-driver mcp-config --client opencode
         ;;
     --caveman )
+        echo "Install caveman..."
         npx -y github:JuliusBrussee/caveman -- --only opencode
         if ! grep -q '"cavecrew-builder"' "$CONFIG_FILE" 2>/dev/null; then
             if command -v jq &>/dev/null; then
@@ -219,12 +232,14 @@ function main()
         fi
         ;;
     --agentmemory )
+        echo "Install agentmemory..."
         sudo npm install -g @agentmemory/agentmemory
         curl -fsSL https://install.iii.dev/iii/main/install.sh | VERSION=0.11.2 sh
         npx git-ripper https://github.com/rohitg00/agentmemory/tree/main/plugin/opencode -o ./agentmemory
         ./agentmemory/install.sh
         ;;
     --omniroute )
+        echo "Install omniroute..."
         sudo npm install -g omniroute
         #if which omniroute >/dev/null 2>&1; then
         #    omniroute setup opencode
@@ -235,8 +250,9 @@ function main()
         omniroute_provider_config
         ;;
     --open-code-review )
+        echo "Install open-code-review..."
         sudo npm install -g @alibaba-group/open-code-review
-        if which ocr >/dev/null 2>&1; then
+        if command -v ocr >/dev/null 2>&1; then
             npx skills add alibaba/open-code-review -g -y --skill open-code-review --agent opencode
             ocr config provider          # 选择内置供应商或添加自定义供应商
             ocr config model             # 为当前供应商选择模型
