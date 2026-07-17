@@ -226,7 +226,6 @@ function main()
         ;;
     --omniroute )
         sudo npm install -g omniroute
-        sudo npm install -g @ai-sdk/openai-compatible
         #if which omniroute >/dev/null 2>&1; then
         #    omniroute setup opencode
         #    echo "run omniroute, login web create apikey"

@@ -46,7 +46,7 @@
       "type": "remote",
       "url": "https://api.anysearch.com/mcp",
       "headers": {
-        "Authorization": "Bearer ${ANYSEARCH_API_KEY}"
+        "Authorization": "Bearer {env:ANYSEARCH_API_KEY}"
       },
       "enabled": false
     },
