@@ -33,13 +33,13 @@ if ! grep -q '"agentmemory"' <<< "$(jq '.mcp // empty' "$CONFIG_FILE")" 2>/dev/n
 fi
 
 # 2. append plugin entry for agentmemory-capture.ts
-if ! grep -q 'agentmemory-capture' "$CONFIG_FILE" 2>/dev/null; then
-    if command -v jq &>/dev/null; then
-        jq '.plugin += ["./plugins/agentmemory-capture.ts"]' \
-            "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
-        mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
-    fi
-fi
+#if ! grep -q 'agentmemory-capture' "$CONFIG_FILE" 2>/dev/null; then
+#    if command -v jq &>/dev/null; then
+#        jq '.plugin += ["./plugins/agentmemory-capture.ts"]' \
+#            "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
+#        mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
+#    fi
+#fi
 
 # 3. copy files
 mkdir -p "$HOME/.config/opencode/plugins"
