@@ -53,10 +53,10 @@ Comet 技能列表
 
 |你的需求| 推荐 |
 | ------------------ | ------------ |
-|新项目开发 | comet |
-|强制规范流程 + TDD | Superpowers|
-|学习我的代码风格 + 审批 | OAC|
-|快速原型 | AGENTS.md|
-|多 agent 并行 | Oh My OpenCode|
+|新项目开发 | comet (集成 OpenSpec + Superpowers) |
+|强制规范流程 + TDD | Superpowers |
+|学习我的代码风格 + 审批 | OAC |
+|快速原型 | AGENTS.md |
+|多 agent 并行 | oh-my-openagent |
 
 
