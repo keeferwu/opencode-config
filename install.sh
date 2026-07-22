@@ -121,6 +121,8 @@ function default_config_install()
         cp -auv commands "$HOME/.config/opencode"
         cp -auv rules "$HOME/.config/opencode"
         cp -auv skills "$HOME/.config/opencode"
+        cp dcp.jsonc "$HOME/.config/opencode"
+        cp oh-my-openagent.jsonc "$HOME/.config/opencode"
     fi
 
     #npx @colbymchenry/codegraph
@@ -259,10 +261,22 @@ function main()
             ocr llm test                 # 测试连通性
         fi
         ;;
+    --omo )
+        echo "Install oh-my-openagent..."
+        sudo npm install -g oh-my-openagent
+        if ! grep -q 'oh-my-openagent' "$CONFIG_FILE" 2>/dev/null; then
+            if command -v jq &>/dev/null; then
+                jq '.plugin += ["oh-my-openagent@latest"]' \
+                    "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
+                mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
+            fi
+        fi
+        ;;
     --help )
         echo ""
         echo "options:"
         echo "--oac: install OpenAgentsControl for specific project"
+        echo "--omo: install oh-my-openagent, use multi-model agent for coding"
         echo "--markitdown: install markitdown docker, use for translate file to markdown"
         echo "--drawio: install drawio, use for draw diagram"
         echo "--comet: install comet, use for comet openspec and superpowers"

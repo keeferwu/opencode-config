@@ -1,0 +1,52 @@
+// oh-my-openagent 配置
+{
+  "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json",
+  "agents": {
+    // 主调度器：规划并委派给各专业代理，使用激进并行执行把任务推到完成
+    "sisyphus": { "model": "opencode/big-pickle" },
+    // 自主深度工作者：给定目标而非步骤，自行探索代码库、研究模式并端到端执行（“The Legitimate Craftsman”）
+    "hephaestus": { "model": "opencode/big-pickle" },
+    // 只读高 IQ 顾问：架构决策与复杂调试，应对陌生模式、安全问题或跨系统权衡
+    "oracle": { "model": "opencode/big-pickle" },
+    // 文档与开源代码搜索：跟踪各库最新 API 与最佳实践
+    "librarian": { "model": "opencode/big-pickle" },
+    // 代码库快速 grep / 模式发现：使用速度优先模型
+    "explore": { "model": "opencode/big-pickle" },
+    // 多模态查看器：视觉与截图分析（图像/UI 场景）
+    "multimodal-looker": { "model": "opencode/big-pickle" },
+    // 战略规划者：采访模式，先提问、识别范围，再产出一份详细计划
+    "prometheus": { "model": "opencode/big-pickle" },
+    // 计划顾问 / 缺口分析：在计划定稿前找出 Prometheus 漏掉的点
+    "metis": { "model": "opencode/big-pickle" },
+    // 计划评审：按清晰度、可验证性、上下文条件无情审查计划
+    "momus": { "model": "opencode/big-pickle" },
+    // 计划执行调度（Conductor）：分发任务给专门子代理，独立验证完成度，并跨任务累积经验
+    "atlas": { "model": "opencode/big-pickle" },
+    // 被 Atlas 委派的具体子任务执行者（精简版）
+    "sisyphus-junior": { "model": "opencode/big-pickle" }
+  },
+  "categories": {
+    // 前端 UI/UX、样式、动画、可视化设计
+    "visual-engineering": { "model": "opencode/big-pickle" },
+    // 困难逻辑与架构决策：重型推理路由
+    "ultrabrain": { "model": "opencode/big-pickle" },
+    // 自主研究 + 端到端实现，需要长链路探索
+    "deep": { "model": "opencode/big-pickle" },
+    // 创意/设计类、非传统方案
+    "artistry": { "model": "opencode/big-pickle" },
+    // 单文件改动、typo 等轻量修改
+    "quick": { "model": "opencode/big-pickle" },
+    // 未明确类别的低开销回退：优先选用最便宜的可用模型
+    "unspecified-low": { "model": "opencode/big-pickle" },
+    // 未明确类别的高开销回退：尽力调用最强模型
+    "unspecified-high": { "model": "opencode/big-pickle" },
+    // 文档与散文写作：偏好 prose 优化型模型
+    "writing": { "model": "opencode/big-pickle" }
+  },
+  "disabled_mcps":["codegraph"],
+  "disabled_skills":[],
+  "disabled_commands": [],
+  "disabled_tools" :[],
+  "disabled_hooks":[],
+  "disabled_agents" :[]
+}

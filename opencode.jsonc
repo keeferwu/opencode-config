@@ -50,7 +50,7 @@
       },
       "enabled": false
     },
-    "gh_grep": {
+    "grep_app": {
       "type": "remote",
       "url": "https://mcp.grep.app",
       "enabled": false

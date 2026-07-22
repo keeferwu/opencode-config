@@ -57,6 +57,6 @@ Comet 技能列表
 |强制规范流程 + TDD | Superpowers |
 |学习我的代码风格 + 审批 | OAC |
 |快速原型 | AGENTS.md |
-|多 agent 并行 | oh-my-openagent |
+|多 agent 并行 | OMO (oh-my-openagent) |
 
 
