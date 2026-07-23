@@ -68,7 +68,14 @@ function omniroute_provider_config()
                   "auto": {
                     "name": "Auto-Combo",
                     "tool_call": true,
-                    "reasoning": true
+                    "reasoning": true,
+                    "attachment": true,
+                    "temperature": true,
+                    "interleaved": true,
+                    "limit": {
+                      "context": 200000,
+                      "output": 65536
+                    }
                   }
                 }
             }' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
