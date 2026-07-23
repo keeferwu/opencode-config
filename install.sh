@@ -262,7 +262,7 @@ function main()
         echo "Install open-code-review..."
         sudo npm install -g @alibaba-group/open-code-review
         if command -v ocr >/dev/null 2>&1; then
-            npx skills add alibaba/open-code-review -g -y --skill open-code-review --agent opencode
+            #npx skills add alibaba/open-code-review -g -y --skill open-code-review --agent opencode
             ocr config provider          # 选择内置供应商或添加自定义供应商
             ocr config model             # 为当前供应商选择模型
             ocr llm test                 # 测试连通性
@@ -279,6 +279,11 @@ function main()
             fi
         fi
         ;;
+    --officecli )
+        echo "Install officecli..."
+        sudo npm install -g @officecli/officecli
+        officecli install opencode
+        ;;
     --help )
         echo ""
         echo "options:"
@@ -293,6 +298,7 @@ function main()
         echo "--agentmemory: install agentmemory, use for agent memory"
         echo "--omniroute: install omniroute, use for llm proxy"
         echo "--open-code-review: install open-code-review, use for review code"
+        echo "--officecli: instll officecli, use for handle docx, xlsx, pptx document"
         ;;
     * )
         default_config_install
