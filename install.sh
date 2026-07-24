@@ -73,8 +73,8 @@ function omniroute_provider_config()
                     "temperature": true,
                     "interleaved": true,
                     "limit": {
-                      "context": 200000,
-                      "output": 65536
+                      "context": 1000000,
+                      "output": 300000
                     }
                   }
                 }
