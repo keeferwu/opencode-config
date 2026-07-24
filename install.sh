@@ -66,15 +66,18 @@ function omniroute_provider_config()
                 },
                 "models": {
                   "auto": {
-                    "name": "Auto-Combo",
+                    "name": "Auto Combo"
+                  },
+                  "auto/best-coding": {
+                    "name": "Auto Best Coding",
                     "tool_call": true,
                     "reasoning": true,
                     "attachment": true,
                     "temperature": true,
                     "interleaved": true,
                     "limit": {
-                      "context": 1000000,
-                      "output": 300000
+                      "context": 200000,
+                      "output": 60000
                     }
                   }
                 }
