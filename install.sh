@@ -219,13 +219,17 @@ function main()
         echo "Install graphify..."
         # base Python 3.10+
         pip install graphifyy
-        graphify install --platform opencode
-        graphify opencode install   #安装常驻助手规则 AGENTS.md 到当前项目
+        if command -v graphify >/dev/null 2>&1; then
+            graphify install --platform opencode
+            graphify opencode install   #安装常驻助手规则 AGENTS.md 到当前项目
+        fi
         ;;
     --cua )
         echo "Install computer use agent..."
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/trycua/cua/main/libs/cua-driver/scripts/install.sh)"
-        cua-driver mcp-config --client opencode
+        if command -v cua-driver >/dev/null 2>&1; then
+            cua-driver mcp-config --client opencode
+        fi
         ;;
     --caveman )
         echo "Install caveman..."
@@ -250,13 +254,11 @@ function main()
     --omniroute )
         echo "Install omniroute..."
         sudo npm install -g omniroute
-        #if which omniroute >/dev/null 2>&1; then
-        #    omniroute setup opencode
-        #    echo "run omniroute, login web create apikey"
-        #    echo "run opencode auth login --provider omniroute"
-        #fi
-        # use config provider instead of plugin
-        omniroute_provider_config
+        if command -v omniroute >/dev/null 2>&1; then
+            #omniroute setup opencode
+            # use config provider instead of plugin
+            omniroute_provider_config
+        fi
         ;;
     --open-code-review )
         echo "Install open-code-review..."
@@ -282,7 +284,9 @@ function main()
     --officecli )
         echo "Install officecli..."
         sudo npm install -g @officecli/officecli
-        officecli install opencode
+        if command -v officecli >/dev/null 2>&1; then
+            officecli install opencode
+        fi
         ;;
     --help )
         echo ""
@@ -293,7 +297,7 @@ function main()
         echo "--drawio: install drawio, use for draw diagram"
         echo "--comet: install comet, use for comet openspec and superpowers"
         echo "--graphify: install graphify, use for drawing code knowledge maps"
-        echo "--cua: install cua, use for drive native desktop apps in the background"
+        echo "--cua: install cua-driver, use for drive native desktop apps in the background"
         echo "--caveman: install caveman, use for save token, similar tool ponytail"
         echo "--agentmemory: install agentmemory, use for agent memory"
         echo "--omniroute: install omniroute, use for llm proxy"
