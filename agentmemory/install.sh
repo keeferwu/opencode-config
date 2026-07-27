@@ -25,7 +25,7 @@ if ! grep -q '"agentmemory"' <<< "$(jq '.mcp // empty' "$CONFIG_FILE")" 2>/dev/n
         else
             #use global standalone.mjs instead of npx, because npx cache slowly
             jq --arg mjs "$STANDALONE_MJS" \
-            '.mcp.agentmemory = {"type": "local", "command": ["node", $mjs], "env": {"AGENTMEMORY_URL": "http://localhost:3111"}, "enabled": true}' \
+            '.mcp.agentmemory = {"type": "local", "command": ["node", $mjs], "env": {"AGENTMEMORY_URL": "http://localhost:3111", "AGENTMEMORY_TOOLS": "core"}, "enabled": true}' \
                 "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
         fi
         mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
