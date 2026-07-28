@@ -133,6 +133,9 @@ function default_config_install()
         cp -auv skills "$HOME/.config/opencode"
         cp dcp.jsonc "$HOME/.config/opencode"
         cp oh-my-openagent.jsonc "$HOME/.config/opencode"
+    else
+        ln -s "$PWD/dcp.jsonc" "$HOME/.config/opencode/dcp.jsonc"
+        ln -s "$PWD/oh-my-openagent.jsonc" "$HOME/.config/opencode/oh-my-openagent.jsonc"
     fi
 
     #npx @colbymchenry/codegraph
