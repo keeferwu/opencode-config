@@ -1,18 +1,18 @@
 ---
-name: session-clean
+name: session-manager
 description: Browsing, exporting, and cleaning OpenCode sessions. Includes paginated listing, export-to-markdown, preview-before-delete, automated cleanup of DB + storage artifacts. Use when user wants to export, delete, clean, or manage opencode sessions or reduce space.
 ---
 
-# session-clean
+# session-manager
 
-Browse and clean OpenCode session data interactively.
+Browse, export, and manage OpenCode sessions interactively.
 
 ## Direct Action Shortcut
 
 **"export current session"** or similar intent (e.g., "export this session", "export current"):
 
-1. Call `./clean_sessions.py current_session` to get current session ID
-2. Call `./clean_sessions.py export_sessions <id>`
+1. Call `./session_manager.py current_session` to get current session ID
+2. Call `./session_manager.py export_sessions <id>`
 3. Report result per section 5, then exit
 
 ## Autonomy Rules
@@ -24,15 +24,15 @@ Browse and clean OpenCode session data interactively.
 
 ### 1. Entry
 
-Call `./clean_sessions.py stats` to get total counts:
+Call `./session_manager.py stats` to get total counts:
 ```
-./clean_sessions.py stats
+./session_manager.py stats
 ```
 Display: "OpenCode has {total_sessions} sessions, {total_projects} projects"
 
 ### 2. Project Page
 
-Call `./clean_sessions.py list_projects` to get all projects.
+Call `./session_manager.py list_projects` to get all projects.
 
 **If empty:** message "No projects found" and exit.
 
@@ -47,8 +47,8 @@ After the paginated list, add action options:
 
 ### 3. Session Page
 
-Call `./clean_sessions.py list_sessions <project_id>` to get sessions.
-Call `./clean_sessions.py current_session` to get current session ID.
+Call `./session_manager.py list_sessions <project_id>` to get sessions.
+Call `./session_manager.py current_session` to get current session ID.
 
 Display project info + paginated session list (10 per page). Two-step interaction:
 
@@ -94,7 +94,7 @@ Will delete:
 - Session diff files: <count>
 ```
 
-Then delete: `./clean_sessions.py delete_sessions <id1,id2,...>`
+Then delete: `./session_manager.py delete_sessions <id1,id2,...>`
 
 **Project deletion** — call `preview_delete_project <project_id>`:
 ```
@@ -106,7 +106,7 @@ Will delete:
 - Snapshot directory: <path>
 ```
 
-Then delete: `./clean_sessions.py delete_project <project_id>`
+Then delete: `./session_manager.py delete_project <project_id>`
 
 Report result: "Deleted N sessions" / "Deleted project and N sessions"
 
@@ -114,7 +114,7 @@ Report result: "Deleted N sessions" / "Deleted project and N sessions"
 
 When user picks "export selected", pass `selected_ids` as-is (current session included if selected):
 ```
-./clean_sessions.py export_sessions <id1,id2,...>
+./session_manager.py export_sessions <id1,id2,...>
 ```
 
 Report per session:
