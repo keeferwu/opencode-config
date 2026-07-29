@@ -5,6 +5,8 @@ Commands:
   stats                          Show total sessions/projects
   list_projects                  List all projects with session counts
   list_sessions <project_id>     List sessions for a project
+  export_sessions <ids>          Export comma-separated session IDs to markdown
+  current_session                Show current session ID
   preview_delete_sessions <ids>  Preview deleting comma-separated session IDs
   preview_delete_project <id>    Preview deleting a project
   delete_sessions <ids>          Delete comma-separated session IDs
@@ -12,16 +14,23 @@ Commands:
 """
 import json
 import os
+import re
 import sqlite3
 import shutil
+import subprocess
 import sys
+import tempfile
 from datetime import datetime, timezone
 
-OPCODE_DIR = os.path.expanduser("~/.local/share/opencode")
-DB_PATH = os.path.join(OPCODE_DIR, "opencode.db")
-DCP_DIR = os.path.join(OPCODE_DIR, "storage", "plugin", "dcp")
-DIFF_DIR = os.path.join(OPCODE_DIR, "storage", "session_diff")
-SNAPSHOT_DIR = os.path.join(OPCODE_DIR, "snapshot")
+OPCODE_DATA_DIR = os.path.join(
+    os.environ.get("XDG_DATA_HOME") or os.path.expanduser("~/.local/share"),
+    "opencode"
+)
+DB_PATH = os.path.join(OPCODE_DATA_DIR, "opencode.db")
+DCP_DIR = os.path.join(OPCODE_DATA_DIR, "storage", "plugin", "dcp")
+DIFF_DIR = os.path.join(OPCODE_DATA_DIR, "storage", "session_diff")
+SNAPSHOT_DIR = os.path.join(OPCODE_DATA_DIR, "snapshot")
+EXPORT_DIR = os.path.join(OPCODE_DATA_DIR, "export")
 
 
 def _epoch_to_str(ms):
@@ -101,11 +110,12 @@ def cmd_list_projects():
     print(json.dumps(out))
 
 
-def cmd_list_sessions():
-    if len(sys.argv) < 3:
-        print(json.dumps({"error": "Missing project_id"}))
-        sys.exit(1)
-    pid = sys.argv[2]
+def cmd_list_sessions(pid=None):
+    if pid is None:
+        if len(sys.argv) < 3:
+            print(json.dumps({"error": "Missing project_id"}))
+            sys.exit(1)
+        pid = sys.argv[2]
     _validate_id(pid, "project_id")
     conn = _get_db()
     rows = conn.execute("""
@@ -131,7 +141,7 @@ def cmd_list_sessions():
 
 
 def cmd_current_session():
-    pid_file = os.path.join(OPCODE_DIR, "current_session.pid")
+    pid_file = os.path.join(OPCODE_DATA_DIR, "current_session.pid")
     if os.path.isfile(pid_file):
         with open(pid_file) as f:
             sid = f.read().strip()
@@ -148,6 +158,80 @@ def cmd_current_session():
         print(json.dumps({"id": row["id"]}))
     else:
         print(json.dumps({"id": None}))
+
+
+def cmd_export_sessions():
+    if len(sys.argv) < 3:
+        print(json.dumps({"error": "Missing session_ids"}))
+        sys.exit(1)
+    ids = sys.argv[2].split(",")
+    for sid in ids:
+        _validate_id(sid, "session_id")
+
+    conn = _get_db()
+    results = []
+
+    for sid in ids:
+        row = conn.execute(
+            """SELECT s.id, s.slug, s.title, p.worktree
+               FROM session s JOIN project p ON s.project_id = p.id
+               WHERE s.id = ?""", (sid,)
+        ).fetchone()
+
+        if not row:
+            results.append({"id": sid, "error": "Session not found"})
+            continue
+
+        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".json")
+        try:
+            proc = subprocess.run(["opencode", "export", sid],
+                                  stdout=tmp, stderr=subprocess.PIPE, timeout=300)
+            tmp.close()
+            if proc.returncode != 0:
+                err_msg = proc.stderr.decode().strip() if proc.stderr else "Export command failed"
+                raise RuntimeError(err_msg)
+            with open(tmp.name) as f:
+                data = json.load(f)
+        except Exception as e:
+            results.append({"id": sid, "error": str(e)})
+            continue
+        finally:
+            try:
+                os.unlink(tmp.name)
+            except OSError:
+                pass
+
+        md = [
+            f"# {row['title'] or row['slug']}\n",
+            f"> Exported from OpenCode session `{row['slug']}`\n\n",
+        ]
+        for msg in data.get("messages", []):
+            role = msg.get("info", {}).get("role", "unknown")
+            prefix = "##" if role == "user" else "###"
+            md.append(f"{prefix} {role.capitalize()}\n")
+            for part in msg.get("parts", []):
+                if part.get("type") == "text":
+                    text = re.sub(r"^#", r"\#", part.get("text", ""), flags=re.MULTILINE)
+                    md.append(text + "\n")
+            md.append("---\n")
+
+        md_content = "".join(md)
+        title = (row["title"] or row["slug"]).replace("/", "-").strip() or row["slug"]
+        os.makedirs(EXPORT_DIR, exist_ok=True)
+        filepath = os.path.join(EXPORT_DIR, f"{title}.md")
+        counter = 1
+        while os.path.exists(filepath):
+            filepath = os.path.join(EXPORT_DIR, f"{title}_{counter}.md")
+            counter += 1
+        try:
+            with open(filepath, "w", encoding="utf-8") as f:
+                f.write(md_content)
+            results.append({"id": sid, "slug": row["slug"], "file": filepath, "text_chars": len(md_content)})
+        except Exception as e:
+            results.append({"id": sid, "error": f"Write failed: {e}"})
+
+    conn.close()
+    print(json.dumps(results))
 
 
 def cmd_preview_delete_sessions():
@@ -258,6 +342,7 @@ def main():
         "list_projects": cmd_list_projects,
         "list_sessions": cmd_list_sessions,
         "current_session": cmd_current_session,
+        "export_sessions": cmd_export_sessions,
         "preview_delete_sessions": cmd_preview_delete_sessions,
         "preview_delete_project": cmd_preview_delete_project,
         "delete_sessions": cmd_delete_sessions,
@@ -268,7 +353,10 @@ def main():
         print(json.dumps({"error": f"Unknown command: {command}"}))
         sys.exit(1)
     try:
-        fn()
+        if command == "list_sessions":
+            fn(sys.argv[2] if len(sys.argv) > 2 else None)
+        else:
+            fn()
     except Exception as e:
         print(json.dumps({"error": str(e)}))
         sys.exit(1)

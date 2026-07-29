@@ -1,11 +1,19 @@
 ---
 name: session-clean
-description: Browsing and cleaning OpenCode sessions. Includes paginated listing, preview-before-delete, automated cleanup of DB + storage artifacts. Use when user wants to delete/clean/manage opencode sessions or reduce space.
+description: Browsing, exporting, and cleaning OpenCode sessions. Includes paginated listing, export-to-markdown, preview-before-delete, automated cleanup of DB + storage artifacts. Use when user wants to export, delete, clean, or manage opencode sessions or reduce space.
 ---
 
 # session-clean
 
 Browse and clean OpenCode session data interactively.
+
+## Direct Action Shortcut
+
+**"export current session"** or similar intent (e.g., "export this session", "export current"):
+
+1. Call `./clean_sessions.py current_session` to get current session ID
+2. Call `./clean_sessions.py export_sessions <id>`
+3. Report result per section 5, then exit
 
 ## Autonomy Rules
 
@@ -18,7 +26,7 @@ Browse and clean OpenCode session data interactively.
 
 Call `./clean_sessions.py stats` to get total counts:
 ```
-python3 <skill_dir>/clean_sessions.py stats
+./clean_sessions.py stats
 ```
 Display: "OpenCode has {total_sessions} sessions, {total_projects} projects"
 
@@ -50,15 +58,18 @@ Session options on this page:
 - `{label: "<slug>: <title>", description: "<preview> — <time_created>"}`
 - `{label: "select all", description: "select all sessions on current page and proceed"}`
 
-User may pick zero, one, or many sessions. If "select all on this page" is in selection, treat as selecting all sessions on current page, then apply current session protection (below), then skip to step 3b. Otherwise, selection stored for step 3b.
+User may pick zero, one, or many sessions. Store selection as `selected_ids`. Track `current_session_id` for action-time filtering.
 
-**Current session protection:** After user selects (including "select all"), filter out any session matching the current session ID from the selection. If current session was in selection, report: "Current session (<slug>) excluded — cannot delete active session". Proceed with remaining selected sessions. If no sessions remain after filtering, skip to step 3b with 0 selected.
+If "select all on this page" is in selection, treat as selecting all sessions on current page and proceed to step 3b.
+
+**Current session advisory:** After user selects, check if current session is in `selected_ids`. If so, report: "Current session (<slug>) — will be skipped on delete, but can be exported". Do NOT remove it from `selected_ids` — filtering happens per-action below.
 
 **Step 3b — choose action** (`question`, single-select):
 
 **MANDATORY** — Include page info in `question` text: `"Page {current_page}/{total_pages}"`
 
-- `{label: "delete selected (<N>)", description: "preview then delete"}` — N is count after current session filtering; hidden when 0
+- `{label: "delete selected (<N>)", description: "preview then delete"}` — N = `selected_ids` count after excluding current session
+- `{label: "export selected (<N>)", description: "export to markdown"}` — N = `selected_ids` count (may include current session)
 - `{label: "change selection", description: "back to step 3a"}`
 - `{label: "next", description: "next page"}` — show only when `current_page < total_pages`
 - `{label: "prev", description: "prev page"}` — show only when `current_page > 1`
@@ -71,9 +82,11 @@ Pagination resets selection (new page starts at 3a with no carry-over).
 
 ### 4. Preview & Execute Deletion
 
+When user picks "delete selected", filter out current session from `selected_ids` before proceeding.
+
 Show preview before deletion, then auto-delete:
 
-**Session preview** — call `preview_delete_sessions <id1,id2,...>`:
+**Session preview** — call `preview_delete_sessions <id1,id2,...>` (current session already excluded):
 ```
 Will delete:
 - Database session records: <count>
@@ -81,7 +94,7 @@ Will delete:
 - Session diff files: <count>
 ```
 
-Then delete: `python3 <skill_dir>/clean_sessions.py delete_sessions <id1,id2,...>`
+Then delete: `./clean_sessions.py delete_sessions <id1,id2,...>`
 
 **Project deletion** — call `preview_delete_project <project_id>`:
 ```
@@ -93,19 +106,31 @@ Will delete:
 - Snapshot directory: <path>
 ```
 
-Then delete: `python3 <skill_dir>/clean_sessions.py delete_project <project_id>`
+Then delete: `./clean_sessions.py delete_project <project_id>`
 
 Report result: "Deleted N sessions" / "Deleted project and N sessions"
 
-### 5. Post-deletion
+### 5. Export Sessions
 
-After any deletion, return to **project list page** (step 2). Do NOT exit to shell.
+When user picks "export selected", pass `selected_ids` as-is (current session included if selected):
+```
+./clean_sessions.py export_sessions <id1,id2,...>
+```
+
+Report per session:
+- On success: "Exported <slug> → <filepath> (<text_chars> chars)"
+- On error: "Failed <slug>: <error>"
+
+### 6. Post-action
+
+After any deletion or export, return to **project list page** (step 2). Do NOT exit to shell.
 
 ## Notes
 
 - All `question` tool selections accept number input (not raw IDs)
-- Step 3a returns an array of selected labels; map each label back to its session id by page position, then pass `id1,id2,...` to preview/delete commands
+- Step 3a returns an array of selected labels; map each label back to its session id by page position, then pass `id1,id2,...` to preview/delete/export commands
 - When mapping labels to ids, the list_sessions output order (DESC time_updated) matches the displayed page order so index aligns
+- `selected_ids` keeps all user picks; delete filters out current session at execution time, export does not
 - Always show project worktree path for identification (not just internal ID)
 - Convert epoch ms timestamps to readable date in display
 - The Python script handles DB operations + file cleanup atomically
