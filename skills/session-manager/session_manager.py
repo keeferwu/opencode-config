@@ -207,12 +207,16 @@ def cmd_export_sessions():
         ]
         for msg in data.get("messages", []):
             role = msg.get("info", {}).get("role", "unknown")
-            prefix = "##" if role == "user" else "###"
-            md.append(f"{prefix} {role.capitalize()}\n")
+            text_parts = []
             for part in msg.get("parts", []):
                 if part.get("type") == "text":
                     text = re.sub(r"^#", r"\#", part.get("text", ""), flags=re.MULTILINE)
-                    md.append(text + "\n")
+                    text_parts.append(text + "\n")
+            if role == "assistant" and not text_parts:
+                continue
+            prefix = "##" if role == "user" else "###"
+            md.append(f"{prefix} {role.capitalize()}\n")
+            md.extend(text_parts)
             md.append("---\n")
 
         md_content = "".join(md)
