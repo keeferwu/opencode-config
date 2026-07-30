@@ -38,11 +38,11 @@
   "compress": {
     "mode": "range",                  // 压缩模式: "range" | "message"（实验性）
     "permission": "allow",            // 权限: "allow" | "ask" | "deny"
-    "showCompression": false,         // 在通知中显示压缩内容
+    "showCompression": true,         // 在通知中显示压缩内容
     "summaryBuffer": true,            // 摘要 token 扩展有效上限
 
     // 上下文限制
-    "maxContextLimit": "90%",           // 软上限（数字或 "X%"）
+    "maxContextLimit": "80%",           // 软上限（数字或 "X%"）
     "minContextLimit": "50%",           // 软下限（数字或 "X%"）
     "modelMaxLimits": {},             // 按模型覆盖上限 {"provider/model": 120000}
     "modelMinLimits": {},             // 按模型覆盖下限
