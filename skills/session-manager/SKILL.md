@@ -36,14 +36,11 @@ Call `./session_manager.py list_projects` to get all projects.
 
 **If empty:** message "No projects found" and exit.
 
-Otherwise paginate with `question` tool (10 per page). Put all display info in `label`, leave `description` empty:
+Otherwise paginate with `question` tool (10 per page) and specify page item:
 
-Format per option: `{label: "<name_or_worktree> — <session_count> sessions", description: ""}`
-
-After the paginated list, add action options:
+- `{label: "<name_or_worktree> — <session_count> sessions", description: ""}`
 - `{label: "next", description: "next page"}` — show only when `current_page < total_pages`
 - `{label: "prev", description: "prev page"}` — show only when `current_page > 1`
-- `{label: "cancel", description: "cancel & exit"}`
 
 ### 3. Session Page
 
@@ -52,9 +49,8 @@ Call `./session_manager.py current_session` to get current session ID.
 
 Display project info + paginated session list (10 per page). Two-step interaction:
 
-**Step 3a — select sessions** (`question` with `multiple: true`):
+**Step 3a — select sessions** (`question` with `multiple: true`) with specified page item:
 
-Session options on this page:
 - `{label: "<slug>: <title>", description: "<preview> — <time_created>"}`
 - `{label: "select all", description: "select all sessions on current page and proceed"}`
 
@@ -64,7 +60,7 @@ If "select all on this page" is in selection, treat as selecting all sessions on
 
 **Current session advisory:** After user selects, check if current session is in `selected_ids`. If so, report: "Current session (<slug>) — will be skipped on delete, but can be exported". Do NOT remove it from `selected_ids` — filtering happens per-action below.
 
-**Step 3b — choose action** (`question`, single-select):
+**Step 3b — choose action** (`question`, single-select) with specified page item:
 
 **MANDATORY** — Include page info in `question` text: `"Page {current_page}/{total_pages}"`
 
@@ -73,8 +69,7 @@ If "select all on this page" is in selection, treat as selecting all sessions on
 - `{label: "change selection", description: "back to step 3a"}`
 - `{label: "next", description: "next page"}` — show only when `current_page < total_pages`
 - `{label: "prev", description: "prev page"}` — show only when `current_page > 1`
-- `{label: "cancel", description: "cancel & exit"}`
-- `{label: "back project ", description: "back to project list"}`
+- `{label: "cancel", description: "back to project list"}`
 
 Pagination resets selection (new page starts at 3a with no carry-over).
 
@@ -128,7 +123,7 @@ After any deletion or export, return to **project list page** (step 2). Do NOT e
 ## Notes
 
 - All `question` tool selections accept number input (not raw IDs)
-- Step 3a returns an array of selected labels; map each label back to its session id by page position, then pass `id1,id2,...` to preview/delete/export commands
+- Session Page's tep 3a returns an array of selected labels; map each label back to its session id by page position, then pass `id1,id2,...` to preview/delete/export commands
 - When mapping labels to ids, the list_sessions output order (DESC time_updated) matches the displayed page order so index aligns
 - `selected_ids` keeps all user picks; delete filters out current session at execution time, export does not
 - Always show project worktree path for identification (not just internal ID)
