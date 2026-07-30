@@ -36,11 +36,13 @@ Call `./session_manager.py list_projects` to get all projects.
 
 **If empty:** message "No projects found" and exit.
 
-Otherwise paginate with `question` tool (10 per page) and specify page item:
+Otherwise paginate with `question` tool (10 per page).
 
-- `{label: "<name_or_worktree> — <session_count> sessions", description: ""}`
+Item **MUST and ONLY** show:
+- `{label: "<name_or_worktree>", description: "<id> — <session_count> sessions"}`
 - `{label: "next", description: "next page"}` — show only when `current_page < total_pages`
 - `{label: "prev", description: "prev page"}` — show only when `current_page > 1`
+- `{label: "cancel", description: "stop and exit"}`
 
 ### 3. Session Page
 
@@ -49,8 +51,9 @@ Call `./session_manager.py current_session` to get current session ID.
 
 Display project info + paginated session list (10 per page). Two-step interaction:
 
-**Step 3a — select sessions** (`question` with `multiple: true`) with specified page item:
+**Step 3a — select sessions** (`question` with `multiple: true`).
 
+Item **MUST and ONLY** show:
 - `{label: "<slug>: <title>", description: "<preview> — <time_created>"}`
 - `{label: "select all", description: "select all sessions on current page and proceed"}`
 
@@ -60,13 +63,13 @@ If "select all on this page" is in selection, treat as selecting all sessions on
 
 **Current session advisory:** After user selects, check if current session is in `selected_ids`. If so, report: "Current session (<slug>) — will be skipped on delete, but can be exported". Do NOT remove it from `selected_ids` — filtering happens per-action below.
 
-**Step 3b — choose action** (`question`, single-select) with specified page item:
+**Step 3b — choose action** (`question`, single-select).
 
+Item **MUST and ONLY** show:
 **MANDATORY** — Include page info in `question` text: `"Page {current_page}/{total_pages}"`
-
 - `{label: "delete selected (<N>)", description: "preview then delete"}` — N = `selected_ids` count after excluding current session
 - `{label: "export selected (<N>)", description: "export to markdown"}` — N = `selected_ids` count (may include current session)
-- `{label: "change selection", description: "back to step 3a"}`
+- `{label: "change selection", description: "back to select sessons"}`
 - `{label: "next", description: "next page"}` — show only when `current_page < total_pages`
 - `{label: "prev", description: "prev page"}` — show only when `current_page > 1`
 - `{label: "cancel", description: "back to project list"}`
