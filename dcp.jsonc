@@ -42,8 +42,8 @@
     "summaryBuffer": true,            // 摘要 token 扩展有效上限
 
     // 上下文限制
-    "maxContextLimit": "80%",           // 软上限（数字或 "X%"）
-    "minContextLimit": "50%",           // 软下限（数字或 "X%"）
+    "maxContextLimit": 100000,           // 软上限（数字或 "X%"）
+    "minContextLimit": 50000,           // 软下限（数字或 "X%"）
     "modelMaxLimits": {},             // 按模型覆盖上限 {"provider/model": 120000}
     "modelMinLimits": {},             // 按模型覆盖下限
 
