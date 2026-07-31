@@ -79,7 +79,7 @@ function omniroute_provider_config()
                 "name": "OmniRoute",
                 "options": {
                   "baseURL": "http://localhost:20128/v1",
-                  "apiKey": "omniroute_key",
+                  "apiKey": "{env:OMNIROUTE_API_KEY}",
                   "timeout": 120000,
                   "headerTimeout": 30000,
                   "chunkTimeout": 60000
