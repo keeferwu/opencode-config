@@ -193,13 +193,14 @@ function default_config_install()
         sudo codebase-memory-mcp --help
     fi
 
-    if command -v rtk >/dev/null 2>&1; then
-        rtk init -g --opencode
-        sudo cp $HOME/.local/bin/rtk /usr/local/bin/
-    else
+    if ! command -v rtk >/dev/null 2>&1; then
         echo "Install rtk"
         curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
+        sudo mv $HOME/.local/bin/rtk /usr/local/bin/
+        sudo chown root:root /usr/local/bin/rtk
+        sudo chmod 777 /usr/local/bin/rtk
     fi
+    rtk init -g --opencode
 
     echo "Install skills to $HOME/.agents/skills"
     # npx skills add Option         Description
@@ -266,8 +267,10 @@ function update_tools()
     if command -v rtk >/dev/null 2>&1; then
         echo "Update rtk..."
         curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
+        sudo mv $HOME/.local/bin/rtk /usr/local/bin/
+        sudo chown root:root /usr/local/bin/rtk
+        sudo chmod 777 /usr/local/bin/rtk
         rtk init -g --opencode
-        sudo cp $HOME/.local/bin/rtk /usr/local/bin/
     fi
 }
 
