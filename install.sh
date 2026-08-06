@@ -139,6 +139,26 @@ function omniroute_provider_config()
     echo ""
 }
 
+function export_env()
+{
+    local var_name=$1
+    local var_value=$2
+    local env_file=$HOME/.profile
+
+    # skip if the variable is already set in the current environment
+    if [ -n "${!var_name}" ]; then
+        return 0
+    fi
+
+    # skip if the variable already exists in $HOME/.profile
+    if [ -f "$env_file" ] && grep -q "^export $var_name=" "$env_file"; then
+        return 0
+    fi
+
+    echo "export $var_name=$var_value" >> "$env_file"
+    echo "Added export $var_name=$var_value to $env_file"
+}
+
 function default_config_install()
 {
     # remove plugin cache
@@ -157,6 +177,10 @@ function default_config_install()
         ln -sf "$PWD/dcp.jsonc" "$HOME/.config/opencode/dcp.jsonc"
         ln -sf "$PWD/oh-my-openagent.jsonc" "$HOME/.config/opencode/oh-my-openagent.jsonc"
     fi
+
+    export_env EDITOR vim
+    export_env OPENCODE_DISABLE_CLAUDE_CODE true
+    export_env OPENCODE_DISABLE_EXTERNAL_SKILLS true
 
     #npx @colbymchenry/codegraph
     #echo "Install codegraph"
