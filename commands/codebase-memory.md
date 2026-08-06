@@ -66,7 +66,6 @@ Only run if the project root contains `AGENTS.md` or `.opencode/AGENTS.md`. Skip
      - Read source: `get_code_snippet(qualified_name="pkg/orders.OrderHandler")`
      <!-- codebase-memory-mcp:end -->
      ```
-   - If neither `AGENTS.md` nor `.opencode/AGENTS.md` exists, skip this step
 
 4. **Index codebase**:
    - After configuration is verified (steps 1-3 done), dispatch a subagent to index the codebase
