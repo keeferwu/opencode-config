@@ -227,12 +227,6 @@ function update_tools()
         sudo opencode upgrade
     fi
 
-    if command -v agentmemory >/dev/null 2>&1; then
-        echo "Update agentmemory..."
-        sudo agentmemory upgrade
-        npx git-ripper https://github.com/rohitg00/agentmemory/tree/main/plugin/opencode -o ./agentmemory
-    fi
-
     if command -v codebase-memory-mcp >/dev/null 2>&1; then
         echo "Update codebase-memory-mcp..."
         sudo codebase-memory-mcp update
@@ -271,6 +265,13 @@ function update_tools()
         sudo chown root:root /usr/local/bin/rtk
         sudo chmod 777 /usr/local/bin/rtk
         rtk init -g --opencode
+    fi
+
+    if command -v agentmemory >/dev/null 2>&1; then
+        echo "Update agentmemory..."
+        sudo agentmemory upgrade
+        npx git-ripper https://github.com/rohitg00/agentmemory/tree/main/plugin/opencode -o ./agentmemory
+        ./agentmemory/install.sh
     fi
 }
 
