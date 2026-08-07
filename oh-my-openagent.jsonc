@@ -47,6 +47,17 @@
   "disabled_skills":[],
   "disabled_commands": [],
   "disabled_tools" :[],
-  "disabled_hooks":[],
-  "disabled_agents" :[]
+  "disabled_hooks":["startup-toast","auto-update-checker","session-notification","keyword-detector","category-skill-reminder","agent-usage-reminder"],
+  "disabled_agents" :[],
+  "experimental": {
+    // Disable the auto-injected omo-env block (date/time/timezone).
+    // Improves cache hit rate since the date no longer invalidates cache daily.
+    "disable_omo_env": true,
+    // Auto-prune old tool outputs to manage the context window.
+    "dynamic_context_pruning": {
+      "enabled": true,
+      "notification": "detailed",
+      "turn_protection": { "enabled": true, "turns": 5 }
+    }
+  }
 }
