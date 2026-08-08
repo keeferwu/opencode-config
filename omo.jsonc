@@ -85,19 +85,26 @@
       }
     },
     // Disabled lists (7 arrays)
-    "disabled_mcps": [
-      "codegraph"
-    ],
-    "disabled_skills": [],
-    "disabled_commands": [],
-    "disabled_tools": [],
-    "disabled_hooks": [
-      "startup-toast",
-      "auto-update-checker",
-      "session-notification"
-    ],
-    "disabled_agents": [],
     "disabled_providers": [],
+    // Planning flow goes to Superpowers (brainstorming -> writing-plans -> executing-plans)
+    // Disable the OmO planner (Prometheus) and restore the native opencode `plan` agent
+    "sisyphus_agent": {
+      "planner_enabled": false,
+      "replace_plan": false
+    },
+    // Disable the OmO planning chain (Prometheus -> Metis -> Momus -> Atlas)
+    "disabled_agents": ["prometheus", "metis", "momus", "atlas"],
+    "disabled_commands": ["start-work", "hyperplan"],
+    "disabled_tools": [],
+    "disabled_mcps": ["codegraph"],
+    "disabled_skills": [
+        "codex-qa", "get-unpublished-changes", "publish", "omomomo",
+        "start-work", "hyperplan", "ulw-research", "ulw-plan"
+    ],
+    "disabled_hooks": [
+        "startup-toast", "auto-update-checker", "session-notification",
+        "keyword-detector", "atlas", "start-work", "prometheus-md-only", "plan-format-validator"
+    ],
     // Experimental features
     "experimental": {
       // Disable the auto-injected omo-env block (date/time/timezone).
