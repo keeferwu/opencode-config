@@ -388,6 +388,8 @@ function main()
                 mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
             fi
         fi
+        mkdir -p "$HOME/.omo"
+        cp omo.jsonc "$HOME/.omo"
         ;;
     --officecli )
         echo "Install officecli..."

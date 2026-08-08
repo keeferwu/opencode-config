@@ -1,0 +1,118 @@
+// OMO configuration
+{
+  "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/omo.schema.json",
+  "[opencode]": {
+    // Agent system configuration
+    "agents": {
+      // Main orchestrator: plans and delegates to specialized agents, pushes tasks to completion with aggressive parallel execution
+      "sisyphus": {
+        "model": "opencode/big-pickle"
+      },
+      // Autonomous deep worker: given goals rather than steps, explores the codebase, researches patterns, and executes end-to-end ("The Legitimate Craftsman")
+      "hephaestus": {
+        "model": "opencode/big-pickle"
+      },
+      // Read-only high-IQ consultant: architecture decisions and complex debugging, handles unfamiliar patterns, security concerns, or cross-system tradeoffs
+      "oracle": {
+        "model": "opencode/big-pickle"
+      },
+      // Documentation and open-source code search: tracks latest APIs and best practices across libraries
+      "librarian": {
+        "model": "opencode/big-pickle"
+      },
+      // Fast codebase grep / pattern discovery: uses speed-first model
+      "explore": {
+        "model": "opencode/big-pickle"
+      },
+      // Multimodal viewer: visual and screenshot analysis (image/UI scenarios)
+      "multimodal-looker": {
+        "model": "opencode/big-pickle"
+      },
+      // Strategic planner: interview mode, asks questions first, identifies scope, then produces a detailed plan
+      "prometheus": {
+        "model": "opencode/big-pickle"
+      },
+      // Plan consultant / gap analysis: finds what Prometheus missed before the plan is finalized
+      "metis": {
+        "model": "opencode/big-pickle"
+      },
+      // Plan reviewer: ruthlessly reviews plans for clarity, verifiability, and context sufficiency
+      "momus": {
+        "model": "opencode/big-pickle"
+      },
+      // Plan execution conductor: dispatches tasks to specialized subagents, independently verifies completion, accumulates learnings across tasks
+      "atlas": {
+        "model": "opencode/big-pickle"
+      },
+      // Concrete subtask executor delegated by Atlas (lean version)
+      "sisyphus-junior": {
+        "model": "opencode/big-pickle"
+      }
+    },
+    // Category classification system
+    "categories": {
+      // Frontend UI/UX, styling, animation, visual design
+      "visual-engineering": {
+        "model": "opencode/big-pickle"
+      },
+      // Hard logic and architecture decisions: heavy-reasoning routing
+      "ultrabrain": {
+        "model": "opencode/big-pickle"
+      },
+      // Autonomous research + end-to-end implementation, needs long-chain exploration
+      "deep": {
+        "model": "opencode/big-pickle"
+      },
+      // Creative/design tasks, unconventional approaches
+      "artistry": {
+        "model": "opencode/big-pickle"
+      },
+      // Single-file changes, typo fixes, lightweight modifications
+      "quick": {
+        "model": "opencode/big-pickle"
+      },
+      // Unspecified low-effort fallback: prefers the cheapest available model
+      "unspecified-low": {
+        "model": "opencode/big-pickle"
+      },
+      // Unspecified high-effort fallback: calls the strongest model available
+      "unspecified-high": {
+        "model": "opencode/big-pickle"
+      },
+      // Documentation and prose writing: prefers prose-optimized models
+      "writing": {
+        "model": "opencode/big-pickle"
+      }
+    },
+    // Disabled lists (7 arrays)
+    "disabled_mcps": [
+      "codegraph"
+    ],
+    "disabled_skills": [],
+    "disabled_commands": [],
+    "disabled_tools": [],
+    "disabled_hooks": [
+      "startup-toast",
+      "auto-update-checker",
+      "session-notification"
+    ],
+    "disabled_agents": [],
+    "disabled_providers": [],
+    // Experimental features
+    "experimental": {
+      // Disable the auto-injected omo-env block (date/time/timezone).
+      // Improves cache hit rate since the date no longer invalidates cache daily.
+      "disable_omo_env": true,
+      "preemptive_compaction": true,
+      // Auto-prune old tool outputs to manage the context window.
+      "dynamic_context_pruning": {
+        "enabled": true,
+        "notification": "detailed",
+        "turn_protection": {
+          "enabled": true,
+          "turns": 5
+        }
+      }
+    }
+  }
+}
