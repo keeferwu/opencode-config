@@ -179,7 +179,7 @@ function default_config_install()
 
     export_env EDITOR vim
     export_env OPENCODE_DISABLE_CLAUDE_CODE true
-    export_env OPENCODE_DISABLE_EXTERNAL_SKILLS true
+    export_env OPENCODE_DISABLE_EXTERNAL_SKILLS false
 
     #npx @colbymchenry/codegraph
     #echo "Install codegraph"
