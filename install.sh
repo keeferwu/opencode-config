@@ -1,6 +1,7 @@
 #!/bin/bash
 
-CONFIG_FILE="$HOME/.config/opencode/opencode.json"
+CONFIG_DIR="$HOME/.config/opencode"
+CONFIG_FILE="$CONFIG_DIR/opencode.json"
 if [ ! -f "$CONFIG_FILE" ]; then
     mkdir -p "$(dirname "$CONFIG_FILE")"
     cat > "$CONFIG_FILE" << 'EOF'
@@ -164,17 +165,16 @@ function default_config_install()
     # remove plugin cache
     rm -rf $HOME/.cache/opencode/packages/*
     if [ "$PWD" != "$HOME/.opencode" ]; then
-        echo "Install global config to $HOME/.config/opencode"
-        cp opencode.jsonc "$HOME/.config/opencode"
-        cp tui.json "$HOME/.config/opencode"
-        cp -auv agents "$HOME/.config/opencode"
-        cp -auv commands "$HOME/.config/opencode"
-        cp -auv rules "$HOME/.config/opencode"
-        cp -auv skills "$HOME/.config/opencode"
-        cp dcp.jsonc "$HOME/.config/opencode"
-        cp oh-my-openagent.jsonc "$HOME/.config/opencode"
+        echo "Install global config to $CONFIG_DIR"
+        cp opencode.jsonc $CONFIG_DIR
+        cp tui.json $CONFIG_DIR
+        cp -auv agents $CONFIG_DIR
+        cp -auv commands $CONFIG_DIR
+        cp -auv rules $CONFIG_DIR
+        cp -auv skills $CONFIG_DIR
+        cp dcp.jsonc $CONFIG_DIR
     else
-        ln -sf "$PWD/dcp.jsonc" "$HOME/.config/opencode/dcp.jsonc"
+        ln -sf "$PWD/dcp.jsonc" "$CONFIG_DIR/dcp.jsonc"
     fi
 
     export_env EDITOR vim
@@ -244,6 +244,9 @@ function update_tools()
     if command -v ocr >/dev/null 2>&1; then
         echo "Update open-code-review..."
         sudo npm install -g @alibaba-group/open-code-review
+        curl -fsSL \
+            https://raw.githubusercontent.com/alibaba/open-code-review/main/plugins/open-code-review/opencode/open-code-review.ts \
+            -o $CONFIG_DIR/plugins/open-code-review.ts
     fi
 
     if command -v oh-my-openagent >/dev/null 2>&1; then
@@ -299,7 +302,7 @@ function main()
         echo "Install OpenAgentsControl developer..."
         curl -fsSL https://raw.githubusercontent.com/darrenhinde/OpenAgentsControl/main/install.sh | bash -s developer
         if [ -d .opencode ]; then
-            rsync_developer_config "${2:-$HOME/.config/opencode}"
+            rsync_developer_config "${2:-$CONFIG_DIR}"
             rm .opencode
         fi
         ;;
@@ -372,10 +375,12 @@ function main()
         echo "Install open-code-review..."
         sudo npm install -g @alibaba-group/open-code-review
         if command -v ocr >/dev/null 2>&1; then
-            #npx skills add alibaba/open-code-review -g -y --skill open-code-review --agent opencode
             ocr config provider          # 选择内置供应商或添加自定义供应商
             ocr config model             # 为当前供应商选择模型
             ocr llm test                 # 测试连通性
+            curl -fsSL \
+                https://raw.githubusercontent.com/alibaba/open-code-review/main/plugins/open-code-review/opencode/open-code-review.ts \
+                -o $CONFIG_DIR/plugins/open-code-review.ts
         fi
         ;;
     --omo )
