@@ -187,9 +187,10 @@ function default_config_install()
 
     if ! command -v codebase-memory-mcp >/dev/null 2>&1; then
         echo "Install codebase-memory-mcp"
-        #curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/install.sh | bash
-        sudo npm install -g codebase-memory-mcp
-        sudo codebase-memory-mcp --help
+        curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/install.sh | bash
+        sudo mv $HOME/.local/bin/codebase-memory-mcp /usr/local/bin/
+        sudo chown root:root /usr/local/bin/codebase-memory-mcp
+        sudo chmod 777 /usr/local/bin/codebase-memory-mcp
     fi
 
     if ! command -v rtk >/dev/null 2>&1; then
@@ -226,9 +227,11 @@ function update_tools()
         sudo opencode upgrade
     fi
 
-    if command -v codebase-memory-mcp >/dev/null 2>&1; then
-        echo "Update codebase-memory-mcp..."
-        sudo codebase-memory-mcp update
+    if command -v agentmemory >/dev/null 2>&1; then
+        echo "Update agentmemory..."
+        sudo agentmemory upgrade
+        npx git-ripper https://github.com/rohitg00/agentmemory/tree/main/plugin/opencode -o ./agentmemory
+        ./agentmemory/install.sh
     fi
 
     if command -v comet >/dev/null 2>&1; then
@@ -269,11 +272,12 @@ function update_tools()
         rtk init -g --opencode
     fi
 
-    if command -v agentmemory >/dev/null 2>&1; then
-        echo "Update agentmemory..."
-        sudo agentmemory upgrade
-        npx git-ripper https://github.com/rohitg00/agentmemory/tree/main/plugin/opencode -o ./agentmemory
-        ./agentmemory/install.sh
+    if command -v codebase-memory-mcp >/dev/null 2>&1; then
+        echo "Update codebase-memory-mcp..."
+        codebase-memory-mcp update
+        sudo mv $HOME/.local/bin/codebase-memory-mcp /usr/local/bin/
+        sudo chown root:root /usr/local/bin/codebase-memory-mcp
+        sudo chmod 777 /usr/local/bin/codebase-memory-mcp
     fi
 }
 
