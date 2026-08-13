@@ -74,59 +74,51 @@ function omniroute_provider_config()
     # headerTimeout：响应头等待时间
     # timeout：整体请求超时时间
     if ! jq -e '.provider.omniroute' "$CONFIG_FILE" >/dev/null 2>&1; then
-        if command -v jq &>/dev/null; then
-            jq '.provider.omniroute = {
-                "npm": "@ai-sdk/openai-compatible",
-                "name": "OmniRoute",
-                "options": {
-                  "baseURL": "http://localhost:20128/v1",
-                  "apiKey": "{env:OMNIROUTE_API_KEY}",
-                  "timeout": 120000,
-                  "headerTimeout": 30000,
-                  "chunkTimeout": 60000
-                },
-                "models": {
-                  "auto": {
-                    "name": "Auto Combo"
-                  },
-                  "auto/best-coding": {
-                    "name": "Auto Best Coding",
-                    "tool_call": true,
-                    "reasoning": true,
-                    "attachment": true,
-                    "temperature": true,
-                    "interleaved": true,
-                    "limit": {
-                      "context": 200000,
-                      "output": 60000
-                    }
-                  }
+        jq '.provider.omniroute = {
+            "npm": "@ai-sdk/openai-compatible",
+            "name": "OmniRoute",
+            "options": {
+              "baseURL": "http://localhost:20128/v1",
+              "apiKey": "{env:OMNIROUTE_API_KEY}",
+              "timeout": 120000,
+              "headerTimeout": 30000,
+              "chunkTimeout": 60000
+            },
+            "models": {
+              "auto": {
+                "name": "Auto Combo"
+              },
+              "auto/best-coding": {
+                "name": "Auto Best Coding",
+                "tool_call": true,
+                "reasoning": true,
+                "attachment": true,
+                "temperature": true,
+                "interleaved": true,
+                "limit": {
+                  "context": 200000,
+                  "output": 60000
                 }
-            }' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
-            mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
-            echo "Added omniroute provider with auto model to $CONFIG_FILE"
-        else
-            echo "jq not installed, skipping provider config. Add provider manually."
-        fi
+              }
+            }
+        }' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
+        mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
+        echo "Added omniroute provider with auto model to $CONFIG_FILE"
     fi
     read -p "Do you want to configure omniroute MCP server? (y/N) " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         if ! jq -e '.mcp.omniroute' "$CONFIG_FILE" >/dev/null 2>&1; then
-            if command -v jq &>/dev/null; then
-                jq '.mcp.omniroute = {
-                    "type": "remote",
-                    "url": "http://localhost:20128/api/mcp/sse",
-                    "headers": {
-                        "Authorization": "Bearer omniroute_management_key"
-                    },
-                    "enabled": false
-                }' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
-                mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
-                echo "Added omniroute MCP server to $CONFIG_FILE"
-            else
-                echo "jq not installed, skipping MCP config. Add MCP config manually."
-            fi
+            jq '.mcp.omniroute = {
+                "type": "remote",
+                "url": "http://localhost:20128/api/mcp/sse",
+                "headers": {
+                    "Authorization": "Bearer omniroute_management_key"
+                },
+                "enabled": false
+            }' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
+            mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
+            echo "Added omniroute MCP server to $CONFIG_FILE"
         else
             echo "omniroute MCP server already configured, skipping."
         fi
@@ -138,6 +130,23 @@ function omniroute_provider_config()
     echo "  Login password: INITIAL_PASSWORD=CHANGEME"
     echo "  Daily request limit: DEFAULT_RATE_LIMIT_PER_DAY=1000"
     echo ""
+}
+
+function codebase_memory_mcp_config()
+{
+    sudo mv $HOME/.local/bin/codebase-memory-mcp /usr/local/bin/
+    sudo chown root:root /usr/local/bin/codebase-memory-mcp
+    sudo chmod 777 /usr/local/bin/codebase-memory-mcp
+    if jq -e '.mcp.codebase-memory-mcp' "$CONFIG_FILE" >/dev/null 2>&1; then
+        jq 'del(.mcp.codebase-memory-mcp)' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
+        mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
+
+        mv $CONFIG_DIR/AGENTS.md $CONFIG_DIR/codebase_memory/codebase_memory.md
+        mv $CONFIG_DIR/skills/codebase-memory $CONFIG_DIR/codebase_memory/skills
+        mv $CONFIG_DIR/agents/codebase-memory* $CONFIG_DIR/codebase_memory/agents
+        mv $CONFIG_DIR/plugins/cbm-augment.ts $CONFIG_DIR/codebase_memory/plugins
+        echo "Removed codebase-memory-mcp config from $CONFIG_FILE"
+    fi
 }
 
 function export_env()
@@ -172,13 +181,22 @@ function default_config_install()
         cp -auv commands $CONFIG_DIR
         cp -auv rules $CONFIG_DIR
         cp -auv skills $CONFIG_DIR
+        cp -auv codebase_memory $CONFIG_DIR
         cp dcp.jsonc $CONFIG_DIR
     else
         ln -sf "$PWD/dcp.jsonc" "$CONFIG_DIR/dcp.jsonc"
+        ln -sf "$PWD/rules" "$CONFIG_DIR/rules"
+        ln -sf "$PWD/codebase_memory" "$CONFIG_DIR/codebase_memory"
     fi
 
     export_env EDITOR vim
+    # Disable all .claude support
     export_env OPENCODE_DISABLE_CLAUDE_CODE true
+    # Disable only ~/.claude/CLAUDE.md
+    #export_env OPENCODE_DISABLE_CLAUDE_CODE_PROMPT true
+    # Disable only .claude/skills
+    #export_env OPENCODE_DISABLE_CLAUDE_CODE_SKILLS true
+    # Enable .agents/skills
     export_env OPENCODE_DISABLE_EXTERNAL_SKILLS false
 
     #npx @colbymchenry/codegraph
@@ -188,9 +206,7 @@ function default_config_install()
     if ! command -v codebase-memory-mcp >/dev/null 2>&1; then
         echo "Install codebase-memory-mcp"
         curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/install.sh | bash
-        sudo mv $HOME/.local/bin/codebase-memory-mcp /usr/local/bin/
-        sudo chown root:root /usr/local/bin/codebase-memory-mcp
-        sudo chmod 777 /usr/local/bin/codebase-memory-mcp
+        codebase_memory_mcp_config
     fi
 
     if ! command -v rtk >/dev/null 2>&1; then
@@ -274,9 +290,7 @@ function update_tools()
     if command -v codebase-memory-mcp >/dev/null 2>&1; then
         echo "Update codebase-memory-mcp..."
         codebase-memory-mcp update
-        sudo mv $HOME/.local/bin/codebase-memory-mcp /usr/local/bin/
-        sudo chown root:root /usr/local/bin/codebase-memory-mcp
-        sudo chmod 777 /usr/local/bin/codebase-memory-mcp
+        codebase_memory_mcp_config
     fi
 }
 
@@ -294,6 +308,21 @@ function main()
             fi
         else
             echo "Skip opencode installation"
+        fi
+    fi
+
+    if ! command -v jq &>/dev/null; then
+        echo "Install jq..."
+        if command -v apt-get &>/dev/null; then
+            sudo apt-get install -y jq
+        elif command -v yum &>/dev/null; then
+            sudo yum install -y jq
+        elif command -v pacman &>/dev/null; then
+            sudo pacman -S jq
+        elif command -v brew &>/dev/null; then
+            brew install jq
+        else
+            echo "Cannot install jq: no supported package manager found"
         fi
     fi
 
@@ -349,13 +378,11 @@ function main()
         echo "Install caveman..."
         npx -y github:JuliusBrussee/caveman -- --only opencode
         if ! grep -q '"cavecrew-builder"' "$CONFIG_FILE" 2>/dev/null; then
-            if command -v jq &>/dev/null; then
-                jq '.agent["cavecrew-builder"] = {"mode": "subagent"} |
-                    .agent["cavecrew-investigator"] = {"mode": "subagent"} |
-                    .agent["cavecrew-reviewer"] = {"mode": "subagent"}' \
-                    "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
-                mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
-            fi
+            jq '.agent["cavecrew-builder"] = {"mode": "subagent"} |
+                .agent["cavecrew-investigator"] = {"mode": "subagent"} |
+                .agent["cavecrew-reviewer"] = {"mode": "subagent"}' \
+            "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
+            mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
         fi
         ;;
     --agentmemory )
@@ -390,11 +417,8 @@ function main()
         echo "Install oh-my-openagent..."
         sudo npm install -g oh-my-openagent
         if ! grep -q 'oh-my-openagent' "$CONFIG_FILE" 2>/dev/null; then
-            if command -v jq &>/dev/null; then
-                jq '.plugin += ["oh-my-openagent@latest"]' \
-                    "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
-                mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
-            fi
+            jq '.plugin += ["oh-my-openagent@latest"]' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
+            mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
         fi
         mkdir -p "$HOME/.omo"
         cp omo.jsonc "$HOME/.omo"

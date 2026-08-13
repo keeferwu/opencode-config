@@ -10,7 +10,7 @@
   "instructions": [
     "CONTRIBUTING.md",
     "docs/rule.md",
-    "~/.opencode/rules/*.md"
+    "~/.config/opencode/rules/*.md"
   ],
   "watcher": {
     "ignore": [
