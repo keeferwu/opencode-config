@@ -214,9 +214,8 @@ function default_config_install()
 
     # GitHub shorthand (owner/repo)
     npx skills add vercel-labs/skills -g -y --skill find-skills --agent opencode
-    #npx skills add mattpocock/skills -g -y --skill improve-codebase-architecture --skill codebase-design --skill grilling --skill domain-modeling --agent opencode
+    #npx skills add https://github.com/cathrynlavery/diagram-design --skill diagram-design  --agent opencode
     #npx skills add kepano/obsidian-skills -g -y --agent opencode
-    #npx skills add anthropics/skills -g -y --skill pdf --skill docx --skill pptx --skill xlsx --agent opencode
     #npx skills update
 }
 
