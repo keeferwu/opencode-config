@@ -134,17 +134,17 @@ function omniroute_provider_config()
 
 function codebase_memory_mcp_config()
 {
+    curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/install.sh | bash
     sudo mv $HOME/.local/bin/codebase-memory-mcp /usr/local/bin/
     sudo chown root:root /usr/local/bin/codebase-memory-mcp
     sudo chmod 777 /usr/local/bin/codebase-memory-mcp
-    if jq -e '.mcp.codebase-memory-mcp' "$CONFIG_FILE" >/dev/null 2>&1; then
-        jq 'del(.mcp.codebase-memory-mcp)' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
+    if jq -e '.mcp."codebase-memory-mcp"' "$CONFIG_FILE" >/dev/null 2>&1; then
+        jq 'del(.mcp."codebase-memory-mcp")' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
         mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
-
-        mv $CONFIG_DIR/AGENTS.md $CONFIG_DIR/codebase_memory/codebase_memory.md
-        mv $CONFIG_DIR/skills/codebase-memory $CONFIG_DIR/codebase_memory/skills
-        mv $CONFIG_DIR/agents/codebase-memory* $CONFIG_DIR/codebase_memory/agents
-        mv $CONFIG_DIR/plugins/cbm-augment.ts $CONFIG_DIR/codebase_memory/plugins
+        mv $CONFIG_DIR/AGENTS.md $CONFIG_DIR/codebase_memory/
+        mv $CONFIG_DIR/skills/codebase-memory $CONFIG_DIR/codebase_memory/skills/
+        mv $CONFIG_DIR/agents/codebase-memory* $CONFIG_DIR/codebase_memory/agents/
+        mv $CONFIG_DIR/plugins/cbm-augment.ts $CONFIG_DIR/codebase_memory/plugins/
         echo "Removed codebase-memory-mcp config from $CONFIG_FILE"
     fi
 }
@@ -205,7 +205,6 @@ function default_config_install()
 
     if ! command -v codebase-memory-mcp >/dev/null 2>&1; then
         echo "Install codebase-memory-mcp"
-        curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/install.sh | bash
         codebase_memory_mcp_config
     fi
 
@@ -289,7 +288,6 @@ function update_tools()
 
     if command -v codebase-memory-mcp >/dev/null 2>&1; then
         echo "Update codebase-memory-mcp..."
-        codebase-memory-mcp update
         codebase_memory_mcp_config
     fi
 }
