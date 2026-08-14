@@ -67,7 +67,7 @@
   },
   "plugin": [
     //"opencode-mem@latest",
-    "opencode-skill-creator@latest",
+    //"opencode-skill-creator@latest",
     "@tarquinen/opencode-dcp@latest",
     "superpowers@git+https://github.com/obra/superpowers.git"
   ]
