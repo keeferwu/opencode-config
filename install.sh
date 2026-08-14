@@ -158,14 +158,15 @@ function default_config_install()
     rm -rf $HOME/.cache/opencode/packages/*
     if [ "$PWD" != "$HOME/.opencode" ]; then
         echo "Install global config to $CONFIG_DIR"
-        cp opencode.jsonc $CONFIG_DIR
-        cp tui.json $CONFIG_DIR
-        cp -auv agents $CONFIG_DIR
-        cp -auv commands $CONFIG_DIR
-        cp -auv rules $CONFIG_DIR
-        cp -auv skills $CONFIG_DIR
-        cp -auv codebase_memory $CONFIG_DIR
-        cp dcp.jsonc $CONFIG_DIR
+        rsync -av  --include='tui.json' \
+            --include='opencode.jsonc' \
+            --include='dcp.jsonc' \
+            --include='agents' \
+            --include='commands' \
+            --include='rules' \
+            --include='skills' \
+            --include='codebase_memory' \
+            --exclude='*' ./  $CONFIG_DIR
     else
         ln -sf "$PWD/dcp.jsonc" "$CONFIG_DIR/dcp.jsonc"
         ln -sf "$PWD/rules" "$CONFIG_DIR/rules"
