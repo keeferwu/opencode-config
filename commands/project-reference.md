@@ -29,14 +29,18 @@ Steps:
 
 - step 1: Prompt the user to enter the reference **name**. Store as `<name>`.
 - step 2: Prompt the user to choose the reference **type**: `local path` or `git repository`. Store as `<type>`.
-- step 3: If `<type>` is `local path`, prompt the user to enter the reference **path** (relative, absolute, or `~/`). Store as `<path>`. If `<type>` is `git repository`, prompt the user to enter the **repository** (`owner/repo` or a full Git URL). Store as `<repository>`.
-- step 4: If `<type>` is `git repository`, prompt the user to enter the **branch** (optional, e.g. `main`). Store as `<branch>`. Skip this step if `<type>` is `local path` or the user leaves it blank.
-- step 5: Prompt the user to enter the reference **description**. Store as `<description>`.
+- step 3: If `<type>` is `local path`:
+    - step 3a: prompt the user to enter the reference **path** (relative, absolute, or `~/`). Store as `<path>`, if path is relative, prepend `../` when storing.
+    - step 3b: Verify the path exists with `read`/`ls`; if not, re-prompt until valid or the user declines.
+- step 4: If `<type>` is `git repository`:
+    - step 4a: prompt the user to enter the **repository** (`owner/repo` or a full Git URL). Store as `<repository>`.
+    - setp 4b: prompt the user to enter the **branch** (optional, e.g. `main`). Store as `<branch>`. Skip this step if user leaves it blank.
+- step 5: Prompt the user to enter the reference **description**, if blank, auto-derive by `<type>`. Store as `<description>` in **English**.
 
 Rules:
 
 - Ask each question separately; do not batch fields into a single prompt.
-- Do not proceed to the next step until the current step has a non-empty answer (except `branch`, which is optional).
+- Do not proceed to the next step until the current step has a non-empty answer (except `branch` and `description`, which is optional).
 - If the user declines or skips a required step, abort the command silently.
 
 ## Precondition
