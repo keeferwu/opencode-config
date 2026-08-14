@@ -234,64 +234,6 @@ function default_config_install()
     #npx skills update
 }
 
-function update_tools()
-{
-    if command -v opencode >/dev/null 2>&1; then
-        echo "Update opencode..."
-        sudo opencode upgrade
-    fi
-
-    if command -v agentmemory >/dev/null 2>&1; then
-        echo "Update agentmemory..."
-        sudo agentmemory upgrade
-        npx git-ripper https://github.com/rohitg00/agentmemory/tree/main/plugin/opencode -o ./agentmemory
-        ./agentmemory/install.sh
-    fi
-
-    if command -v comet >/dev/null 2>&1; then
-        echo "Update comet..."
-        sudo comet update
-    fi
-
-    if command -v omniroute >/dev/null 2>&1; then
-        echo "Update omniroute..."
-        sudo omniroute update
-    fi
-
-    if command -v ocr >/dev/null 2>&1; then
-        echo "Update open-code-review..."
-        sudo npm install -g @alibaba-group/open-code-review
-        curl -fsSL \
-            https://raw.githubusercontent.com/alibaba/open-code-review/main/plugins/open-code-review/opencode/open-code-review.ts \
-            -o $CONFIG_DIR/plugins/open-code-review.ts
-    fi
-
-    if command -v oh-my-openagent >/dev/null 2>&1; then
-        echo "Update oh-my-openagent..."
-        sudo npm install -g oh-my-openagent
-    fi
-
-    if command -v officecli >/dev/null 2>&1; then
-        echo "Update officecli..."
-        sudo npm install -g @officecli/officecli
-        officecli install opencode
-    fi
-
-    if command -v rtk >/dev/null 2>&1; then
-        echo "Update rtk..."
-        curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
-        sudo mv $HOME/.local/bin/rtk /usr/local/bin/
-        sudo chown root:root /usr/local/bin/rtk
-        sudo chmod 777 /usr/local/bin/rtk
-        rtk init -g --opencode
-    fi
-
-    if command -v codebase-memory-mcp >/dev/null 2>&1; then
-        echo "Update codebase-memory-mcp..."
-        codebase_memory_mcp_config
-    fi
-}
-
 function main()
 {
     if ! command -v opencode >/dev/null 2>&1; then
@@ -325,9 +267,6 @@ function main()
     fi
 
     case "$1" in
-    --update )
-        update_tools
-        ;;
     --oac )
         echo "Install OpenAgentsControl developer..."
         curl -fsSL https://raw.githubusercontent.com/darrenhinde/OpenAgentsControl/main/install.sh | bash -s developer
@@ -439,7 +378,6 @@ function main()
     --help )
         echo ""
         echo "options:"
-        echo "--update: update all tools"
         echo "--oac: install OpenAgentsControl for specific project"
         echo "--omo: install oh-my-openagent, use multi-model agent for coding"
         echo "--markitdown: install markitdown docker, use for translate file to markdown"
