@@ -132,23 +132,6 @@ function omniroute_provider_config()
     echo ""
 }
 
-function codebase_memory_mcp_config()
-{
-    curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/install.sh | bash
-    sudo mv $HOME/.local/bin/codebase-memory-mcp /usr/local/bin/
-    sudo chown root:root /usr/local/bin/codebase-memory-mcp
-    sudo chmod 777 /usr/local/bin/codebase-memory-mcp
-    if jq -e '.mcp."codebase-memory-mcp"' "$CONFIG_FILE" >/dev/null 2>&1; then
-        jq 'del(.mcp."codebase-memory-mcp")' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
-        mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
-        mv $CONFIG_DIR/AGENTS.md $CONFIG_DIR/codebase_memory/
-        mv $CONFIG_DIR/skills/codebase-memory $CONFIG_DIR/codebase_memory/skills/
-        mv $CONFIG_DIR/agents/codebase-memory* $CONFIG_DIR/codebase_memory/agents/
-        mv $CONFIG_DIR/plugins/cbm-augment.ts $CONFIG_DIR/codebase_memory/plugins/
-        echo "Removed codebase-memory-mcp config from $CONFIG_FILE"
-    fi
-}
-
 function export_env()
 {
     local var_name=$1
@@ -198,24 +181,6 @@ function default_config_install()
     #export_env OPENCODE_DISABLE_CLAUDE_CODE_SKILLS true
     # Enable .agents/skills
     export_env OPENCODE_DISABLE_EXTERNAL_SKILLS false
-
-    #npx @colbymchenry/codegraph
-    #echo "Install codegraph"
-    #npx install @colbymchenry/codegraph
-
-    if ! command -v codebase-memory-mcp >/dev/null 2>&1; then
-        echo "Install codebase-memory-mcp"
-        codebase_memory_mcp_config
-    fi
-
-    if ! command -v rtk >/dev/null 2>&1; then
-        echo "Install rtk"
-        curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
-        sudo mv $HOME/.local/bin/rtk /usr/local/bin/
-        sudo chown root:root /usr/local/bin/rtk
-        sudo chmod 777 /usr/local/bin/rtk
-    fi
-    rtk init -g --opencode
 
     echo "Install skills to $HOME/.agents/skills"
     # npx skills add Option         Description
@@ -273,6 +238,30 @@ function main()
         if [ -d .opencode ]; then
             rsync_developer_config "${2:-$CONFIG_DIR}"
             rm .opencode
+        fi
+        ;;
+    --rtk )
+        echo "Install rtk..."
+        curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
+        sudo mv $HOME/.local/bin/rtk /usr/local/bin/
+        sudo chown root:root /usr/local/bin/rtk
+        sudo chmod 777 /usr/local/bin/rtk
+        rtk init -g --opencode
+        ;;
+    --codebase-memory )
+        echo "Install codebase-memory-mcp..."
+        curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/install.sh | bash
+        sudo mv $HOME/.local/bin/codebase-memory-mcp /usr/local/bin/
+        sudo chown root:root /usr/local/bin/codebase-memory-mcp
+        sudo chmod 777 /usr/local/bin/codebase-memory-mcp
+        if jq -e '.mcp."codebase-memory-mcp"' "$CONFIG_FILE" >/dev/null 2>&1; then
+            jq 'del(.mcp."codebase-memory-mcp")' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
+            mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
+            mv $CONFIG_DIR/AGENTS.md $CONFIG_DIR/codebase_memory/
+            mv $CONFIG_DIR/skills/codebase-memory $CONFIG_DIR/codebase_memory/skills/
+            mv $CONFIG_DIR/agents/codebase-memory* $CONFIG_DIR/codebase_memory/agents/
+            mv $CONFIG_DIR/plugins/cbm-augment.ts $CONFIG_DIR/codebase_memory/plugins/
+            echo "Removed codebase-memory-mcp config from $CONFIG_FILE"
         fi
         ;;
     --markitdown )
@@ -380,6 +369,8 @@ function main()
         echo "options:"
         echo "--oac: install OpenAgentsControl for specific project"
         echo "--omo: install oh-my-openagent, use multi-model agent for coding"
+        echo "--rtk: install rtk, use for command output compact"
+        echo "--codebase-memory: install codebase-memory-mcp, use for code graph"
         echo "--markitdown: install markitdown docker, use for translate file to markdown"
         echo "--drawio: install drawio, use for draw diagram"
         echo "--comet: install comet, use for comet openspec and superpowers"
