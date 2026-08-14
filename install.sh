@@ -327,16 +327,16 @@ function main()
             omniroute_provider_config
         fi
         ;;
-    --open-code-review )
+    --ocr )
         echo "Install open-code-review..."
         sudo npm install -g @alibaba-group/open-code-review
         if command -v ocr >/dev/null 2>&1; then
-            ocr config provider          # 选择内置供应商或添加自定义供应商
-            ocr config model             # 为当前供应商选择模型
-            ocr llm test                 # 测试连通性
             curl -fsSL \
                 https://raw.githubusercontent.com/alibaba/open-code-review/main/plugins/open-code-review/opencode/open-code-review.ts \
                 -o $CONFIG_DIR/plugins/open-code-review.ts
+            ocr config provider          # 选择内置供应商或添加自定义供应商
+            ocr config model             # 为当前供应商选择模型
+            ocr llm test                 # 测试连通性
         fi
         ;;
     --omo )
@@ -368,6 +368,7 @@ function main()
         echo ""
         echo "options:"
         echo "--oac: install OpenAgentsControl for specific project"
+        echo "--ocr: install open-code-review, use for review code"
         echo "--omo: install oh-my-openagent, use multi-model agent for coding"
         echo "--rtk: install rtk, use for command output compact"
         echo "--codebase-memory: install codebase-memory-mcp, use for code graph"
@@ -379,7 +380,6 @@ function main()
         echo "--caveman: install caveman, use for save token, similar tool ponytail"
         echo "--agentmemory: install agentmemory, use for agent memory"
         echo "--omniroute: install omniroute, use for llm proxy"
-        echo "--open-code-review: install open-code-review, use for review code"
         echo "--officecli: instll officecli, use for handle docx, xlsx, pptx document"
         echo "--book-to-skill: install book-to-skill, use for convert book to skill"
         ;;
