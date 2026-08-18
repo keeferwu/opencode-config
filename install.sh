@@ -11,26 +11,6 @@ if [ ! -f "$CONFIG_FILE" ]; then
 EOF
 fi
 
-function use_uv_pip_install()
-{
-    if ! command -v uv >/dev/null 2>&1; then
-        curl -LsSf https://astral.sh/uv/install.sh | sh
-    fi
-    local project_dir=~/.venv/$1
-    local requirement_file=$1/requirements.txt
-    # 创建使用 Python 3.11 的虚拟环境，自动下载3.11
-    uv venv $project_dir --python 3.11 -c
-
-    if [ -f "$requirement_file" ]; then
-        # 批量安装多个包
-        uv pip install --python $project_dir/bin/python -r $requirement_file
-    else
-        # 安装参数中的所有包
-        uv pip install --python $project_dir/bin/python "${@:2}"
-    fi
-    echo "Note: Before use $1, should source $project_dir/bin/activate"
-}
-
 function rsync_developer_config()
 {
     echo "rsync oac developer config to $1"
@@ -359,10 +339,15 @@ function main()
         ;;
     --book-to-skill )
         echo "Install book-to-skill..."
+        npx skills add virgiliojr94/book-to-skill -g -y --skill book-to-skill --agent opencode
         if python3 -c 'import sys; sys.exit(0 if sys.version_info > (3, 9) else 1)'; then
-            pip install "book-to-skill[pdf]"
+            pip install pypdf docling
         else
-            use_uv_pip_install book-to-skill "book-to-skill[pdf] @ git+https://github.com/virgiliojr94/book-to-skill.git"
+            if ! command -v uv >/dev/null 2>&1; then
+                curl -LsSf https://astral.sh/uv/install.sh | sh
+            fi
+            # use uv env
+            uv tool install --python 3.11 docling --with pypdf
         fi
         ;;
     --help )
