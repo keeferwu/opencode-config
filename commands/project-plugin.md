@@ -34,7 +34,7 @@ If `graphify` command is available, install by command:
 graphify install --project --platform opencode
 ```
 Local plugin do not need to be explicitly declared, so remove `.opencode/plugins/graphify.js` from `.opencode/opencode.json` plugin array.
-Move the graphify section from `AGENTS.md` to `.opencode/AGENTS.md`. If `.opencode/AGENTS.md` is not empty before moving, append to the end of file.
+Move the graphify section from `AGENTS.md` to `.opencode/AGENTS.md`. If `.opencode/AGENTS.md` is exists before moving, append to the end of file.
 
 For `@<org>/<repo>` plugins:
 ```bash

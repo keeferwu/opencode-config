@@ -43,7 +43,12 @@ Only run if the project root contains `AGENTS.md` or `.opencode/AGENTS.md`. Skip
 3. **Sync codebase memory config**:
    - Sync `~/.config/opencode/codebase_memory` directory to `.opencode/` in the current project using:
      ```bash
-     rsync -av ~/.config/opencode/codebase_memory/ .opencode/
+     rsync -av --exclude='AGENTS.md' ~/.config/opencode/codebase_memory/ .opencode/
+     if [ -e ".opencode/AGENTS.md" ]; then
+        cat ~/.config/opencode/codebase_memory/AGENTS.md >> .opencode/AGENTS.md
+     else
+        cp ~/.config/opencode/codebase_memory/AGENTS.md .opencode/AGENTS.md
+     fi
      ```
    - Ensure the destination `.opencode/` exists before syncing
 
