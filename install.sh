@@ -268,10 +268,14 @@ function main()
     --graphify )
         echo "Install graphify..."
         # base Python 3.10+
-        pip install graphifyy
-        if command -v graphify >/dev/null 2>&1; then
-            graphify install --platform opencode
-            graphify opencode install   #安装常驻助手规则 AGENTS.md 到当前项目
+        if python3 -c 'import sys; sys.exit(0 if sys.version_info > (3, 9) else 1)'; then
+            pip install graphifyy
+        else
+            if ! command -v uv >/dev/null 2>&1; then
+                curl -LsSf https://astral.sh/uv/install.sh | sh
+            fi
+            # use uv env
+            uv tool install --python 3.11 graphifyy
         fi
         ;;
     --cua )
