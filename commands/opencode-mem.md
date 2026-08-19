@@ -1,5 +1,7 @@
 ---
 description: Manage opencode-mem memory plugin — search/add/delete/list memories, view/update user profile, troubleshoot errors (doctor).
+agent: build
+model: opencode/big-pickle
 ---
 
 # Opencode-mem Command

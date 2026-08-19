@@ -1,5 +1,7 @@
 ---
 description: Add/remove references to project
+agent: build
+model: opencode/big-pickle
 ---
 
 # Project-reference Command

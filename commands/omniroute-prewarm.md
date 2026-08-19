@@ -1,5 +1,7 @@
 ---
 description: Pre-warm OmniRoute models to eliminate cold start delays before starting a session.
+agent: build
+model: opencode/big-pickle
 ---
 
 # OmniRoute Model Pre-warm

@@ -1,5 +1,7 @@
 ---
 description: Create well-formatted git commits with Conventional Commits
+agent: build
+model: opencode/big-pickle
 ---
 
 # Git-commit Command

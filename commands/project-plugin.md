@@ -1,5 +1,7 @@
 ---
 description: Install/uninstall opencode plugins to project
+agent: build
+model: opencode/big-pickle
 ---
 
 # Project-plugin Command

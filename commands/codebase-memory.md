@@ -1,5 +1,7 @@
 ---
 description: Initialize project codebase knowledge graph
+agent: build
+model: opencode/big-pickle
 ---
 
 # Codebase-memory Command

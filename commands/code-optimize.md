@@ -1,5 +1,7 @@
 ---
 description: Optimize code files using code-simplifier subagent with AGENTS.md standards
+agent: build
+model: opencode/big-pickle
 ---
 
 # Code-optimize Command
