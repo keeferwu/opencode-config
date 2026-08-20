@@ -76,8 +76,12 @@ function omniroute_provider_config()
                 "temperature": true,
                 "interleaved": true,
                 "limit": {
-                  "context": 200000,
-                  "output": 60000
+                  "context": 200000(200k) or 1000000(1M)
+                  "output": 60000(200k) or 300000(1M)
+                },
+                "modalities": {
+                  "input": ["text", "pdf", "image"],
+                  "output": ["text"]
                 }
               }
             }
