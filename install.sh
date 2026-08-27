@@ -242,10 +242,10 @@ function main()
         if jq -e '.mcp."codebase-memory-mcp"' "$CONFIG_FILE" >/dev/null 2>&1; then
             jq 'del(.mcp."codebase-memory-mcp")' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
             mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
-            mv $CONFIG_DIR/AGENTS.md $CONFIG_DIR/codebase_memory/
-            mv $CONFIG_DIR/skills/codebase-memory $CONFIG_DIR/codebase_memory/skills/
-            mv $CONFIG_DIR/agents/codebase-memory* $CONFIG_DIR/codebase_memory/agents/
-            mv $CONFIG_DIR/plugins/cbm-augment.ts $CONFIG_DIR/codebase_memory/plugins/
+            mv -f $CONFIG_DIR/AGENTS.md $CONFIG_DIR/codebase_memory/
+            mv -f $CONFIG_DIR/skills/codebase-memory $CONFIG_DIR/codebase_memory/skills/
+            mv -f $CONFIG_DIR/agents/codebase-memory* $CONFIG_DIR/codebase_memory/agents/
+            mv -f $CONFIG_DIR/plugins/cbm-augment.ts $CONFIG_DIR/codebase_memory/plugins/
             echo "Removed codebase-memory-mcp config from $CONFIG_FILE"
         fi
         ;;
