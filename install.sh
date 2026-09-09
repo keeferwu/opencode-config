@@ -258,6 +258,7 @@ function main()
         rm -rf markitdown
         ;;
     --drawio )
+        npx skills add tt-a1i/archify -g -y --skill archify --agent opencode
         echo "Install drawio desktop and skill..."
         npx skills add Agents365-ai/drawio-skill -g -y --skill drawio-skill --agent opencode
         sudo apt-get install xvfb
