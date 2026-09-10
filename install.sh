@@ -341,6 +341,7 @@ function main()
         ;;
     --officecli )
         echo "Install officecli..."
+        sudo apt-get update && sudo apt-get install -y libicu-dev
         sudo npm install -g @officecli/officecli
         if command -v officecli >/dev/null 2>&1; then
             officecli install opencode
@@ -350,7 +351,7 @@ function main()
         echo "Install book-to-skill..."
         npx skills add virgiliojr94/book-to-skill -g -y --skill book-to-skill --agent opencode
         if python3 -c 'import sys; sys.exit(0 if sys.version_info > (3, 9) else 1)'; then
-            pip install pypdf docling
+            pip install --break-system-packages pypdf docling
         else
             if ! command -v uv >/dev/null 2>&1; then
                 curl -LsSf https://astral.sh/uv/install.sh | sh
