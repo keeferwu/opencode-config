@@ -152,9 +152,12 @@ function default_config_install()
             --include='codebase_memory' \
             --exclude='*' ./  $CONFIG_DIR
     else
-        ln -sf "$PWD/dcp.jsonc" "$CONFIG_DIR/dcp.jsonc"
-        ln -sf "$PWD/rules" "$CONFIG_DIR/rules"
-        ln -sf "$PWD/codebase_memory" "$CONFIG_DIR/codebase_memory"
+        rm -rf "$CONFIG_DIR/dcp.jsonc"
+        ln -s "$PWD/dcp.jsonc" "$CONFIG_DIR/dcp.jsonc"
+        rm -rf "$CONFIG_DIR/rules"
+        ln -s "$PWD/rules" "$CONFIG_DIR/rules"
+        rm -rf "$CONFIG_DIR/codebase_memory"
+        ln -s "$PWD/codebase_memory" "$CONFIG_DIR/codebase_memory"
     fi
 
     export_env EDITOR vim
