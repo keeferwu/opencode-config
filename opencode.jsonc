@@ -47,7 +47,7 @@
       "type": "remote",
       "url": "https://mcp.context7.com/mcp",
       "headers": {
-        "CONTEXT7_API_KEY": "{env:CONTEXT7_API_KEY}"
+        "Authorization": "Bearer {env:CONTEXT7_API_KEY}"
       },
       "enabled": true
     },
@@ -55,8 +55,10 @@
       "type": "remote",
       "url": "https://api.anysearch.com/mcp",
       "headers": {
-        "Authorization": "Bearer {env:ANYSEARCH_API_KEY}"
+        "Authorization": "Bearer {env:ANYSEARCH_API_KEY}",
+        "X-Anysearch-Client": "mcp/1.0.0"
       },
+      "oauth": false,
       "enabled": false
     },
     "grep_app": {
