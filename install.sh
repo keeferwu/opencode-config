@@ -334,13 +334,14 @@ function main()
         ;;
     --omo )
         echo "Install oh-my-openagent..."
-        sudo npm install -g oh-my-openagent
-        if ! grep -q 'oh-my-openagent' "$CONFIG_FILE" 2>/dev/null; then
-            jq '.plugin += ["oh-my-openagent@latest"]' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
-            mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
-        fi
         mkdir -p "$HOME/.omo"
+        rm $CONFIG_DIR/opencode.json.backup* -rf
+        rm $HOME/.omo/omo.jsonc.bak* -rf
         cp omo.jsonc "$HOME/.omo"
+        if ! command -v bunx >/dev/null 2>&1; then
+            sudo npm install -g bun
+        fi
+        bunx oh-my-openagent install
         ;;
     --officecli )
         echo "Install officecli..."
