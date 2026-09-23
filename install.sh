@@ -342,6 +342,7 @@ function main()
             sudo npm install -g bun
         fi
         bunx oh-my-openagent install
+        export_env LSP_TOOLS_MCP_USER_CONFIG "$HOME/.config/opencode/lsp-client.json"
         ;;
     --officecli )
         echo "Install officecli..."
