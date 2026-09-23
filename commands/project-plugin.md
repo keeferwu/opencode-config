@@ -19,10 +19,17 @@ When the user runs this command (`/project-plugin`), follow these rules:
 2. **Arguments** — Proceed based on the arguments:
    - `install <plugin>`: Install plugin.
    - `uninstall <plugin>`: Uninstall plugin.
-3. **`<plugin>`** — The plugin name, switch to `@<org>/<repo>`.
-   - `dap` → `@debugtalk/opencode-dap`.
-   - `ponytail` → `@dietrichgebert/ponytail`.
-   - `graphify` → `graphify local plugin`.
+3. **`<plugin>`** — The plugin reference, resolve aliases first. Three accepted forms:
+   - Aliases:
+     - `dap` → `@debugtalk/opencode-dap`
+     - `ponytail` → `@dietrichgebert/ponytail`
+     - `omo` → `oh-my-openagent@latest`
+     - `superpowers` → `superpowers@git+https://github.com/obra/superpowers.git`
+     - `graphify` → `graphify local plugin`
+   - Forms after resolution:
+     - `graphify` — local plugin (special handling).
+     - `@<org>/<repo>` — scoped plugin, e.g. `@debugtalk/opencode-dap`, `@dietrichgebert/ponytail`.
+     - `<name>@<spec>` — named plugin with version or git spec, e.g. `oh-my-openagent@latest`, `superpowers@git+https://github.com/obra/superpowers.git`.
 
 ## Install plugin
 
@@ -41,6 +48,12 @@ For `@<org>/<repo>` plugins:
 opencode plugin @<org>/<repo>@latest --force
 ```
 
+For `<name>@<spec>` plugins:
+```bash
+opencode plugin <name>@<spec> --force
+```
+Do not append `@latest` to a spec that already contains one (or a `git+` URL).
+
 ## Uninstall plugin
 
 For `graphify`:
@@ -50,10 +63,10 @@ graphify uninstall --project --platform opencode
 ```
 Remove the graphify section from `.opencode/AGENTS.md`. If `.opencode/AGENTS.md` is empty after removal, delete the file.
 
-For `@<org>/<repo>` plugins:
+For `@<org>/<repo>` or `<name>@<spec>` plugins:
 - If `.opencode/opencode.json` does not exist, skip silently.
 - Read `.opencode/opencode.json`.
-  - If the `plugin` array contains the `@<org>/<repo>`, remove it.
+  - If the `plugin` array contains the resolved reference, remove it.
   - If the `plugin` array becomes empty after removal, remove the `plugin` array field entirely.
 
 ## Post-configuration

@@ -335,13 +335,15 @@ function main()
     --omo )
         echo "Install oh-my-openagent..."
         mkdir -p "$HOME/.omo"
-        rm $CONFIG_DIR/opencode.json.backup* -rf
-        rm $HOME/.omo/omo.jsonc.bak* -rf
         cp omo.jsonc "$HOME/.omo"
         if ! command -v bunx >/dev/null 2>&1; then
             sudo npm install -g bun
         fi
+        mv  $CONFIG_FILE $CONFIG_DIR/opencode.json.backup
         bunx oh-my-openagent install
+        mv $CONFIG_DIR/opencode.json.backup $CONFIG_FILE
+        rm $HOME/.omo/omo.jsonc.bak* -rf
+        rm $CONFIG_DIR/opencode.json.backup* -rf
         export_env LSP_TOOLS_MCP_USER_CONFIG "$HOME/.config/opencode/lsp-client.json"
         ;;
     --officecli )
