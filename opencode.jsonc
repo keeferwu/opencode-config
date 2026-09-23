@@ -3,11 +3,6 @@
   "share": "manual",
   "autoupdate": false,
   "lsp": true,
-  "compaction": {
-    "auto": false,
-    "prune": false,
-    "tail_turns": 10
-  },
   "instructions": [
     "CONTRIBUTING.md",
     "docs/rule.md",
@@ -69,9 +64,9 @@
     }
   },
   "plugin": [
+    "@tarquinen/opencode-dcp@latest"
     //"opencode-mem@latest",
     //"opencode-skill-creator@latest",
-    "@tarquinen/opencode-dcp@latest",
-    "superpowers@git+https://github.com/obra/superpowers.git"
+    //"superpowers@git+https://github.com/obra/superpowers.git"
   ]
 }
