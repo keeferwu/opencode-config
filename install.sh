@@ -336,6 +336,9 @@ function main()
         echo "Install oh-my-openagent..."
         mkdir -p "$HOME/.omo"
         cp omo.jsonc "$HOME/.omo"
+        if ! command -v codegraph >/dev/null 2>&1; then
+            sudo npm i -g @colbymchenry/codegraph
+        fi
         if ! command -v bunx >/dev/null 2>&1; then
             sudo npm install -g bun
         fi
