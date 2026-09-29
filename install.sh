@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# opencode 增强组件安装器
+#   交互式: ./install.sh
+#   参数式: ./install.sh --omo --rtk ...
+
 CONFIG_DIR="$HOME/.config/opencode"
 CONFIG_FILE="$CONFIG_DIR/opencode.json"
 if [ ! -f "$CONFIG_FILE" ]; then
@@ -11,42 +15,189 @@ if [ ! -f "$CONFIG_FILE" ]; then
 EOF
 fi
 
-function rsync_developer_config()
+# ==================== 通用工具 ====================
+
+if [ -t 1 ] && command -v tput >/dev/null 2>&1 && [ "$(tput colors 2>/dev/null)" -ge 8 ]; then
+    C_GREEN=$(tput setaf 2)
+    C_YELLOW=$(tput setaf 3)
+    C_CYAN=$(tput setaf 6)
+    C_BOLD=$(tput bold)
+    C_OFF=$(tput sgr0)
+else
+    C_GREEN=""
+    C_YELLOW=""
+    C_CYAN=""
+    C_BOLD=""
+    C_OFF=""
+fi
+
+function have()
 {
-    echo "rsync oac developer config to $1"
+    command -v "$1" >/dev/null 2>&1
+}
 
-    if [ ! -d "$1" ]; then
-        echo "$1 does not exist"
-        exit 1
+function rule()
+{
+    printf "%s\n" "------------------------------------------------------------"
+}
+
+# ==================== 基础依赖 ====================
+
+function install_node()
+{
+    if have node; then
+        echo "nodejs already installed, skipping."
+        return 0
     fi
-
-    # 判断 $1 是否以 .opencode 结尾
-    if [[ "$1" == *.opencode ]]; then
-        target="$1"
+    echo "Install nodejs..."
+    if have apt-get; then
+        curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+        sudo apt-get install -y nodejs
+    elif have brew; then
+        brew install node
     else
-        target="$1/.opencode"
-        mkdir -p "$target"
-    fi
-
-    rsync -av  --exclude='README.md' \
-               --exclude='env.example' \
-               --exclude='config' \
-               --exclude='command/clean.md' \
-               --exclude='command/test.md' \
-               --exclude='command/validate-repo.md' \
-               --exclude='command/openagents' \
-               --exclude='agent/subagents/development' \
-               --exclude='context/development' \
-               --exclude='context/openagents-repo' \
-               --exclude='context/ui' \
-               --exclude='context/core/visual-development.md' \
-               --exclude='context/core/workflows/design-iteration*' \
-               .opencode/ "$target"
-
-    if [ ! -f "$target/.env" ]; then
-        cp .opencode/env.example "$target/.env"
+        echo "Cannot install nodejs: no supported package manager found"
+        return 1
     fi
 }
+
+function install_npm()
+{
+    if have npm; then
+        echo "npm already installed, skipping."
+        return 0
+    fi
+    echo "Install npm..."
+    if have apt-get; then
+        sudo apt-get install -y npm
+    elif have brew; then
+        brew install npm
+    else
+        echo "Cannot install npm: no supported package manager found"
+        return 1
+    fi
+}
+
+function install_opencode()
+{
+    if have opencode; then
+        echo "opencode already installed, skipping."
+        return 0
+    fi
+    echo "Install opencode..."
+    sudo npm install -g opencode-ai
+}
+
+function install_jq()
+{
+    if have jq; then
+        echo "jq already installed, skipping."
+        return 0
+    fi
+    echo "Install jq..."
+    if command -v apt-get &>/dev/null; then
+        sudo apt-get install -y jq
+    elif command -v yum &>/dev/null; then
+        sudo yum install -y jq
+    elif command -v pacman &>/dev/null; then
+        sudo pacman -S --noconfirm jq
+    elif command -v brew &>/dev/null; then
+        brew install jq
+    else
+        echo "Cannot install jq: no supported package manager found"
+        return 1
+    fi
+}
+
+function install_uv_if_needed()
+{
+    if ! command -v uv >/dev/null 2>&1; then
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        export PATH="$HOME/.local/bin:$PATH"
+    fi
+}
+
+# ==================== 环境检测 ====================
+
+MISSING_DEPS=()
+
+function dep_line()
+{
+    # $1=command $2=label $3=core(可选, 缺失时是否可自动安装)
+    local cmd=$1 label=$2 core=$3 ver
+    if have "$cmd"; then
+        ver=$("$cmd" --version 2>/dev/null | head -n 1)
+        [ -z "$ver" ] && ver="已安装"
+        printf "  %s✓%s %-12s %s\n" "$C_GREEN" "$C_OFF" "$label" "$ver"
+    else
+        printf "  %s·%s %-12s %s\n" "$C_YELLOW" "$C_OFF" "$label" "未安装"
+        if [ "$core" = "core" ]; then
+            MISSING_DEPS+=("$cmd")
+        fi
+    fi
+}
+
+function check_env()
+{
+    MISSING_DEPS=()
+    echo ""
+    echo "${C_BOLD}[环境检测]${C_OFF}"
+    dep_line node "nodejs" core
+    dep_line npm "npm" core
+    dep_line opencode "opencode" core
+    dep_line jq "jq" core
+    rule
+    dep_line rsync "rsync"
+    dep_line curl "curl"
+    dep_line git "git"
+    dep_line python3 "python3"
+    dep_line docker "docker"
+}
+
+function install_env()
+{
+    local cmd
+    for cmd in "$@"; do
+        case "$cmd" in
+        node)
+            install_node
+            ;;
+        npm)
+            install_npm
+            ;;
+        opencode)
+            install_opencode
+            ;;
+        jq)
+            install_jq
+            ;;
+        *)
+            echo "No installer for $cmd, skipping."
+            ;;
+        esac
+    done
+}
+
+function ensure_env()
+{
+    check_env
+    if [ "${#MISSING_DEPS[@]}" -gt 0 ]; then
+        echo ""
+        read -r -p "是否安装缺失的核心依赖 [${MISSING_DEPS[*]}] ? (Y/n) " reply
+        echo ""
+        case "$reply" in
+        ""|[Yy]*)
+            install_env "${MISSING_DEPS[@]}"
+            ;;
+        *)
+            echo "已跳过依赖安装，部分组件可能安装失败"
+            ;;
+        esac
+        check_env
+    fi
+}
+
+# ==================== 安装项 ====================
 
 function omniroute_provider_config()
 {
@@ -184,215 +335,607 @@ function default_config_install()
     npx skills add vercel-labs/skills -g -y --skill find-skills --agent opencode
     #npx skills add https://github.com/cathrynlavery/diagram-design --skill diagram-design  --agent opencode
     #npx skills add kepano/obsidian-skills -g -y --agent opencode
-    #npx skills update
+    npx skills update
+}
+
+function install_archify()
+{
+    echo "Install archify skill..."
+    npx skills add tt-a1i/archify -g -y --skill archify --agent opencode
+}
+
+function install_rtk()
+{
+    echo "Install rtk..."
+    curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
+    sudo mv $HOME/.local/bin/rtk /usr/local/bin/
+    sudo chown root:root /usr/local/bin/rtk
+    sudo chmod 777 /usr/local/bin/rtk
+    rtk init -g --opencode
+}
+
+function install_codebase_memory()
+{
+    echo "Install codebase-memory-mcp..."
+    curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/install.sh | bash
+    sudo mv $HOME/.local/bin/codebase-memory-mcp /usr/local/bin/
+    sudo chown root:root /usr/local/bin/codebase-memory-mcp
+    sudo chmod 777 /usr/local/bin/codebase-memory-mcp
+    if jq -e '.mcp."codebase-memory-mcp"' "$CONFIG_FILE" >/dev/null 2>&1; then
+        jq 'del(.mcp."codebase-memory-mcp")' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
+        mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
+        mv -f $CONFIG_DIR/AGENTS.md $CONFIG_DIR/codebase_memory/
+        mv -f $CONFIG_DIR/skills/codebase-memory $CONFIG_DIR/codebase_memory/skills/
+        mv -f $CONFIG_DIR/agents/codebase-memory* $CONFIG_DIR/codebase_memory/agents/
+        mv -f $CONFIG_DIR/plugins/cbm-augment.ts $CONFIG_DIR/codebase_memory/plugins/
+        echo "Removed codebase-memory-mcp config from $CONFIG_FILE"
+    fi
+}
+
+function install_markitdown()
+{
+    echo "Install markitdown docker..."
+    if ! have docker; then
+        echo "docker not found, please install docker first"
+        return 1
+    fi
+    git clone https://github.com/microsoft/markitdown
+    cd markitdown
+    docker build -t markitdown:latest .
+    cd - >/dev/null
+    rm -rf markitdown
+}
+
+function install_drawio()
+{
+    echo "Install drawio desktop and skill..."
+    npx skills add Agents365-ai/drawio-skill -g -y --skill drawio-skill --agent opencode
+    if have apt-get; then
+        sudo apt-get install -y xvfb
+    fi
+    sudo snap install drawio
+}
+
+function install_comet()
+{
+    echo "Install openspec and supperpowers for project..."
+    sudo npm install -g @rpamis/comet@latest
+    sudo npm install -g @fission-ai/openspec@latest
+    echo "cd project directory and run: comet init"
+}
+
+function install_graphify()
+{
+    echo "Install graphify..."
+    # base Python 3.10+
+    if python3 -c 'import sys; sys.exit(0 if sys.version_info > (3, 9) else 1)'; then
+        pip install --break-system-packages graphifyy
+    else
+        install_uv_if_needed
+        # use uv env
+        uv tool install --python 3.11 graphifyy
+    fi
+}
+
+function install_cua()
+{
+    echo "Install computer use agent..."
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/trycua/cua/main/libs/cua-driver/scripts/install.sh)"
+    if command -v cua-driver >/dev/null 2>&1; then
+        cua-driver mcp-config --client opencode
+    fi
+}
+
+function install_caveman()
+{
+    echo "Install caveman..."
+    npx -y github:JuliusBrussee/caveman -- --only opencode
+    if ! grep -q '"cavecrew-builder"' "$CONFIG_FILE" 2>/dev/null; then
+        jq '.agent["cavecrew-builder"] = {"mode": "subagent"} |
+            .agent["cavecrew-investigator"] = {"mode": "subagent"} |
+            .agent["cavecrew-reviewer"] = {"mode": "subagent"}' \
+        "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
+        mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
+    fi
+}
+
+function install_agentmemory()
+{
+    echo "Install agentmemory..."
+    sudo npm install -g @agentmemory/agentmemory
+    curl -fsSL https://install.iii.dev/iii/main/install.sh | VERSION=0.11.2 sh
+    npx git-ripper https://github.com/rohitg00/agentmemory/tree/main/plugin/opencode -o ./agentmemory
+    ./agentmemory/install.sh
+}
+
+function install_omniroute()
+{
+    echo "Install omniroute..."
+    sudo npm install -g omniroute
+    if command -v omniroute >/dev/null 2>&1; then
+        #omniroute setup opencode
+        # use config provider instead of plugin
+        omniroute_provider_config
+    fi
+}
+
+function install_ocr()
+{
+    echo "Install open-code-review..."
+    sudo npm install -g @alibaba-group/open-code-review
+    if command -v ocr >/dev/null 2>&1; then
+        mkdir -p "$CONFIG_DIR/plugins"
+        curl -fsSL \
+        https://raw.githubusercontent.com/alibaba/open-code-review/main/plugins/open-code-review/opencode/open-code-review.ts \
+        -o $CONFIG_DIR/plugins/open-code-review.ts
+        ocr config provider          # 选择内置供应商或添加自定义供应商
+        ocr config model             # 为当前供应商选择模型
+        ocr llm test                 # 测试连通性
+    fi
+}
+
+function install_omo()
+{
+    echo "Install oh-my-openagent..."
+    mkdir -p "$HOME/.omo"
+    cp omo.jsonc "$HOME/.omo"
+    if ! command -v codegraph >/dev/null 2>&1; then
+        sudo npm i -g @colbymchenry/codegraph
+    fi
+    if ! command -v bunx >/dev/null 2>&1; then
+        sudo npm install -g bun
+    fi
+    mv  $CONFIG_FILE $CONFIG_DIR/opencode.json.backup
+    bunx oh-my-openagent install
+    mv $CONFIG_DIR/opencode.json.backup $CONFIG_FILE
+    rm $HOME/.omo/omo.jsonc.bak* -rf
+    rm $CONFIG_DIR/opencode.json.backup* -rf
+    export_env LSP_TOOLS_MCP_USER_CONFIG "$HOME/.config/opencode/lsp-client.json"
+}
+
+function install_officecli()
+{
+    echo "Install officecli..."
+    sudo apt-get update && sudo apt-get install -y libicu-dev
+    sudo npm install -g @officecli/officecli
+    if command -v officecli >/dev/null 2>&1; then
+        officecli install opencode
+    fi
+}
+
+function install_book_to_skill()
+{
+    echo "Install book-to-skill..."
+    npx skills add virgiliojr94/book-to-skill -g -y --skill book-to-skill --agent opencode
+    if python3 -c 'import sys; sys.exit(0 if sys.version_info > (3, 9) else 1)'; then
+        pip install --break-system-packages pypdf docling
+    else
+        install_uv_if_needed
+        # use uv env
+        uv tool install --python 3.11 docling --with pypdf
+    fi
+}
+
+# ==================== 安装项元数据与状态 ====================
+
+# 格式: key|显示名|说明
+# 注意: default_config_install 不是组件, 每次运行安装器都会自动执行
+INSTALL_ITEMS=(
+"rtk|rtk|压缩命令输出, 节省 token"
+"codebase_memory|codebase-memory|代码图谱 MCP"
+"omo|oh-my-openagent|多模型 agent 编排 (OMO)"
+"omniroute|OmniRoute|LLM 代理"
+"ocr|open-code-review|代码评审"
+"officecli|officecli|处理 docx/xlsx/pptx"
+"caveman|caveman|省 token 的精简工具集"
+"comet|comet + openspec|规范化开发流程 + superpowers"
+"graphify|graphify|绘制代码知识图谱"
+"markitdown|markitdown|文件转 markdown (docker)"
+"drawio|drawio|绘制图表 (desktop + skill)"
+"cua|cua-driver|后台驱动桌面应用"
+"agentmemory|agentmemory|agent 记忆"
+"archify|archify|绘制架构/流程/时序图 skill"
+"book_to_skill|book-to-skill|书籍/文档转 skill"
+)
+
+function item_meta()
+{
+    # $1=记录 $2=字段(1=key 2=显示名 3=说明)
+    local a b c
+    IFS='|' read -r a b c <<< "$1"
+    case "$2" in
+    1) printf '%s' "$a" ;;
+    2) printf '%s' "$b" ;;
+    3) printf '%s' "$c" ;;
+    esac
+}
+
+function item_installed()
+{
+    # 返回 0 表示该组件已安装
+    case "$1" in
+    rtk)
+        have rtk
+        ;;
+    codebase_memory)
+        have codebase-memory-mcp
+        ;;
+    omo)
+        have omo
+        ;;
+    omniroute)
+        have omniroute
+        ;;
+    ocr)
+        have ocr
+        ;;
+    officecli)
+        have officecli
+        ;;
+    caveman)
+        jq -e '.agent["cavecrew-builder"]' "$CONFIG_FILE" >/dev/null 2>&1
+        ;;
+    comet)
+        have comet
+        ;;
+    graphify)
+        have graphify
+        ;;
+    markitdown)
+        [ -n "$(docker images -q markitdown:latest 2>/dev/null)" ]
+        ;;
+    drawio)
+        have drawio || have draw.io || snap list drawio 2>/dev/null | grep -q drawio
+        ;;
+    cua)
+        have cua-driver
+        ;;
+    agentmemory)
+        have agentmemory
+        ;;
+    archify)
+        [ -d "$HOME/.agents/skills/archify" ]
+        ;;
+    book_to_skill)
+        [ -d "$HOME/.agents/skills/book-to-skill" ] || [ -d "$CONFIG_DIR/skills/book-to-skill" ]
+        ;;
+    *)
+        return 1
+        ;;
+    esac
+}
+
+function run_item()
+{
+    # $1=key
+    local key=$1
+    case "$key" in
+    rtk)
+        install_rtk
+        ;;
+    codebase_memory)
+        install_codebase_memory
+        ;;
+    omo)
+        install_omo
+        ;;
+    omniroute)
+        install_omniroute
+        ;;
+    ocr)
+        install_ocr
+        ;;
+    officecli)
+        install_officecli
+        ;;
+    caveman)
+        install_caveman
+        ;;
+    comet)
+        install_comet
+        ;;
+    graphify)
+        install_graphify
+        ;;
+    markitdown)
+        install_markitdown
+        ;;
+    drawio)
+        install_drawio
+        ;;
+    cua)
+        install_cua
+        ;;
+    agentmemory)
+        install_agentmemory
+        ;;
+    archify)
+        install_archify
+        ;;
+    book_to_skill)
+        install_book_to_skill
+        ;;
+    *)
+        echo "Unknown item: $key"
+        return 1
+        ;;
+    esac
+}
+
+# ==================== 交互式菜单 ====================
+
+function dwidth()
+{
+    # 显示宽度: 中日韩等宽字符按 2 列计算
+    printf '%s' "$1" | LC_ALL=C awk '{ b = length($0); c = gsub(/[\200-\277]/, ""); printf "%d", b - int(c / 2) }'
+}
+
+function pad()
+{
+    # $1=文本 $2=目标显示宽度
+    local text=$1 width=$2
+    local pad
+    pad=$(($(dwidth "$text") > width ? 0 : width - $(dwidth "$text")))
+    printf '%s%*s' "$text" "$pad" ''
+}
+
+function print_menu()
+{
+    local i=0 rec key mark color
+    echo ""
+    echo "${C_BOLD}可安装组件${C_OFF}   (${C_GREEN}✓${C_OFF} 已安装 / ${C_YELLOW}·${C_OFF} 未安装)"
+    rule
+    for rec in "${INSTALL_ITEMS[@]}"; do
+        i=$((i + 1))
+        key=$(item_meta "$rec" 1)
+        if item_installed "$key"; then
+            mark="✓ 已安装"
+            color="$C_GREEN"
+        else
+            mark="· 未安装"
+            color="$C_YELLOW"
+        fi
+        printf "  %2d) %s%s%s  %s  %s\n" \
+            "$i" "$color" "$(pad "$mark" 12)" "$C_OFF" \
+            "$(pad "$(item_meta "$rec" 2)" 20)" "$(item_meta "$rec" 3)"
+    done
+    rule
+    echo "  a = 安装全部未安装组件    l = 刷新列表    q = 退出"
+}
+
+function contains_index()
+{
+    local needle=$1
+    shift
+    local item
+    for item in "$@"; do
+        [ "$item" = "$needle" ] && return 0
+    done
+    return 1
+}
+
+function prepare()
+{
+    # 每次运行安装器都会执行: 依赖检测 + 默认配置同步
+    ensure_env
+    echo ""
+    rule
+    echo "${C_BOLD}同步默认配置${C_OFF}"
+    rule
+    default_config_install
+}
+
+function interactive_menu()
+{
+    local answer tok n idx i key rec
+    local -a targets=()
+
+    if [ ! -t 0 ]; then
+        echo "非交互终端: 请使用参数模式, 例如 ./install.sh --omo  (查看 ./install.sh --help)"
+        return 1
+    fi
+
+    while true; do
+        print_menu
+        targets=()
+        read -r -p "请输入要安装的组件编号(空格分隔多个, 如 1 3): " answer
+        answer=${answer//,/ }
+        if [ -z "$answer" ] || [ "$answer" = "q" ] || [ "$answer" = "Q" ] || [ "$answer" = "0" ]; then
+            break
+        fi
+        if [ "$answer" = "l" ] || [ "$answer" = "L" ]; then
+            continue
+        fi
+        if [ "$answer" = "a" ] || [ "$answer" = "A" ]; then
+            for i in "${!INSTALL_ITEMS[@]}"; do
+                key=$(item_meta "${INSTALL_ITEMS[$i]}" 1)
+                item_installed "$key" || targets+=("$i")
+            done
+        else
+            for tok in $answer; do
+                if ! [[ "$tok" =~ ^[0-9]+$ ]]; then
+                    echo "忽略无效输入: $tok"
+                    continue
+                fi
+                n=$((10#$tok))
+                if [ "$n" -lt 1 ] || [ "$n" -gt "${#INSTALL_ITEMS[@]}" ]; then
+                    echo "忽略超出范围的编号: $tok"
+                    continue
+                fi
+                idx=$((n - 1))
+                contains_index "$idx" "${targets[@]:-}" || targets+=("$idx")
+            done
+        fi
+
+        if [ "${#targets[@]}" -eq 0 ]; then
+            echo "没有选择任何组件"
+            continue
+        fi
+
+        local total=${#targets[@]}
+        local done_count=0
+        for idx in "${targets[@]}"; do
+            done_count=$((done_count + 1))
+            rec="${INSTALL_ITEMS[$idx]}"
+            key=$(item_meta "$rec" 1)
+            echo ""
+            rule
+            echo "${C_CYAN}[$done_count/$total] $(item_meta "$rec" 2)${C_OFF}"
+            rule
+            if ! run_item "$key"; then
+                echo "${C_YELLOW}[失败] $key${C_OFF}"
+            fi
+        done
+        echo ""
+        rule
+        echo "本轮完成, 继续选择其他组件"
+    done
+
+    echo ""
+    echo "退出安装器"
+}
+
+# ==================== 入口 ====================
+
+function print_help()
+{
+    echo ""
+    echo "opencode 增强组件安装器"
+    echo ""
+    echo "用法:"
+    echo "  ./install.sh                 进入交互式安装列表"
+    echo "  ./install.sh --list          仅打印安装列表与当前状态"
+    echo "  ./install.sh --env           只检查并安装基础依赖 (nodejs/npm/opencode/jq)"
+    echo "  ./install.sh --<component>   安装指定组件, 可组合多个"
+    echo ""
+    echo "每次运行都会先检测基础依赖, 并同步默认配置:"
+    echo "  rsync 配置到 ~/.config/opencode, 并安装全局 skills"
+    echo "  --list / --help / --env 不会执行默认配置同步"
+    echo ""
+    echo "options:"
+    echo "  --rtk:                   安装 rtk, 压缩命令输出以节省 token"
+    echo "  --codebase-memory:       安装 codebase-memory-mcp, 提供代码图谱"
+    echo "  --omo:                   安装 oh-my-openagent, 多模型 agent 编排"
+    echo "  --omniroute:             安装 omniroute, 作为 LLM 代理"
+    echo "  --ocr:                   安装 open-code-review, 用于代码评审"
+    echo "  --officecli:             安装 officecli, 处理 docx/xlsx/pptx 文档"
+    echo "  --caveman:               安装 caveman, 省 token 的精简工具集"
+    echo "  --comet:                 安装 comet, 含 openspec 与 superpowers 流程"
+    echo "  --graphify:              安装 graphify, 绘制代码知识图谱"
+    echo "  --markitdown:            安装 markitdown docker, 把文件转 markdown"
+    echo "  --drawio:                安装 drawio, 绘制图表"
+    echo "  --cua:                   安装 cua-driver, 后台驱动桌面应用"
+    echo "  --agentmemory:           安装 agentmemory, 为 agent 提供记忆"
+    echo "  --archify:               安装 archify skill, 绘制架构/流程/时序图"
+    echo "  --book-to-skill:         安装 book-to-skill, 把书籍/文档转成 skill"
+    echo ""
+}
+
+function flag_to_key()
+{
+    # $1=命令行参数 -> 输出 key (未知则返回 1)
+    case "$1" in
+    --rtk)
+        echo "rtk"
+        ;;
+    --codebase-memory)
+        echo "codebase_memory"
+        ;;
+    --omo)
+        echo "omo"
+        ;;
+    --omniroute)
+        echo "omniroute"
+        ;;
+    --ocr)
+        echo "ocr"
+        ;;
+    --officecli)
+        echo "officecli"
+        ;;
+    --caveman)
+        echo "caveman"
+        ;;
+    --comet)
+        echo "comet"
+        ;;
+    --graphify)
+        echo "graphify"
+        ;;
+    --markitdown)
+        echo "markitdown"
+        ;;
+    --drawio)
+        echo "drawio"
+        ;;
+    --cua)
+        echo "cua"
+        ;;
+    --agentmemory)
+        echo "agentmemory"
+        ;;
+    --archify)
+        echo "archify"
+        ;;
+    --book-to-skill)
+        echo "book_to_skill"
+        ;;
+    *)
+        return 1
+        ;;
+    esac
 }
 
 function main()
 {
-    if ! command -v opencode >/dev/null 2>&1; then
-        read -p "opencode is not installed. Do you want to install it? (y/N) " -n 1 -r
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            echo "Install opencode"
-            if command -v node >/dev/null 2>&1; then
-                sudo npm install -g opencode-ai
-            else
-                curl -fsSL https://opencode.ai/install | bash
-            fi
-        else
-            echo "Skip opencode installation"
-        fi
-    fi
-
-    if ! command -v jq &>/dev/null; then
-        echo "Install jq..."
-        if command -v apt-get &>/dev/null; then
-            sudo apt-get install -y jq
-        elif command -v yum &>/dev/null; then
-            sudo yum install -y jq
-        elif command -v pacman &>/dev/null; then
-            sudo pacman -S jq
-        elif command -v brew &>/dev/null; then
-            brew install jq
-        else
-            echo "Cannot install jq: no supported package manager found"
-        fi
-    fi
-
-    case "$1" in
-    --oac )
-        echo "Install OpenAgentsControl developer..."
-        curl -fsSL https://raw.githubusercontent.com/darrenhinde/OpenAgentsControl/main/install.sh | bash -s developer
-        if [ -d .opencode ]; then
-            rsync_developer_config "${2:-$CONFIG_DIR}"
-            rm .opencode
-        fi
+    case "${1:-}" in
+    --help | -h)
+        print_help
+        return 0
         ;;
-    --rtk )
-        echo "Install rtk..."
-        curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
-        sudo mv $HOME/.local/bin/rtk /usr/local/bin/
-        sudo chown root:root /usr/local/bin/rtk
-        sudo chmod 777 /usr/local/bin/rtk
-        rtk init -g --opencode
+    --list | -l)
+        check_env
+        print_menu
+        return 0
         ;;
-    --codebase-memory )
-        echo "Install codebase-memory-mcp..."
-        curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/install.sh | bash
-        sudo mv $HOME/.local/bin/codebase-memory-mcp /usr/local/bin/
-        sudo chown root:root /usr/local/bin/codebase-memory-mcp
-        sudo chmod 777 /usr/local/bin/codebase-memory-mcp
-        if jq -e '.mcp."codebase-memory-mcp"' "$CONFIG_FILE" >/dev/null 2>&1; then
-            jq 'del(.mcp."codebase-memory-mcp")' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
-            mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
-            mv -f $CONFIG_DIR/AGENTS.md $CONFIG_DIR/codebase_memory/
-            mv -f $CONFIG_DIR/skills/codebase-memory $CONFIG_DIR/codebase_memory/skills/
-            mv -f $CONFIG_DIR/agents/codebase-memory* $CONFIG_DIR/codebase_memory/agents/
-            mv -f $CONFIG_DIR/plugins/cbm-augment.ts $CONFIG_DIR/codebase_memory/plugins/
-            echo "Removed codebase-memory-mcp config from $CONFIG_FILE"
-        fi
-        ;;
-    --markitdown )
-        echo "Install markitdown docker..."
-        git clone https://github.com/microsoft/markitdown
-        cd markitdown
-        docker build -t markitdown:latest .
-        cd -
-        rm -rf markitdown
-        ;;
-    --drawio )
-        npx skills add tt-a1i/archify -g -y --skill archify --agent opencode
-        echo "Install drawio desktop and skill..."
-        npx skills add Agents365-ai/drawio-skill -g -y --skill drawio-skill --agent opencode
-        sudo apt-get install xvfb
-        sudo snap install drawio
-        ;;
-    --comet )
-        echo "Install openspec and supperpowers for project..."
-        sudo npm install -g @rpamis/comet@latest
-        sudo npm install -g @fission-ai/openspec@latest
-        echo "cd project directory and run: comet init"
-        ;;
-    --graphify )
-        echo "Install graphify..."
-        # base Python 3.10+
-        if python3 -c 'import sys; sys.exit(0 if sys.version_info > (3, 9) else 1)'; then
-            pip install graphifyy
-        else
-            if ! command -v uv >/dev/null 2>&1; then
-                curl -LsSf https://astral.sh/uv/install.sh | sh
-            fi
-            # use uv env
-            uv tool install --python 3.11 graphifyy
-        fi
-        ;;
-    --cua )
-        echo "Install computer use agent..."
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/trycua/cua/main/libs/cua-driver/scripts/install.sh)"
-        if command -v cua-driver >/dev/null 2>&1; then
-            cua-driver mcp-config --client opencode
-        fi
-        ;;
-    --caveman )
-        echo "Install caveman..."
-        npx -y github:JuliusBrussee/caveman -- --only opencode
-        if ! grep -q '"cavecrew-builder"' "$CONFIG_FILE" 2>/dev/null; then
-            jq '.agent["cavecrew-builder"] = {"mode": "subagent"} |
-                .agent["cavecrew-investigator"] = {"mode": "subagent"} |
-                .agent["cavecrew-reviewer"] = {"mode": "subagent"}' \
-            "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
-            mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
-        fi
-        ;;
-    --agentmemory )
-        echo "Install agentmemory..."
-        sudo npm install -g @agentmemory/agentmemory
-        curl -fsSL https://install.iii.dev/iii/main/install.sh | VERSION=0.11.2 sh
-        npx git-ripper https://github.com/rohitg00/agentmemory/tree/main/plugin/opencode -o ./agentmemory
-        ./agentmemory/install.sh
-        ;;
-    --omniroute )
-        echo "Install omniroute..."
-        sudo npm install -g omniroute
-        if command -v omniroute >/dev/null 2>&1; then
-            #omniroute setup opencode
-            # use config provider instead of plugin
-            omniroute_provider_config
-        fi
-        ;;
-    --ocr )
-        echo "Install open-code-review..."
-        sudo npm install -g @alibaba-group/open-code-review
-        if command -v ocr >/dev/null 2>&1; then
-            curl -fsSL \
-                https://raw.githubusercontent.com/alibaba/open-code-review/main/plugins/open-code-review/opencode/open-code-review.ts \
-                -o $CONFIG_DIR/plugins/open-code-review.ts
-            ocr config provider          # 选择内置供应商或添加自定义供应商
-            ocr config model             # 为当前供应商选择模型
-            ocr llm test                 # 测试连通性
-        fi
-        ;;
-    --omo )
-        echo "Install oh-my-openagent..."
-        mkdir -p "$HOME/.omo"
-        cp omo.jsonc "$HOME/.omo"
-        if ! command -v codegraph >/dev/null 2>&1; then
-            sudo npm i -g @colbymchenry/codegraph
-        fi
-        if ! command -v bunx >/dev/null 2>&1; then
-            sudo npm install -g bun
-        fi
-        mv  $CONFIG_FILE $CONFIG_DIR/opencode.json.backup
-        bunx oh-my-openagent install
-        mv $CONFIG_DIR/opencode.json.backup $CONFIG_FILE
-        rm $HOME/.omo/omo.jsonc.bak* -rf
-        rm $CONFIG_DIR/opencode.json.backup* -rf
-        export_env LSP_TOOLS_MCP_USER_CONFIG "$HOME/.config/opencode/lsp-client.json"
-        ;;
-    --officecli )
-        echo "Install officecli..."
-        sudo apt-get update && sudo apt-get install -y libicu-dev
-        sudo npm install -g @officecli/officecli
-        if command -v officecli >/dev/null 2>&1; then
-            officecli install opencode
-        fi
-        ;;
-    --book-to-skill )
-        echo "Install book-to-skill..."
-        npx skills add virgiliojr94/book-to-skill -g -y --skill book-to-skill --agent opencode
-        if python3 -c 'import sys; sys.exit(0 if sys.version_info > (3, 9) else 1)'; then
-            pip install --break-system-packages pypdf docling
-        else
-            if ! command -v uv >/dev/null 2>&1; then
-                curl -LsSf https://astral.sh/uv/install.sh | sh
-            fi
-            # use uv env
-            uv tool install --python 3.11 docling --with pypdf
-        fi
-        ;;
-    --help )
-        echo ""
-        echo "options:"
-        echo "--oac: install OpenAgentsControl for specific project"
-        echo "--ocr: install open-code-review, use for review code"
-        echo "--omo: install oh-my-openagent, use multi-model agent for coding"
-        echo "--rtk: install rtk, use for command output compact"
-        echo "--codebase-memory: install codebase-memory-mcp, use for code graph"
-        echo "--markitdown: install markitdown docker, use for translate file to markdown"
-        echo "--drawio: install drawio, use for draw diagram"
-        echo "--comet: install comet, use for comet openspec and superpowers"
-        echo "--graphify: install graphify, use for drawing code knowledge maps"
-        echo "--cua: install cua-driver, use for drive native desktop apps in the background"
-        echo "--caveman: install caveman, use for save token, similar tool ponytail"
-        echo "--agentmemory: install agentmemory, use for agent memory"
-        echo "--omniroute: install omniroute, use for llm proxy"
-        echo "--officecli: instll officecli, use for handle docx, xlsx, pptx document"
-        echo "--book-to-skill: install book-to-skill, use for convert book to skill"
-        ;;
-    * )
-        default_config_install
+    --env)
+        ensure_env
+        return 0
         ;;
     esac
+
+    local arg key
+    local -a keys=()
+    for arg in "$@"; do
+        if key=$(flag_to_key "$arg"); then
+            keys+=("$key")
+        else
+            echo "Unknown option: $arg"
+            print_help
+            return 1
+        fi
+    done
+
+    if [ "$#" -eq 0 ] && [ ! -t 0 ]; then
+        echo "非交互终端: 请使用参数模式, 例如 ./install.sh --omo  (查看 ./install.sh --help)"
+        return 1
+    fi
+
+    # 依赖检测 + 默认配置同步: 每次运行都执行
+    prepare
+
+    if [ "$#" -eq 0 ]; then
+        interactive_menu
+        return $?
+    fi
+
+    for key in "${keys[@]}"; do
+        rule
+        echo "$key"
+        rule
+        run_item "$key"
+    done
 }
+
 # 调用main函数
 main "$@"
