@@ -42,6 +42,14 @@
           "turns": 5
         }
       }
+    },
+    "claude_code": {
+      "mcp": false,
+      "commands": false,
+      "skills": false,
+      "agents": false,
+      "hooks": false,
+      "plugins": false
     }
   }
 }
