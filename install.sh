@@ -335,7 +335,7 @@ function default_config_install()
     npx skills add vercel-labs/skills -g -y --skill find-skills --agent opencode
     #npx skills add https://github.com/cathrynlavery/diagram-design --skill diagram-design  --agent opencode
     #npx skills add kepano/obsidian-skills -g -y --agent opencode
-    npx skills update
+    #npx skills update
 }
 
 function install_archify()
@@ -348,7 +348,7 @@ function install_rtk()
 {
     echo "Install rtk..."
     curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
-    sudo mv $HOME/.local/bin/rtk /usr/local/bin/
+    sudo cp $HOME/.local/bin/rtk /usr/local/bin/
     sudo chown root:root /usr/local/bin/rtk
     sudo chmod 777 /usr/local/bin/rtk
     rtk init -g --opencode
@@ -358,7 +358,7 @@ function install_codebase_memory()
 {
     echo "Install codebase-memory-mcp..."
     curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/install.sh | bash
-    sudo mv $HOME/.local/bin/codebase-memory-mcp /usr/local/bin/
+    sudo cp $HOME/.local/bin/codebase-memory-mcp /usr/local/bin/
     sudo chown root:root /usr/local/bin/codebase-memory-mcp
     sudo chmod 777 /usr/local/bin/codebase-memory-mcp
     if jq -e '.mcp."codebase-memory-mcp"' "$CONFIG_FILE" >/dev/null 2>&1; then
@@ -480,9 +480,6 @@ function install_omo()
     echo "Install oh-my-openagent..."
     mkdir -p "$HOME/.omo"
     cp omo.jsonc "$HOME/.omo"
-    if ! command -v codegraph >/dev/null 2>&1; then
-        sudo npm i -g @colbymchenry/codegraph
-    fi
     if ! command -v bunx >/dev/null 2>&1; then
         sudo npm install -g bun
     fi
@@ -715,17 +712,6 @@ function contains_index()
     return 1
 }
 
-function prepare()
-{
-    # 每次运行安装器都会执行: 依赖检测 + 默认配置同步
-    ensure_env
-    echo ""
-    rule
-    echo "${C_BOLD}同步默认配置${C_OFF}"
-    rule
-    default_config_install
-}
-
 function interactive_menu()
 {
     local answer tok n idx i key rec
@@ -922,10 +908,15 @@ function main()
         return 1
     fi
 
-    # 依赖检测 + 默认配置同步: 每次运行都执行
-    prepare
+    # 依赖检测
+    ensure_env
 
     if [ "$#" -eq 0 ]; then
+        echo ""
+        rule
+        echo "${C_BOLD}同步默认配置${C_OFF}"
+        rule
+        default_config_install
         interactive_menu
         return $?
     fi
