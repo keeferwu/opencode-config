@@ -365,9 +365,10 @@ function install_codebase_memory()
         jq 'del(.mcp."codebase-memory-mcp")' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
         mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
         mv -f $CONFIG_DIR/AGENTS.md $CONFIG_DIR/codebase_memory/
-        mv -f $CONFIG_DIR/skills/codebase-memory $CONFIG_DIR/codebase_memory/skills/
         mv -f $CONFIG_DIR/agents/codebase-memory* $CONFIG_DIR/codebase_memory/agents/
         mv -f $CONFIG_DIR/plugins/cbm-augment.ts $CONFIG_DIR/codebase_memory/plugins/
+        rm -rf $CONFIG_DIR/codebase_memory/skills/codebase-memory
+        mv -f $CONFIG_DIR/skills/codebase-memory $CONFIG_DIR/codebase_memory/skills/codebase-memory
         echo "Removed codebase-memory-mcp config from $CONFIG_FILE"
     fi
 }
