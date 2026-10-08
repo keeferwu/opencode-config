@@ -55,7 +55,7 @@ Only run if the project root contains `AGENTS.md` or `.opencode/AGENTS.md`. Skip
 4. **Index codebase**:
    - After configuration is verified (steps 1-3 done), dispatch a subagent to index the codebase
    - Launch subagent with terminal timeout of 10min
-   - The subagent executes: `codebase-memory-mcp cli index_repository '{"repo_path":"'$(pwd)'"'`
+   - The subagent executes: `nohup codebase-memory-mcp cli --progress index_repository --repo-path "${pwd}" --mode fast`
    - After completion, the subagent returns the execution result (success/failure + output) to the main agent
 
 5. **Report status**:
