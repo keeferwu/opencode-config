@@ -514,6 +514,22 @@ function install_book_to_skill()
     fi
 }
 
+function install_browser_skill()
+{
+    echo "Install browser-skill (Tencent BrowserSkill)..."
+    curl -fsSL https://raw.githubusercontent.com/Tencent/BrowserSkill/main/install.sh | sh
+    bsk --version
+    # install skill to ~/.agents/skills
+    bsk install-skill --harness codex --json
+    bsk doctor || echo "doctor reported issues: extension not connected is expected until you install it."
+    echo ""
+    echo "Remaining manual step: install the browser extension, open the popup and enable the connection."
+    echo "  Chrome: https://chromewebstore.google.com/detail/hhcmgoofomhgciiibhipgmgkgnoenaoi"
+    echo "  Edge:   https://microsoftedge.microsoft.com/addons/detail/browserskill/emacgiaaaiojkkpkddmmdfhmokgmnikg"
+    echo ""
+    echo "Then start a NEW opencode session so it can discover the browser-skill."
+}
+
 # ==================== 安装项元数据与状态 ====================
 
 # 格式: key|显示名|说明
@@ -534,6 +550,7 @@ INSTALL_ITEMS=(
 "agentmemory|agentmemory|agent 记忆"
 "archify|archify|绘制架构/流程/时序图 skill"
 "book_to_skill|book-to-skill|书籍/文档转 skill"
+"browser_skill|browser-skill|接管已登录浏览器的自动化 skill"
 )
 
 function item_meta()
@@ -597,6 +614,9 @@ function item_installed()
     book_to_skill)
         [ -d "$HOME/.agents/skills/book-to-skill" ] || [ -d "$CONFIG_DIR/skills/book-to-skill" ]
         ;;
+    browser_skill)
+        have bsk && [ -f "$HOME/.agents/skills/browser-skill/SKILL.md" ]
+        ;;
     *)
         return 1
         ;;
@@ -652,6 +672,9 @@ function run_item()
         ;;
     book_to_skill)
         install_book_to_skill
+        ;;
+    browser_skill)
+        install_browser_skill
         ;;
     *)
         echo "Unknown item: $key"
@@ -815,6 +838,7 @@ function print_help()
     echo "  --agentmemory:           安装 agentmemory, 为 agent 提供记忆"
     echo "  --archify:               安装 archify skill, 绘制架构/流程/时序图"
     echo "  --book-to-skill:         安装 book-to-skill, 把书籍/文档转成 skill"
+    echo "  --browser-skill:         安装 Tencent BrowserSkill, 复用浏览器登录态做自动化"
     echo ""
 }
 
@@ -866,6 +890,9 @@ function flag_to_key()
         ;;
     --book-to-skill)
         echo "book_to_skill"
+        ;;
+    --browser-skill)
+        echo "browser_skill"
         ;;
     *)
         return 1
