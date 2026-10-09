@@ -130,6 +130,7 @@ echo "  WebSocket: http://localhost:49134"
 echo "  Viewer:    http://localhost:3113"
 echo ""
 echo "Config files: ~/.agentmemory/.env"
+agentmemory init
 echo "  Enable all tools:       AGENTMEMORY_TOOLS=all"
 echo "  Enable slots tools:     AGENTMEMORY_SLOTS=true"
 echo "  Auto context injection: AGENTMEMORY_INJECT_CONTEXT=true"
