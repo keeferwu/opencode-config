@@ -444,7 +444,6 @@ function install_agentmemory()
 {
     echo "Install agentmemory..."
     sudo npm install -g @agentmemory/agentmemory
-    curl -fsSL https://install.iii.dev/iii/main/install.sh | VERSION=0.11.2 sh
     npx git-ripper https://github.com/rohitg00/agentmemory/tree/main/plugin/opencode -o ./agentmemory
     ./agentmemory/install.sh
 }

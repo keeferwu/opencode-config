@@ -52,7 +52,7 @@ cp "$SCRIPT_DIR/commands/"*.md "$HOME/.config/opencode/commands/" 2>/dev/null ||
 
 # 4. install systemd service for auto-start
 AGENTMEMORY_BIN="$(command -v agentmemory 2>/dev/null)"
-III_BIN="$HOME/.local/bin/iii"
+III_BIN="$HOME/.agentmemory/bin/iii"
 SERVICE_FILE="/etc/systemd/system/agentmemory.service"
 
 if [ ! -x "$AGENTMEMORY_BIN" ]; then
@@ -61,9 +61,19 @@ if [ ! -x "$AGENTMEMORY_BIN" ]; then
 fi
 
 if [ ! -f "$III_BIN" ]; then
-    echo "If you only want to use a shared agentmemory server, no iii install and config needed."
-    echo "Otherwise, please install iii first: curl -fsSL https://install.iii.dev/iii/main/install.sh | sh"
-    exit 1
+    read -p "If you only want to use a shared agentmemory server, no iii install. [Y/n] " ch
+    ch=${ch:-Y} # 如果用户直接按回车，则使用默认值 'Y'
+    if [[ $ch =~ ^[Yy]$ ]]; then
+        CLI=/usr/lib/node_modules/@agentmemory/agentmemory/dist/cli.mjs
+        VERSION=$(grep -oE 'const III_RELEASE_SHA256 = \{ "[0-9]+\.[0-9]+\.[0-9]+"' "$CLI" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+        echo "agentmemory pins iii v$VERSION"
+        mkdir -p ~/.agentmemory/bin
+        curl -fsSL --connect-timeout 15 --max-time 300 \
+          -o ~/.agentmemory/bin/iii-download.tar.gz \
+          "https://ghfast.top/https://github.com/iii-hq/iii/releases/download/iii/v$VERSION/iii-x86_64-unknown-linux-gnu.tar.gz"
+        cd ~/.agentmemory/bin && tar -xzf iii-download.tar.gz && rm -f iii-download.tar.gz && chmod +x iii
+        ./iii --version
+    fi
 fi
 
 if [ ! -f "$SERVICE_FILE" ]; then
