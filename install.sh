@@ -496,7 +496,7 @@ function install_officecli()
     sudo apt-get update && sudo apt-get install -y libicu-dev
     sudo npm install -g @officecli/officecli
     if command -v officecli >/dev/null 2>&1; then
-        officecli install opencode
+        officecli install codex  # install skill to ~/.agents/skills
     fi
 }
 
