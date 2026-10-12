@@ -485,8 +485,13 @@ function install_omo()
     mv  $CONFIG_FILE $CONFIG_DIR/opencode.json.backup
     bunx oh-my-openagent install
     mv $CONFIG_DIR/opencode.json.backup $CONFIG_FILE
-    rm $HOME/.omo/omo.jsonc.bak* -rf
     rm $CONFIG_DIR/opencode.json.backup* -rf
+    rm $HOME/.omo/omo.jsonc.bak* -rf
+    if [ -f "$CONFIG_DIR/tui.json" ]; then
+        jq 'del(.plugin)' "$CONFIG_DIR/tui.json" > "$CONFIG_DIR/tui.json.tmp" \
+            && mv "$CONFIG_DIR/tui.json.tmp" "$CONFIG_DIR/tui.json"
+    fi
+
     export_env LSP_TOOLS_MCP_USER_CONFIG "$HOME/.config/opencode/lsp-client.json"
 }
 
