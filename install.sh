@@ -85,7 +85,7 @@ function install_opencode()
         return 0
     fi
     echo "Install opencode..."
-    sudo npm install -g opencode-ai
+    sudo npm i -g @opencode/cli@latest
 }
 
 function install_jq()
@@ -293,7 +293,7 @@ function default_config_install()
     rm -rf $HOME/.cache/opencode/packages/*
     if [ "$PWD" != "$HOME/.opencode" ]; then
         echo "Install global config to $CONFIG_DIR"
-        rsync -av  --include='tui.json' \
+        rsync -av  --include='cli.json' \
             --include='opencode.jsonc' \
             --include='dcp.jsonc' \
             --include='agents' \
@@ -305,6 +305,8 @@ function default_config_install()
     else
         rm -rf "$CONFIG_DIR/dcp.jsonc"
         ln -s "$PWD/dcp.jsonc" "$CONFIG_DIR/dcp.jsonc"
+        rm -rf "$CONFIG_DIR/cli.json"
+        ln -s "$PWD/cli.json" "$CONFIG_DIR/cli.json"
         rm -rf "$CONFIG_DIR/rules"
         ln -s "$PWD/rules" "$CONFIG_DIR/rules"
         rm -rf "$CONFIG_DIR/codebase_memory"
