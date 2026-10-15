@@ -86,6 +86,9 @@ function install_opencode()
     fi
     echo "Install opencode..."
     sudo npm i -g @opencode/cli@latest
+    #use for opencode desktop connect opencode server
+    mkdir -p $HOME/.opencode/bin
+    ln -sfn "$(readlink -f /usr/bin/opencode)" $HOME/.opencode/bin/opencode
 }
 
 function install_jq()
