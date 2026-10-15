@@ -50,9 +50,9 @@ function install_node()
         return 0
     fi
     echo "Install nodejs..."
-    if have apt-get; then
+    if have apt; then
         curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
-        sudo apt-get install -y nodejs
+        sudo apt install -y nodejs
     elif have brew; then
         brew install node
     else
@@ -68,8 +68,8 @@ function install_npm()
         return 0
     fi
     echo "Install npm..."
-    if have apt-get; then
-        sudo apt-get install -y npm
+    if have apt; then
+        sudo apt install -y npm
     elif have brew; then
         brew install npm
     else
@@ -95,8 +95,8 @@ function install_jq()
         return 0
     fi
     echo "Install jq..."
-    if command -v apt-get &>/dev/null; then
-        sudo apt-get install -y jq
+    if command -v apt &>/dev/null; then
+        sudo apt install -y jq
     elif command -v yum &>/dev/null; then
         sudo yum install -y jq
     elif command -v pacman &>/dev/null; then
@@ -127,6 +127,9 @@ function dep_line()
     local cmd=$1 label=$2 core=$3 ver
     if have "$cmd"; then
         ver=$("$cmd" --version 2>/dev/null | head -n 1)
+        if [ "$cmd" = curl ]; then
+            ver=$(printf '%s\n' "$ver" | awk '{print $1, $2}')
+        fi
         [ -z "$ver" ] && ver="已安装"
         printf "  %s✓%s %-12s %s\n" "$C_GREEN" "$C_OFF" "$label" "$ver"
     else
@@ -393,8 +396,8 @@ function install_drawio()
 {
     echo "Install drawio desktop and skill..."
     npx skills add Agents365-ai/drawio-skill -g -y --skill drawio-skill --agent opencode
-    if have apt-get; then
-        sudo apt-get install -y xvfb
+    if have apt; then
+        sudo apt install -y xvfb
     fi
     sudo snap install drawio
 }
@@ -500,7 +503,7 @@ function install_omo()
 function install_officecli()
 {
     echo "Install officecli..."
-    sudo apt-get update && sudo apt-get install -y libicu-dev
+    sudo apt update && sudo apt install -y libicu-dev
     sudo npm install -g @officecli/officecli
     if command -v officecli >/dev/null 2>&1; then
         officecli install codex  # install skill to ~/.agents/skills
@@ -571,48 +574,60 @@ function item_meta()
     esac
 }
 
+ITEM_CMD=""
+
 function item_installed()
 {
     # 返回 0 表示该组件已安装
+    # 若已安装的是可执行文件, 则把命令名写入全局变量 ITEM_CMD(供打印版本号使用)
+    ITEM_CMD=""
     case "$1" in
     rtk)
-        have rtk
+        have rtk && ITEM_CMD=rtk
         ;;
     codebase_memory)
-        have codebase-memory-mcp
+        have codebase-memory-mcp && ITEM_CMD=codebase-memory-mcp
         ;;
     omo)
-        have omo
+        have omo && ITEM_CMD=omo
         ;;
     omniroute)
-        have omniroute
+        have omniroute && ITEM_CMD=omniroute
         ;;
     ocr)
-        have ocr
+        have ocr && ITEM_CMD=ocr
         ;;
     officecli)
-        have officecli
+        have officecli && ITEM_CMD=officecli
         ;;
     caveman)
         jq -e '.agent["cavecrew-builder"]' "$CONFIG_FILE" >/dev/null 2>&1
         ;;
     comet)
-        have comet
+        have comet && ITEM_CMD=comet
         ;;
     graphify)
-        have graphify
+        have graphify && ITEM_CMD=graphify
         ;;
     markitdown)
         [ -n "$(docker images -q markitdown:latest 2>/dev/null)" ]
         ;;
     drawio)
-        have drawio || have draw.io || snap list drawio 2>/dev/null | grep -q drawio
+        if have drawio; then
+            ITEM_CMD=drawio
+        elif have draw.io; then
+            ITEM_CMD=draw.io
+        elif snap list drawio 2>/dev/null | grep -q drawio; then
+            ITEM_CMD=drawio
+        else
+            return 1
+        fi
         ;;
     cua)
-        have cua-driver
+        have cua-driver && ITEM_CMD=cua-driver
         ;;
     agentmemory)
-        have agentmemory
+        have agentmemory && ITEM_CMD=agentmemory
         ;;
     archify)
         [ -d "$HOME/.agents/skills/archify" ]
@@ -621,7 +636,7 @@ function item_installed()
         [ -d "$HOME/.agents/skills/book-to-skill" ] || [ -d "$CONFIG_DIR/skills/book-to-skill" ]
         ;;
     browser_skill)
-        have bsk && [ -f "$HOME/.agents/skills/browser-skill/SKILL.md" ]
+        have bsk && [ -f "$HOME/.agents/skills/browser-skill/SKILL.md" ] && ITEM_CMD=bsk
         ;;
     *)
         return 1
@@ -708,23 +723,35 @@ function pad()
 
 function print_menu()
 {
-    local i=0 rec key mark color
+    local i=0 rec key mark color name ver desc
+    local W_NUM=4 W_MARK=12 W_NAME=28
     echo ""
     echo "${C_BOLD}可安装组件${C_OFF}   (${C_GREEN}✓${C_OFF} 已安装 / ${C_YELLOW}·${C_OFF} 未安装)"
     rule
     for rec in "${INSTALL_ITEMS[@]}"; do
         i=$((i + 1))
         key=$(item_meta "$rec" 1)
+        name=$(item_meta "$rec" 2)
+        desc=$(item_meta "$rec" 3)
         if item_installed "$key"; then
             mark="✓ 已安装"
             color="$C_GREEN"
+            # 已安装且为可执行文件时追加版本号
+            if [ -n "$ITEM_CMD" ]; then
+                ver=$("$ITEM_CMD" --version 2>/dev/null | head -n 1)
+                if [[ "$ver" =~ ([0-9]+(\.[0-9]+)+([.-][0-9A-Za-z]+)*) ]]; then
+                    ver="${BASH_REMATCH[1]}"
+                fi
+                [ -n "$ver" ] && name="$name ($ver)"
+            fi
         else
             mark="· 未安装"
             color="$C_YELLOW"
         fi
-        printf "  %2d) %s%s%s  %s  %s\n" \
-            "$i" "$color" "$(pad "$mark" 12)" "$C_OFF" \
-            "$(pad "$(item_meta "$rec" 2)" 20)" "$(item_meta "$rec" 3)"
+        printf "%*d) %s%s%s  %s  %s\n" \
+            "$W_NUM" "$i" \
+            "$color" "$(pad "$mark" "$W_MARK")" "$C_OFF" \
+            "$(pad "$name" "$W_NAME")" "$desc"
     done
     rule
     echo "  a = 安装全部未安装组件    l = 刷新列表    q = 退出"
