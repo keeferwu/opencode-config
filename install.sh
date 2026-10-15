@@ -293,6 +293,7 @@ function export_env()
 function default_config_install()
 {
     # remove plugin cache
+    rm -rf $HOME/.cache/opencode/npm/*
     rm -rf $HOME/.cache/opencode/packages/*
     if [ "$PWD" != "$HOME/.opencode" ]; then
         echo "Install global config to $CONFIG_DIR"
@@ -479,7 +480,7 @@ function install_ocr()
     fi
 }
 
-function install_omo()
+function install_omo_ultimate()
 {
     echo "Install oh-my-openagent..."
     mkdir -p "$HOME/.omo"
@@ -488,7 +489,7 @@ function install_omo()
         sudo npm install -g bun
     fi
     mv  $CONFIG_FILE $CONFIG_DIR/opencode.json.backup
-    bunx oh-my-openagent install
+    bunx oh-my-openagent install --platform=opencode
     mv $CONFIG_DIR/opencode.json.backup $CONFIG_FILE
     rm $CONFIG_DIR/opencode.json.backup* -rf
     rm $HOME/.omo/omo.jsonc.bak* -rf
@@ -496,7 +497,9 @@ function install_omo()
         jq 'del(.plugin)' "$CONFIG_DIR/tui.json" > "$CONFIG_DIR/tui.json.tmp" \
             && mv "$CONFIG_DIR/tui.json.tmp" "$CONFIG_DIR/tui.json"
     fi
-
+    sudo apt install gh -y
+    sudo npm i -g --allow-scripts=@ast-grep/cli @ast-grep/cli
+    bunx oh-my-openagent doctor
     export_env LSP_TOOLS_MCP_USER_CONFIG "$HOME/.config/opencode/lsp-client.json"
 }
 
@@ -589,7 +592,24 @@ function item_installed()
         have codebase-memory-mcp && ITEM_CMD=codebase-memory-mcp
         ;;
     omo)
-        have omo && ITEM_CMD=omo
+        # 5.x 起 omo 以 OpenCode 插件形式安装到缓存目录, 不在 PATH 上提供命令; 仅旧版/Native 才有 omo 命令
+        if have omo; then
+            # Native
+            ITEM_CMD=omo
+        else
+            # ultimate 从插件安装目录判断(兼容 npm/ 与 packages/ 两种缓存布局及新旧包名)
+            local cache d found=""
+            cache="${XDG_CACHE_HOME:-$HOME/.cache}/opencode"
+            for d in \
+                "$cache"/npm/oh-my-openagent@latest/*/node_modules/oh-my-openagent \
+                "$cache"/npm/oh-my-opencode@latest/*/node_modules/oh-my-opencode \
+                "$cache"/packages/oh-my-openagent@latest/node_modules/oh-my-openagent \
+                "$cache"/packages/oh-my-opencode@latest/node_modules/oh-my-opencode
+            do
+                [ -f "$d/package.json" ] && { found=1; break; }
+            done
+            [ -n "$found" ] || return 1
+        fi
         ;;
     omniroute)
         have omniroute && ITEM_CMD=omniroute
@@ -656,7 +676,7 @@ function run_item()
         install_codebase_memory
         ;;
     omo)
-        install_omo
+        install_omo_ultimate
         ;;
     omniroute)
         install_omniroute
@@ -736,6 +756,8 @@ function print_menu()
         if item_installed "$key"; then
             mark="✓ 已安装"
             color="$C_GREEN"
+            # omo: 无独立命令(ITEM_CMD 为空)即插件形态; native 有命令, 由下方追加版本号
+            [ "$key" = omo ] && [ -z "$ITEM_CMD" ] && name="$name (ultimate)"
             # 已安装且为可执行文件时追加版本号
             if [ -n "$ITEM_CMD" ]; then
                 ver=$("$ITEM_CMD" --version 2>/dev/null | head -n 1)
