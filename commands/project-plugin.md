@@ -13,7 +13,7 @@ Install or uninstall opencode plugins to project's opencode config.
 When the user runs this command (`/project-plugin`), follow these rules:
 
 1. **No arguments** — Read `.opencode/opencode.json` via the `read` tool:
-   - If file exists, list the current `plugin` array contents, then display the `Arguments` and `<plugin>` sections below and stop.
+   - If file exists, list the current `plugins` array contents, then display the `Arguments` and `<plugin>` sections below and stop.
    - If file does not exist, directly display the `Arguments` and `<plugin>` sections below and stop.
    - Do NOT perform any other operations.
 2. **Arguments** — Proceed based on the arguments:
@@ -21,14 +21,13 @@ When the user runs this command (`/project-plugin`), follow these rules:
    - `uninstall <plugin>`: Uninstall plugin.
 3. **`<plugin>`** — The plugin reference, resolve aliases first. Three accepted forms:
    - Aliases:
-     - `dap` → `@debugtalk/opencode-dap`
      - `ponytail` → `@dietrichgebert/ponytail`
      - `omo` → `oh-my-openagent@latest`
      - `superpowers` → `superpowers@git+https://github.com/obra/superpowers.git`
      - `graphify` → `graphify local plugin`
    - Forms after resolution:
      - `graphify` — local plugin (special handling).
-     - `@<org>/<repo>` — scoped plugin, e.g. `@debugtalk/opencode-dap`, `@dietrichgebert/ponytail`.
+     - `@<org>/<repo>` — scoped plugin, e.g. `@dietrichgebert/ponytail`.
      - `<name>@<spec>` — named plugin with version or git spec, e.g. `oh-my-openagent@latest`, `superpowers@git+https://github.com/obra/superpowers.git`.
 
 ## Install plugin
@@ -40,19 +39,24 @@ If `graphify` command is available, install by command:
 ```bash
 graphify install --project --platform opencode
 ```
-Local plugin do not need to be explicitly declared, so remove `.opencode/plugins/graphify.js` from `.opencode/opencode.json` plugin array.
+Local plugin do not need to be explicitly declared, so remove `.opencode/plugins/graphify.js` from `.opencode/opencode.json` plugins array.
 Move the graphify section from `AGENTS.md` to `.opencode/AGENTS.md`. If `.opencode/AGENTS.md` is exists before moving, append to the end of file.
 
-For `@<org>/<repo>` plugins:
-```bash
-opencode plugin @<org>/<repo>@latest --force
+For `@<org>/<repo>` and `<name>@<spec>` plugins:
+Add the resolved reference as an entry of the `plugins` array in `.opencode/opencode.json`. If the file does not exist, create it:
+```jsonc
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugins": [
+    "@dietrichgebert/ponytail",
+    "oh-my-openagent@latest",
+    "superpowers@git+https://github.com/obra/superpowers.git"
+  ]
+}
 ```
+Do not append `@latest` to a spec that already contains one (or a `git+` URL). OpenCode installs newly added packages automatically on startup/reload.
 
-For `<name>@<spec>` plugins:
-```bash
-opencode plugin <name>@<spec> --force
-```
-Do not append `@latest` to a spec that already contains one (or a `git+` URL).
+Do NOT use `opencode plugin add <ref>` here: it installs to the global config (`~/.config/opencode/opencode.json`), not the project. Only use it if the user explicitly wants a global install. It has no `--force` flag.
 
 ## Uninstall plugin
 
@@ -66,8 +70,8 @@ Remove the graphify section from `.opencode/AGENTS.md`. If `.opencode/AGENTS.md`
 For `@<org>/<repo>` or `<name>@<spec>` plugins:
 - If `.opencode/opencode.json` does not exist, skip silently.
 - Read `.opencode/opencode.json`.
-  - If the `plugin` array contains the resolved reference, remove it.
-  - If the `plugin` array becomes empty after removal, remove the `plugin` array field entirely.
+  - If the `plugins` array contains the resolved reference, remove it.
+  - If the `plugins` array becomes empty after removal, remove the `plugins` field entirely.
 
 ## Post-configuration
 

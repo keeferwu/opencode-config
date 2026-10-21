@@ -483,7 +483,7 @@ function install_ocr()
     fi
 }
 
-function install_omo_ultimate()
+function install_omo()
 {
     echo "Install oh-my-openagent..."
     mkdir -p "$HOME/.omo"
@@ -492,18 +492,23 @@ function install_omo_ultimate()
         sudo npm install -g bun
     fi
     mv  $CONFIG_FILE $CONFIG_DIR/opencode.json.backup
-    bunx oh-my-openagent install --platform=opencode
-    mv $CONFIG_DIR/opencode.json.backup $CONFIG_FILE
-    rm $CONFIG_DIR/opencode.json.backup* -rf
-    rm $HOME/.omo/omo.jsonc.bak* -rf
-    if [ -f "$CONFIG_DIR/tui.json" ]; then
-        jq 'del(.plugin)' "$CONFIG_DIR/tui.json" > "$CONFIG_DIR/tui.json.tmp" \
-            && mv "$CONFIG_DIR/tui.json.tmp" "$CONFIG_DIR/tui.json"
-    fi
     sudo apt install gh -y
     sudo npm i -g --allow-scripts=@ast-grep/cli @ast-grep/cli
-    bunx oh-my-openagent doctor
-    export_env LSP_TOOLS_MCP_USER_CONFIG "$HOME/.config/opencode/lsp-client.json"
+    bunx oh-my-openagent install
+    if [ -f "$HOME/.bun/bin/omo" ]; then
+        # native
+        $HOME/.bun/bin/omo doctor
+    else
+        # ultimate
+        bunx oh-my-openagent doctor
+        mv $CONFIG_DIR/opencode.json.backup $CONFIG_FILE
+        rm $CONFIG_DIR/opencode.json.backup* -rf
+        rm $HOME/.omo/omo.jsonc.bak* -rf
+        if [ -f "$CONFIG_DIR/tui.json" ]; then
+            jq 'del(.plugin)' "$CONFIG_DIR/tui.json" > "$CONFIG_DIR/tui.json.tmp" \
+                && mv "$CONFIG_DIR/tui.json.tmp" "$CONFIG_DIR/tui.json"
+        fi
+    fi
 }
 
 function install_officecli()
@@ -679,7 +684,7 @@ function run_item()
         install_codebase_memory
         ;;
     omo)
-        install_omo_ultimate
+        install_omo
         ;;
     omniroute)
         install_omniroute
