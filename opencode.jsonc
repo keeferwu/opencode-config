@@ -64,7 +64,6 @@
     }
   },
   "plugin": [
-    //"opencode-mem@latest",
     //"opencode-skill-creator@latest",
     "@tarquinen/opencode-dcp@latest"
   ]
