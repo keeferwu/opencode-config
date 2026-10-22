@@ -1,32 +1,35 @@
 // OMO configuration
 {
-  "[opencode]": {
-    "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/omo.schema.json",
+  "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/omo.schema.json",
+  "[native]": {
+    "model_profile": "daily-normal",
     // Agent system configuration
     "agents": {
-      // sisyphus: Main orchestrator: plans and delegates to specialized agents, pushes tasks to completion with aggressive parallel execution
-      // hephaestus: Autonomous deep worker: given goals rather than steps, explores the codebase, researches patterns, and executes end-to-end ("The Legitimate Craftsman")
-      // oracle: Read-only high-IQ consultant: architecture decisions and complex debugging, handles unfamiliar patterns, security concerns, or cross-system tradeoffs
-      // librarian: Documentation and open-source code search: tracks latest APIs and best practices across libraries
-      // explore: Fast codebase grep / pattern discovery: uses speed-first model
-      // multimodal-looker: visual and screenshot analysis (image/UI scenarios)
-      // prometheus: Strategic planner: interview mode, asks questions first, identifies scope, then produces a detailed plan
-      // metis: Plan consultant / gap analysis: finds what Prometheus missed before the plan is finalized
-      // momus: Plan reviewer: ruthlessly reviews plans for clarity, verifiability, and context sufficiency
-      // atlas: Plan execution conductor: dispatches tasks to specialized subagents, independently verifies completion, accumulates learnings across tasks
-      // sisyphus-junior: Concrete subtask executor delegated by Atlas (lean version)
-    },
-    // Category classification system
-    "categories": {
-      // visual-engineering: Frontend UI/UX, styling, animation, visual design
-      // ultrabrain: Hard logic and architecture decisions: heavy-reasoning routing
-      // deep: Autonomous research + end-to-end implementation, needs long-chain exploration
-      // artistry: Creative/design tasks, unconventional approaches
-      // quick: Single-file changes, typo fixes, lightweight modifications
-      // unspecified-low: Unspecified low-effort fallback, prefers the cheapest available model
-      // unspecified-high: Unspecified high-effort fallback, calls the strongest model available
-      // writing: Documentation and prose writing: prefers prose-optimized models
-    },
+	// sisyphus: Main orchestrator: plans and delegates to specialized agents, pushes tasks to completion with aggressive parallel execution
+	// hephaestus: Autonomous deep worker: given goals rather than steps, explores the codebase, researches patterns, and executes end-to-end ("The Legitimate Craftsman")
+	// oracle: Read-only high-IQ consultant: architecture decisions and complex debugging, handles unfamiliar patterns, security concerns, or cross-system tradeoffs
+	// librarian: Documentation and open-source code search: tracks latest APIs and best practices across libraries
+	// explore: Fast codebase grep / pattern discovery: uses speed-first model
+	// multimodal-looker: visual and screenshot analysis (image/UI scenarios)
+	// prometheus: Strategic planner: interview mode, asks questions first, identifies scope, then produces a detailed plan
+	// metis: Plan consultant / gap analysis: finds what Prometheus missed before the plan is finalized
+	// momus: Plan reviewer: ruthlessly reviews plans for clarity, verifiability, and context sufficiency
+	// atlas: Plan execution conductor: dispatches tasks to specialized subagents, independently verifies completion, accumulates learnings across tasks
+	// sisyphus-junior: Concrete subtask executor delegated by Atlas (lean version)
+	},
+	// Category classification system
+	"categories": {
+	// visual-engineering: Frontend UI/UX, styling, animation, visual design
+	// ultrabrain: Hard logic and architecture decisions: heavy-reasoning routing
+	// deep: Autonomous research + end-to-end implementation, needs long-chain exploration
+	// artistry: Creative/design tasks, unconventional approaches
+	// quick: Single-file changes, typo fixes, lightweight modifications
+	// unspecified-low: Unspecified low-effort fallback, prefers the cheapest available model
+	// unspecified-high: Unspecified high-effort fallback, calls the strongest model available
+	// writing: Documentation and prose writing: prefers prose-optimized models
+	}
+  },
+  "[opencode]": {
     // Experimental features
     "experimental": {
       // Disable the auto-injected omo-env block (date/time/timezone).
