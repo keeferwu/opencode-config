@@ -89,6 +89,8 @@ function install_opencode()
     #use for opencode desktop connect opencode server
     mkdir -p $HOME/.opencode/bin
     ln -sfn "$(readlink -f /usr/bin/opencode)" $HOME/.opencode/bin/opencode
+    echo "Start opencode server when system setup..."
+    ./setup-server.sh
 }
 
 function install_jq()
