@@ -72,5 +72,11 @@
     "type": "auto",
     "layout": "main-vertical",
     "main_pane_size": 60
-  }
+  },
+  "disabled_agents": [],
+  "disabled_mcps": [],
+  "disabled_tools": [],
+  "disabled_skills": [],
+  "disabled_hooks": [],
+  "disabled_commands": []
 }

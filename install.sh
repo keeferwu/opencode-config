@@ -505,6 +505,8 @@ function install_omo_slim()
     fi
     bunx oh-my-opencode-slim@latest install
     bunx oh-my-opencode-slim@latest doctor
+    set_env OPENCODE_EXPERIMENTAL_BACKGROUND_SUBAGENTS true
+    set_env OPENCODE_ENABLE_EXA 1
 }
 
 function install_officecli()
