@@ -22,13 +22,12 @@ When the user runs this command (`/project-plugin`), follow these rules:
 3. **`<plugin>`** — The plugin reference, resolve aliases first. Three accepted forms:
    - Aliases:
      - `ponytail` → `@dietrichgebert/ponytail`
-     - `omo` → `oh-my-openagent@latest`
      - `superpowers` → `superpowers@git+https://github.com/obra/superpowers.git`
      - `graphify` → `graphify local plugin`
    - Forms after resolution:
      - `graphify` — local plugin (special handling).
      - `@<org>/<repo>` — scoped plugin, e.g. `@dietrichgebert/ponytail`.
-     - `<name>@<spec>` — named plugin with version or git spec, e.g. `oh-my-openagent@latest`, `superpowers@git+https://github.com/obra/superpowers.git`.
+     - `<name>@<spec>` — named plugin with version or git spec, e.g. `superpowers@git+https://github.com/obra/superpowers.git`.
 
 ## Install plugin
 
@@ -49,7 +48,6 @@ Add the resolved reference as an entry of the `plugins` array in `.opencode/open
   "$schema": "https://opencode.ai/config.json",
   "plugins": [
     "@dietrichgebert/ponytail",
-    "oh-my-openagent@latest",
     "superpowers@git+https://github.com/obra/superpowers.git"
   ]
 }
