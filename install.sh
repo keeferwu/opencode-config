@@ -2,7 +2,7 @@
 
 # opencode 增强组件安装器
 #   交互式: ./install.sh
-#   参数式: ./install.sh --omo --rtk ...
+#   参数式: ./install.sh --omo-slim --rtk ...
 
 CONFIG_DIR="$HOME/.config/opencode"
 CONFIG_FILE="$CONFIG_DIR/opencode.json"
@@ -485,32 +485,15 @@ function install_ocr()
     fi
 }
 
-function install_omo()
+function install_omo_slim()
 {
-    echo "Install oh-my-openagent..."
-    mkdir -p "$HOME/.omo"
-    cp omo.jsonc "$HOME/.omo"
+    echo "Install oh-my-opencode-slim..."
+    rm -rf "$CONFIG_DIR/oh-my-opencode-slim.json"
+    ln -sf "$PWD/oh-my-opencode-slim.json" "$CONFIG_DIR/oh-my-opencode-slim.json"
     if ! command -v bunx >/dev/null 2>&1; then
         sudo npm install -g bun
     fi
-    mv  $CONFIG_FILE $CONFIG_DIR/opencode.json.backup
-    sudo apt install gh -y
-    sudo npm i -g --allow-scripts=@ast-grep/cli @ast-grep/cli
-    bunx oh-my-openagent install
-    if [ -f "$HOME/.bun/bin/omo" ]; then
-        # native
-        $HOME/.bun/bin/omo doctor
-    else
-        # ultimate
-        bunx oh-my-openagent doctor
-        mv $CONFIG_DIR/opencode.json.backup $CONFIG_FILE
-        rm $CONFIG_DIR/opencode.json.backup* -rf
-        rm $HOME/.omo/omo.jsonc.bak* -rf
-        if [ -f "$CONFIG_DIR/tui.json" ]; then
-            jq 'del(.plugin)' "$CONFIG_DIR/tui.json" > "$CONFIG_DIR/tui.json.tmp" \
-                && mv "$CONFIG_DIR/tui.json.tmp" "$CONFIG_DIR/tui.json"
-        fi
-    fi
+    bunx oh-my-opencode-slim@latest install
 }
 
 function install_officecli()
@@ -559,7 +542,7 @@ function install_browser_skill()
 INSTALL_ITEMS=(
 "rtk|rtk|压缩命令输出, 节省 token"
 "codebase_memory|codebase-memory|代码图谱 MCP"
-"omo|oh-my-openagent|多模型 agent 编排 (OMO)"
+"omo-slim|oh-my-opencode-slim|多模型 agent 编排插件"
 "omniroute|OmniRoute|LLM 代理"
 "ocr|open-code-review|代码评审"
 "officecli|officecli|处理 docx/xlsx/pptx"
@@ -601,25 +584,17 @@ function item_installed()
     codebase_memory)
         have codebase-memory-mcp && ITEM_CMD=codebase-memory-mcp
         ;;
-    omo)
-        # 5.x 起 omo 以 OpenCode 插件形式安装到缓存目录, 不在 PATH 上提供命令; 仅旧版/Native 才有 omo 命令
-        if have omo; then
-            # Native
-            ITEM_CMD=omo
-        else
-            # ultimate 从插件安装目录判断(兼容 npm/ 与 packages/ 两种缓存布局及新旧包名)
-            local cache d found=""
-            cache="${XDG_CACHE_HOME:-$HOME/.cache}/opencode"
-            for d in \
-                "$cache"/npm/oh-my-openagent@latest/*/node_modules/oh-my-openagent \
-                "$cache"/npm/oh-my-opencode@latest/*/node_modules/oh-my-opencode \
-                "$cache"/packages/oh-my-openagent@latest/node_modules/oh-my-openagent \
-                "$cache"/packages/oh-my-opencode@latest/node_modules/oh-my-opencode
-            do
-                [ -f "$d/package.json" ] && { found=1; break; }
-            done
-            [ -n "$found" ] || return 1
-        fi
+    omo-slim)
+        # 从插件安装目录判断(兼容 npm/ 与 packages/ 两种缓存布局及新旧包名)
+        local cache d found=""
+        cache="${XDG_CACHE_HOME:-$HOME/.cache}/opencode"
+        for d in \
+            "$cache"/npm/oh-my-opencode-slim@latest/*/node_modules/oh-my-opencode-slim \
+            "$cache"/packages/oh-my-opencode-slim@latest/node_modules/oh-my-opencode-slim
+        do
+            [ -f "$d/package.json" ] && { found=1; break; }
+        done
+        [ -n "$found" ] || return 1
         ;;
     omniroute)
         have omniroute && ITEM_CMD=omniroute
@@ -685,8 +660,8 @@ function run_item()
     codebase_memory)
         install_codebase_memory
         ;;
-    omo)
-        install_omo
+    omo-slim)
+        install_omo_slim
         ;;
     omniroute)
         install_omniroute
@@ -766,8 +741,6 @@ function print_menu()
         if item_installed "$key"; then
             mark="✓ 已安装"
             color="$C_GREEN"
-            # omo: 无独立命令(ITEM_CMD 为空)即插件形态; native 有命令, 由下方追加版本号
-            [ "$key" = omo ] && [ -z "$ITEM_CMD" ] && name="$name (ultimate)"
             # 已安装且为可执行文件时追加版本号
             if [ -n "$ITEM_CMD" ]; then
                 ver=$("$ITEM_CMD" --version 2>/dev/null | head -n 1)
@@ -806,7 +779,7 @@ function interactive_menu()
     local -a targets=()
 
     if [ ! -t 0 ]; then
-        echo "非交互终端: 请使用参数模式, 例如 ./install.sh --omo  (查看 ./install.sh --help)"
+        echo "非交互终端: 请使用参数模式, 例如 ./install.sh --omo-slim  (查看 ./install.sh --help)"
         return 1
     fi
 
@@ -890,7 +863,7 @@ function print_help()
     echo "options:"
     echo "  --rtk:                   安装 rtk, 压缩命令输出以节省 token"
     echo "  --codebase-memory:       安装 codebase-memory-mcp, 提供代码图谱"
-    echo "  --omo:                   安装 oh-my-openagent, 多模型 agent 编排"
+    echo "  --omo-slim:              安装 oh-my-opencode-slim, 多模型 agent 编排插件"
     echo "  --omniroute:             安装 omniroute, 作为 LLM 代理"
     echo "  --ocr:                   安装 open-code-review, 用于代码评审"
     echo "  --officecli:             安装 officecli, 处理 docx/xlsx/pptx 文档"
@@ -917,8 +890,8 @@ function flag_to_key()
     --codebase-memory)
         echo "codebase_memory"
         ;;
-    --omo)
-        echo "omo"
+    --omo-slim)
+        echo "omo-slim"
         ;;
     --omniroute)
         echo "omniroute"
@@ -996,7 +969,7 @@ function main()
     done
 
     if [ "$#" -eq 0 ] && [ ! -t 0 ]; then
-        echo "非交互终端: 请使用参数模式, 例如 ./install.sh --omo  (查看 ./install.sh --help)"
+        echo "非交互终端: 请使用参数模式, 例如 ./install.sh --omo-slim  (查看 ./install.sh --help)"
         return 1
     fi
 
