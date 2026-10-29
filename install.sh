@@ -498,12 +498,17 @@ function install_ocr()
 function install_omo_slim()
 {
     echo "Install oh-my-opencode-slim..."
-    rm -rf "$CONFIG_DIR/oh-my-opencode-slim.json"
-    ln -sf "$PWD/oh-my-opencode-slim.json" "$CONFIG_DIR/oh-my-opencode-slim.json"
     if ! command -v bunx >/dev/null 2>&1; then
         sudo npm install -g bun
     fi
     bunx oh-my-opencode-slim@latest install
+    # 把 omo-slim.json 融合进已有的 oh-my-opencode-slim.json
+    local src="$PWD/omo-slim.json"
+    local dst="$CONFIG_DIR/oh-my-opencode-slim.json"
+    if [ -f "$dst" ]; then
+        jq -s '.[0] * .[1]' "$dst" "$src" > "${dst}.tmp" && mv "${dst}.tmp" "$dst"
+        echo "Merged omo-slim.json into $dst"
+    fi
     bunx oh-my-opencode-slim@latest doctor
     set_env OPENCODE_EXPERIMENTAL_BACKGROUND_SUBAGENTS true
     set_env OPENCODE_ENABLE_EXA 1
