@@ -7,7 +7,7 @@
     "wrap": "word"
   },
   "session": {
-    "sidebar": "hide",
+    "sidebar": "auto",
     "scrollbar": true,
     "thinking": "show"
   },
@@ -20,5 +20,8 @@
     "app.exit": "<leader>q",
     "prompt.history.previous": "ctrl+up",
     "prompt.history.next": "ctrl+down"
+  },
+  "tabs": {
+    "mode": "off"
   }
 }

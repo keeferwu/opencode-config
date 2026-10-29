@@ -65,6 +65,8 @@
   },
   "plugin": [
     //"opencode-skill-creator@latest",
+    "opencode-user-timeline",
+    "opencode-sessions-sidebar",
     "@tarquinen/opencode-dcp@latest"
   ]
 }
