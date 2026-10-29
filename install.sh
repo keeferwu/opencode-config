@@ -103,6 +103,19 @@ function install_opencode()
     ./setup-server.sh
 }
 
+function install_omo()
+{
+    echo "Install oh-my-openagent..."
+    sudo apt install gh -y
+    sudo npm i -g --allow-scripts=@ast-grep/cli @ast-grep/cli
+    curl -fsSL https://get.omo.dev/install.sh | bash
+    if command -v omo &>/dev/null; then
+        # sync opencode config to omo
+        omo setup
+        omo doctor
+    fi
+}
+
 function install_jq()
 {
     if have jq; then
@@ -163,6 +176,7 @@ function check_env()
     dep_line node "nodejs" core
     dep_line npm "npm" core
     dep_line opencode "opencode" core
+    dep_line omo "omo" core
     dep_line jq "jq" core
     rule
     dep_line rsync "rsync"
@@ -185,6 +199,9 @@ function install_env()
             ;;
         opencode)
             install_opencode
+            ;;
+        omo)
+            install_omo
             ;;
         jq)
             install_jq
@@ -871,7 +888,7 @@ function print_help()
     echo "用法:"
     echo "  ./install.sh                 进入交互式安装列表"
     echo "  ./install.sh --list          仅打印安装列表与当前状态"
-    echo "  ./install.sh --env           只检查并安装基础依赖 (nodejs/npm/opencode/jq)"
+    echo "  ./install.sh --env           只检查并安装基础依赖 (nodejs/npm/opencode/omo/jq)"
     echo "  ./install.sh --<component>   安装指定组件, 可组合多个"
     echo ""
     echo "每次运行都会先检测基础依赖, 并同步默认配置:"
