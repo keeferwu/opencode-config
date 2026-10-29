@@ -14,6 +14,16 @@ if [ ! -f "$CONFIG_FILE" ]; then
 }
 EOF
 fi
+if ! grep -qF '. "$HOME/.env"' "$HOME/.profile"; then
+    cat >> "$HOME/.profile" <<'EOF'
+# 环境变量集中在 .env，.profile负责加载（set -a 使其中的赋值自动导出）
+if [ -r "$HOME/.env" ]; then
+  set -a
+  . "$HOME/.env"
+  set +a
+fi
+EOF
+fi
 
 # ==================== 通用工具 ====================
 
@@ -275,24 +285,24 @@ function omniroute_provider_config()
     echo ""
 }
 
-function export_env()
+function set_env()
 {
     local var_name=$1
     local var_value=$2
-    local env_file=$HOME/.profile
+    local env_file=$HOME/.env
 
     # skip if the variable is already set in the current environment
-    if [ -n "${!var_name}" ]; then
+    if [ -n "${!var_name}" ] || [ ! -f "$env_file" ]; then
         return 0
     fi
 
-    # skip if the variable already exists in $HOME/.profile
-    if [ -f "$env_file" ] && grep -q "^export $var_name=" "$env_file"; then
+    # skip if the variable already exists in env
+    if env | grep -q "$var_name"; then
         return 0
     fi
 
-    echo "export $var_name=$var_value" >> "$env_file"
-    echo "Added export $var_name=$var_value to $env_file"
+    echo "$var_name=$var_value" >> "$env_file"
+    echo "Added $var_name=$var_value to $env_file"
 }
 
 function default_config_install()
@@ -322,15 +332,15 @@ function default_config_install()
         ln -s "$PWD/codebase_memory" "$CONFIG_DIR/codebase_memory"
     fi
 
-    export_env EDITOR vim
+    set_env EDITOR vim
     # Disable all .claude support
-    export_env OPENCODE_DISABLE_CLAUDE_CODE true
+    set_env OPENCODE_DISABLE_CLAUDE_CODE true
     # Disable only ~/.claude/CLAUDE.md
-    #export_env OPENCODE_DISABLE_CLAUDE_CODE_PROMPT true
+    #set_env OPENCODE_DISABLE_CLAUDE_CODE_PROMPT true
     # Disable only .claude/skills
-    #export_env OPENCODE_DISABLE_CLAUDE_CODE_SKILLS true
+    #set_env OPENCODE_DISABLE_CLAUDE_CODE_SKILLS true
     # Enable .agents/skills
-    export_env OPENCODE_DISABLE_EXTERNAL_SKILLS false
+    set_env OPENCODE_DISABLE_EXTERNAL_SKILLS false
 
     echo "Install skills to $HOME/.agents/skills"
     # npx skills add Option         Description
@@ -494,6 +504,7 @@ function install_omo_slim()
         sudo npm install -g bun
     fi
     bunx oh-my-opencode-slim@latest install
+    bunx oh-my-opencode-slim@latest doctor
 }
 
 function install_officecli()
