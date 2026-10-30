@@ -1,0 +1,77 @@
+{
+  "$schema": "https://unpkg.com/oh-my-opencode-slim@latest/oh-my-opencode-slim.schema.json",
+  "preset": "opencode",
+  "presets": {
+    "opencode": {
+      "orchestrator": {
+        "model": "opencode/claude-sonnet-5",
+        "variant": "medium",
+        "skills": [
+          "*"
+        ]
+      },
+      "oracle": {
+        "model": "opencode/claude-opus-5",
+        "variant": "high",
+        "skills": [
+          "simplify"
+        ]
+      },
+      "explorer": {
+        "model": "opencode/deepseek-v4.1-flash",
+        "variant": "low",
+        "skills": []
+      },
+      "designer": {
+        "model": "opencode/gemini-3.8-flash",
+        "variant": "medium",
+        "skills": []
+      },
+      "fixer": {
+        "model": "opencode/deepseek-v4.1-flash",
+        "variant": "high",
+        "skills": []
+      },
+      "observer": {
+        "model": "opencode/gemini-3.5-flash-lite",
+        "variant": "low",
+        "skills": []
+      },
+      "council": {
+        "model": "opencode/claude-opus-5",
+        "variant": "high",
+        "skills": []
+      }
+    }
+  },
+  "council": {
+    "default_preset": "default",
+    "presets": {
+      "default": {
+        "alpha": {
+          "model": "opencode/gpt-6.1-sol",
+          "variant": "high"
+        },
+        "beta": {
+          "model": "opencode/gemini-3.1-pro",
+          "variant": "high"
+        },
+        "gamma": {
+          "model": "opencode/qwen3.8-max",
+          "variant": "high"
+        }
+      }
+    }
+  },
+  "multiplexer": {
+    "type": "auto",
+    "layout": "main-vertical",
+    "main_pane_size": 60
+  },
+  "disabled_agents": [],
+  "disabled_mcps": [],
+  "disabled_tools": [],
+  "disabled_skills": [],
+  "disabled_hooks": [],
+  "disabled_commands": []
+}
