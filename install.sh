@@ -103,16 +103,17 @@ function install_opencode()
     ./setup-server.sh
 }
 
-function install_omo()
+function install_omo_native()
 {
     echo "Install oh-my-openagent..."
     sudo apt install gh -y
     sudo npm i -g --allow-scripts=@ast-grep/cli @ast-grep/cli
-    curl -fsSL https://get.omo.dev/install.sh | bash
-    if command -v omo &>/dev/null; then
-        # sync opencode config to omo
-        omo setup
-        omo doctor
+    if ! command -v bunx >/dev/null 2>&1; then
+        sudo npm install -g bun
+    fi
+    bunx oh-my-openagent install --platform=native
+    if [ -f "$HOME/.bun/bin/omo" ]; then
+        $HOME/.bun/bin/omo doctor
     fi
 }
 
@@ -176,7 +177,6 @@ function check_env()
     dep_line node "nodejs" core
     dep_line npm "npm" core
     dep_line opencode "opencode" core
-    dep_line omo "omo" core
     dep_line jq "jq" core
     rule
     dep_line rsync "rsync"
@@ -199,9 +199,6 @@ function install_env()
             ;;
         opencode)
             install_opencode
-            ;;
-        omo)
-            install_omo
             ;;
         jq)
             install_jq
@@ -577,7 +574,8 @@ function install_browser_skill()
 INSTALL_ITEMS=(
 "rtk|rtk|压缩命令输出, 节省 token"
 "codebase_memory|codebase-memory|代码图谱 MCP"
-"omo-slim|oh-my-opencode-slim|多模型 agent 编排插件"
+"omo_slim|oh-my-opencode-slim|多模型 agent 编排插件"
+"omo_native|oh-my-openagent|多模型 agent 编排 (native)"
 "omniroute|OmniRoute|LLM 代理"
 "ocr|open-code-review|代码评审"
 "officecli|officecli|处理 docx/xlsx/pptx"
@@ -619,7 +617,10 @@ function item_installed()
     codebase_memory)
         have codebase-memory-mcp && ITEM_CMD=codebase-memory-mcp
         ;;
-    omo-slim)
+    omo_native)
+        have omo && ITEM_CMD=omo
+        ;;
+    omo_slim)
         # 从插件安装目录判断(兼容 npm/ 与 packages/ 两种缓存布局及新旧包名)
         local cache d found=""
         cache="${XDG_CACHE_HOME:-$HOME/.cache}/opencode"
@@ -695,7 +696,10 @@ function run_item()
     codebase_memory)
         install_codebase_memory
         ;;
-    omo-slim)
+    omo_native)
+        install_omo_native
+        ;;
+    omo_slim)
         install_omo_slim
         ;;
     omniroute)
@@ -888,7 +892,7 @@ function print_help()
     echo "用法:"
     echo "  ./install.sh                 进入交互式安装列表"
     echo "  ./install.sh --list          仅打印安装列表与当前状态"
-    echo "  ./install.sh --env           只检查并安装基础依赖 (nodejs/npm/opencode/omo/jq)"
+    echo "  ./install.sh --env           只检查并安装基础依赖 (nodejs/npm/opencode/jq)"
     echo "  ./install.sh --<component>   安装指定组件, 可组合多个"
     echo ""
     echo "每次运行都会先检测基础依赖, 并同步默认配置:"
@@ -899,6 +903,7 @@ function print_help()
     echo "  --rtk:                   安装 rtk, 压缩命令输出以节省 token"
     echo "  --codebase-memory:       安装 codebase-memory-mcp, 提供代码图谱"
     echo "  --omo-slim:              安装 oh-my-opencode-slim, 多模型 agent 编排插件"
+    echo "  --omo-native:            安装 oh-my-openagent, 多模型 agent 编排 (native)"
     echo "  --omniroute:             安装 omniroute, 作为 LLM 代理"
     echo "  --ocr:                   安装 open-code-review, 用于代码评审"
     echo "  --officecli:             安装 officecli, 处理 docx/xlsx/pptx 文档"
@@ -925,8 +930,11 @@ function flag_to_key()
     --codebase-memory)
         echo "codebase_memory"
         ;;
+    --omo-native)
+        echo "omo_native"
+        ;;
     --omo-slim)
-        echo "omo-slim"
+        echo "omo_slim"
         ;;
     --omniroute)
         echo "omniroute"

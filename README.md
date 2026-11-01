@@ -28,7 +28,7 @@ git clone https://gitee.com/keeferwu/opencode-config ~/.opencode
 # 查看全部可安装的增强应用
 ./install.sh --help
 # 参数模式: 直接安装指定组件, 可组合
-./install.sh --omo --rtk
+./install.sh --omo-slim --rtk
 ```
 
 每次运行安装器都会先执行: 检测基础依赖(缺失时询问安装) + 同步默认配置(把 `tui.json`、`opencode.jsonc`、`dcp.jsonc`、`agents`、`commands`、`rules`、`skills`、`codebase_memory` 同步到 `~/.config/opencode` 并安装全局 skills), 这部分不属于组件列表。`--list`、`--help`、`--env` 只做查看/依赖检查, 不执行配置同步。
