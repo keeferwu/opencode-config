@@ -88,6 +88,16 @@ function install_npm()
     fi
 }
 
+function install_bun()
+{
+    if have bun; then
+        echo "bun already installed, skipping."
+        return 0
+    fi
+    echo "Install bun..."
+    sudo npm install -g bun --allow-scripts=bun
+}
+
 function install_opencode()
 {
     if have opencode; then
@@ -108,9 +118,6 @@ function install_omo_native()
     echo "Install oh-my-openagent..."
     sudo apt install gh -y
     sudo npm i -g --allow-scripts=@ast-grep/cli @ast-grep/cli
-    if ! command -v bunx >/dev/null 2>&1; then
-        sudo npm install -g bun
-    fi
     bunx oh-my-openagent install --platform=native
     if [ -f "$HOME/.bun/bin/omo" ]; then
         $HOME/.bun/bin/omo doctor
@@ -176,6 +183,7 @@ function check_env()
     echo "${C_BOLD}[环境检测]${C_OFF}"
     dep_line node "nodejs" core
     dep_line npm "npm" core
+    dep_line bun "bun" core
     dep_line opencode "opencode" core
     dep_line jq "jq" core
     rule
@@ -196,6 +204,9 @@ function install_env()
             ;;
         npm)
             install_npm
+            ;;
+        bun)
+            install_bun
             ;;
         opencode)
             install_opencode
@@ -512,9 +523,6 @@ function install_ocr()
 function install_omo_slim()
 {
     echo "Install oh-my-opencode-slim..."
-    if ! command -v bunx >/dev/null 2>&1; then
-        sudo npm install -g bun
-    fi
     bunx oh-my-opencode-slim@latest install
     # 把 omo-slim.json 融合进已有的 oh-my-opencode-slim.json
     local src="$PWD/omo-slim.json"
@@ -892,7 +900,7 @@ function print_help()
     echo "用法:"
     echo "  ./install.sh                 进入交互式安装列表"
     echo "  ./install.sh --list          仅打印安装列表与当前状态"
-    echo "  ./install.sh --env           只检查并安装基础依赖 (nodejs/npm/opencode/jq)"
+    echo "  ./install.sh --env           只检查并安装基础依赖 (nodejs/npm/bun/opencode/jq)"
     echo "  ./install.sh --<component>   安装指定组件, 可组合多个"
     echo ""
     echo "每次运行都会先检测基础依赖, 并同步默认配置:"
