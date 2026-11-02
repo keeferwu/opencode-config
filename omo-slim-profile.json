@@ -4,41 +4,62 @@
   "presets": {
     "opencode": {
       "orchestrator": {
-        "model": "opencode/claude-sonnet-5",
+        "model": [
+          "opencode/claude-sonnet-5",
+          "opencode/claude-opus-5"
+        ],
         "variant": "medium",
         "skills": [
           "*"
         ]
       },
       "oracle": {
-        "model": "opencode/claude-opus-5",
+        "model": [
+          "opencode/claude-opus-5",
+          "opencode/qwen3.8-max"
+        ],
         "variant": "high",
         "skills": [
           "simplify"
         ]
       },
       "explorer": {
-        "model": "opencode/deepseek-v4.1-flash",
+        "model": [
+          "opencode/deepseek-v4.1-flash",
+          "opencode/gemini-3.5-flash-lite"
+        ],
         "variant": "low",
         "skills": []
       },
-      "designer": {
-        "model": "opencode/gemini-3.8-flash",
-        "variant": "medium",
-        "skills": []
-      },
       "fixer": {
-        "model": "opencode/deepseek-v4.1-flash",
+        "model": [
+          "opencode/deepseek-v4.1-flash",
+          "opencode/claude-sonnet-5"
+        ],
         "variant": "high",
         "skills": []
       },
       "observer": {
-        "model": "opencode/gemini-3.5-flash-lite",
+        "model": [
+          "opencode/gemini-3.5-flash-lite",
+          "opencode/gemini-3.8-flash"
+        ],
         "variant": "low",
         "skills": []
       },
+      "designer": {
+        "model": [
+          "opencode/gemini-3.8-flash",
+          "opencode/gemini-4-argon"
+        ],
+        "variant": "medium",
+        "skills": []
+      },
       "council": {
-        "model": "opencode/claude-opus-5",
+        "model": [
+          "opencode/claude-opus-5",
+          "opencode/claude-sonnet-5"
+        ],
         "variant": "high",
         "skills": []
       }
@@ -49,12 +70,12 @@
     "presets": {
       "default": {
         "alpha": {
-          "model": "opencode/gpt-6.1-sol",
+          "model": "opencode/claude-opus-5",
           "variant": "high"
         },
         "beta": {
-          "model": "opencode/gemini-3.1-pro",
-          "variant": "high"
+          "model": "opencode/gemini-3.8-flash",
+          "variant": "medium"
         },
         "gamma": {
           "model": "opencode/qwen3.8-max",
@@ -62,6 +83,11 @@
         }
       }
     }
+  },
+  "fallback": {
+    "enabled": true,
+    "maxRetries": 1,
+    "retryDelayMs": 500
   },
   "multiplexer": {
     "type": "auto",
