@@ -404,6 +404,7 @@ function install_codebase_memory()
 {
     echo "Install codebase-memory-mcp..."
     curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/install.sh | bash -s -- --clients=opencode
+    sudo rm $HOME/.local/bin/install.sh
     sudo cp $HOME/.local/bin/codebase-memory-mcp /usr/local/bin/
     sudo chown root:root /usr/local/bin/codebase-memory-mcp
     sudo chmod 777 /usr/local/bin/codebase-memory-mcp
