@@ -109,6 +109,11 @@ function install_opencode()
     #use for opencode desktop connect opencode server
     mkdir -p $HOME/.opencode/bin
     ln -sfn "$(readlink -f /usr/bin/opencode)" $HOME/.opencode/bin/opencode
+
+    opencode --completions bash > opencode-completion
+    sudo mv opencode-completion /usr/share/bash-completion/completions/opencode
+    sudo chown root:root /usr/share/bash-completion/completions/opencode
+
     echo "Start opencode server when system setup..."
     ./setup-server.sh
 }
