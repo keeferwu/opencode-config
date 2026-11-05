@@ -105,7 +105,7 @@ function install_opencode()
         return 0
     fi
     echo "Install opencode..."
-    sudo npm i -g @opencode/cli@latest
+    sudo npm i -g @opencode/cli@latest --allow-scripts=@opencode/cli
     #use for opencode desktop connect opencode server
     mkdir -p $HOME/.opencode/bin
     ln -sfn "$(readlink -f /usr/bin/opencode)" $HOME/.opencode/bin/opencode
@@ -495,7 +495,7 @@ function install_caveman()
 function install_agentmemory()
 {
     echo "Install agentmemory..."
-    sudo npm install -g @agentmemory/agentmemory
+    sudo npm install -g @agentmemory/agentmemory --allow-scripts=@agentmemory/agentmemory
     npx git-ripper https://github.com/rohitg00/agentmemory/tree/main/plugin/opencode -o ./agentmemory
     ./agentmemory/install.sh
 }
@@ -503,7 +503,7 @@ function install_agentmemory()
 function install_omniroute()
 {
     echo "Install omniroute..."
-    sudo npm install -g omniroute
+    sudo npm install -g omniroute --allow-scripts=omniroute
     if command -v omniroute >/dev/null 2>&1; then
         #omniroute setup opencode
         # use config provider instead of plugin
@@ -514,7 +514,7 @@ function install_omniroute()
 function install_ocr()
 {
     echo "Install open-code-review..."
-    sudo npm install -g @alibaba-group/open-code-review
+    sudo npm install -g @alibaba-group/open-code-review --allow-scripts=@alibaba-group/open-code-review
     if command -v ocr >/dev/null 2>&1; then
         mkdir -p "$CONFIG_DIR/plugins"
         curl -fsSL \
@@ -546,7 +546,7 @@ function install_officecli()
 {
     echo "Install officecli..."
     sudo apt update && sudo apt install -y libicu-dev
-    sudo npm install -g @officecli/officecli
+    sudo npm install -g @officecli/officecli --allow-scripts=@officecli/officecli
     if command -v officecli >/dev/null 2>&1; then
         officecli install codex  # install skill to ~/.agents/skills
     fi
