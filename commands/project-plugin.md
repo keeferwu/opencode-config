@@ -19,13 +19,15 @@ When the user runs this command (`/project-plugin`), follow these rules:
 2. **Arguments** — Proceed based on the arguments:
    - `install <plugin>`: Install plugin.
    - `uninstall <plugin>`: Uninstall plugin.
-3. **`<plugin>`** — The plugin reference, resolve aliases first. Three accepted forms:
+3. **`<plugin>`** — The plugin reference, resolve aliases first. Accepted forms:
    - Aliases:
      - `ponytail` → `@dietrichgebert/ponytail`
      - `superpowers` → `superpowers@git+https://github.com/obra/superpowers.git`
+     - `context-mode` → `context-mode`
      - `graphify` → `graphify local plugin`
    - Forms after resolution:
      - `graphify` — local plugin (special handling).
+     - `<name>` — unscoped npm package, e.g. `context-mode`.
      - `@<org>/<repo>` — scoped plugin, e.g. `@dietrichgebert/ponytail`.
      - `<name>@<spec>` — named plugin with version or git spec, e.g. `superpowers@git+https://github.com/obra/superpowers.git`.
 
@@ -41,19 +43,18 @@ graphify install --project --platform opencode
 Local plugin do not need to be explicitly declared, so remove `.opencode/plugins/graphify.js` from `.opencode/opencode.json` plugins array.
 Move the graphify section from `AGENTS.md` to `.opencode/AGENTS.md`. If `.opencode/AGENTS.md` is exists before moving, append to the end of file.
 
-For `@<org>/<repo>` and `<name>@<spec>` plugins:
+For `<name>`, `@<org>/<repo>`, `<name>@<spec>`, and other npm package plugins:
 Add the resolved reference as an entry of the `plugins` array in `.opencode/opencode.json`. If the file does not exist, create it:
 ```jsonc
 {
   "$schema": "https://opencode.ai/config.json",
   "plugins": [
+    "context-mode",
     "@dietrichgebert/ponytail",
     "superpowers@git+https://github.com/obra/superpowers.git"
   ]
 }
 ```
-Do not append `@latest` to a spec that already contains one (or a `git+` URL). OpenCode installs newly added packages automatically on startup/reload.
-
 Do NOT use `opencode plugin add <ref>` here: it installs to the global config (`~/.config/opencode/opencode.json`), not the project. Only use it if the user explicitly wants a global install. It has no `--force` flag.
 
 ## Uninstall plugin
@@ -65,7 +66,7 @@ graphify uninstall --project --platform opencode
 ```
 Remove the graphify section from `.opencode/AGENTS.md`. If `.opencode/AGENTS.md` is empty after removal, delete the file.
 
-For `@<org>/<repo>` or `<name>@<spec>` plugins:
+For `<name>`, `@<org>/<repo>`, `<name>@<spec>`, and other npm package plugins:
 - If `.opencode/opencode.json` does not exist, skip silently.
 - Read `.opencode/opencode.json`.
   - If the `plugins` array contains the resolved reference, remove it.
