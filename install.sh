@@ -449,14 +449,6 @@ function install_drawio()
     sudo snap install drawio
 }
 
-function install_comet()
-{
-    echo "Install openspec and supperpowers for project..."
-    sudo npm install -g @rpamis/comet@latest
-    sudo npm install -g @fission-ai/openspec@latest
-    echo "cd project directory and run: comet init"
-}
-
 function install_graphify()
 {
     echo "Install graphify..."
@@ -594,7 +586,6 @@ INSTALL_ITEMS=(
 "ocr|open-code-review|代码评审"
 "officecli|officecli|处理 docx/xlsx/pptx"
 "caveman|caveman|省 token 的精简工具集"
-"comet|comet + openspec|规范化开发流程 + superpowers"
 "graphify|graphify|绘制代码知识图谱"
 "markitdown|markitdown|文件转 markdown (docker)"
 "drawio|drawio|绘制图表 (desktop + skill)"
@@ -657,9 +648,6 @@ function item_installed()
         ;;
     caveman)
         jq -e '.agent["cavecrew-builder"]' "$CONFIG_FILE" >/dev/null 2>&1
-        ;;
-    comet)
-        have comet && ITEM_CMD=comet
         ;;
     graphify)
         have graphify && ITEM_CMD=graphify
@@ -727,9 +715,6 @@ function run_item()
         ;;
     caveman)
         install_caveman
-        ;;
-    comet)
-        install_comet
         ;;
     graphify)
         install_graphify
@@ -922,7 +907,6 @@ function print_help()
     echo "  --ocr:                   安装 open-code-review, 用于代码评审"
     echo "  --officecli:             安装 officecli, 处理 docx/xlsx/pptx 文档"
     echo "  --caveman:               安装 caveman, 省 token 的精简工具集"
-    echo "  --comet:                 安装 comet, 含 openspec 与 superpowers 流程"
     echo "  --graphify:              安装 graphify, 绘制代码知识图谱"
     echo "  --markitdown:            安装 markitdown docker, 把文件转 markdown"
     echo "  --drawio:                安装 drawio, 绘制图表"
@@ -961,9 +945,6 @@ function flag_to_key()
         ;;
     --caveman)
         echo "caveman"
-        ;;
-    --comet)
-        echo "comet"
         ;;
     --graphify)
         echo "graphify"
