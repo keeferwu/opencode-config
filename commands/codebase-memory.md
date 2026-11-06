@@ -54,7 +54,7 @@ Only run if the project root contains `AGENTS.md` or `.opencode/AGENTS.md`. Skip
      ```
    - Ensure the destination `.opencode/` exists before syncing
 
-4. **Generate `.cbmignore`**:
+4. **Generate `.cbmignore` if file not exist**:
    - Resolve the project root (git-aware; works without git):
      ```bash
      ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
