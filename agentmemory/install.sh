@@ -16,16 +16,16 @@ EOF
 fi
 
 # 1. set mcp config for agentmemory
-if ! grep -q '"agentmemory"' <<< "$(jq '.mcp // empty' "$CONFIG_FILE")" 2>/dev/null; then
+if ! jq -e '.mcp.servers.agentmemory' "$CONFIG_FILE" >/dev/null 2>&1; then
     if command -v jq &>/dev/null; then
         STANDALONE_MJS="/usr/lib/node_modules/@agentmemory/agentmemory/dist/standalone.mjs"
         if [ ! -f "$STANDALONE_MJS" ]; then
-            jq '.mcp.agentmemory = {"type": "local", "command": ["npx", "-y", "@agentmemory/mcp"], "enabled": true}' \
+            jq '.mcp.servers.agentmemory = {"type": "local", "command": ["npx", "-y", "@agentmemory/mcp"], "disabled": false}' \
                 "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
         else
             #use global standalone.mjs instead of npx, because npx cache slowly
             jq --arg mjs "$STANDALONE_MJS" \
-            '.mcp.agentmemory = {"type": "local", "command": ["node", $mjs], "env": {"AGENTMEMORY_URL": "http://localhost:3111", "AGENTMEMORY_TOOLS": "core"}, "enabled": true}' \
+            '.mcp.servers.agentmemory = {"type": "local", "command": ["node", $mjs], "environment": {"AGENTMEMORY_URL": "http://localhost:3111", "AGENTMEMORY_TOOLS": "core"}, "disabled": false}' \
                 "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
         fi
         mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
@@ -35,7 +35,7 @@ fi
 # 2. append plugin entry for agentmemory-capture.ts
 #if ! grep -q 'agentmemory-capture' "$CONFIG_FILE" 2>/dev/null; then
 #    if command -v jq &>/dev/null; then
-#        jq '.plugin += ["./plugins/agentmemory-capture.ts"]' \
+#        jq '.plugins += ["./plugins/agentmemory-capture.ts"]' \
 #            "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
 #        mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
 #    fi

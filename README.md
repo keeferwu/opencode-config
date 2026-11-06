@@ -1,7 +1,7 @@
 # opencode-config
 
 ### 介绍
-configure for opencode
+configure for opencode V2
 
 ### Install skills
 

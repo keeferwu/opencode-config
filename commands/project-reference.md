@@ -47,12 +47,12 @@ Rules:
 
 ## Precondition
 
-- **⚠️ MUST use `read` or `ls` tool to check whether the project root contains `.opencode/opencode.json` — DO NOT use `glob` as substitutes.**
+- **⚠️ MUST use `read` or `ls` tool to check whether the project root contains `.opencode/opencode.json[c]` — DO NOT use `glob` as substitutes.**
 - If file does not exist, use `question` tool to ask user whether to create the file (with `{ "$schema": "https://opencode.ai/config.json" }`) or not.
 
 ## Add reference
 
-- Read `.opencode/opencode.json`.
+- Read `.opencode/opencode.json[c]`.
 - If the `references` object field is missing, add:
   ```json
   "references": {
@@ -87,17 +87,17 @@ Rules:
 
 ## Remove reference
 
-- Read `.opencode/opencode.json`.
+- Read `.opencode/opencode.json[c]`.
 - If `references` object contains `<name>`, remove the entry.
 - If `references` becomes empty after removal, remove the `references` field entirely.
-- Skip silently if `.opencode/opencode.json` does not exist or the `<name>` is absent.
+- Skip silently if `.opencode/opencode.json[c]` does not exist or the `<name>` is absent.
 
 ## List references
 
-- Read `.opencode/opencode.json`.
+- Read `.opencode/opencode.json[c]`.
 - If `references` exists, print each entry. For `path` entries: `name -> path: description`. For `repository` entries: `name -> repository@branch: description` (omit `@branch` when no branch is set).
 - If absent, print `No references configured.`
 
 ## Post-configuration
 
-**Restart opencode** after modifying `.opencode/opencode.json` for the changes to take effect.
+Config reloads automatically; tell the user to run `/reload` only if the reference does not appear.

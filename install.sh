@@ -252,11 +252,11 @@ function omniroute_provider_config()
     # chunkTimeout：SSEchunk之间的最大等待时间（应对OmniRoute冷启动时的长延迟）
     # headerTimeout：响应头等待时间
     # timeout：整体请求超时时间
-    if ! jq -e '.provider.omniroute' "$CONFIG_FILE" >/dev/null 2>&1; then
-        jq '.provider.omniroute = {
-            "npm": "@ai-sdk/openai-compatible",
+    if ! jq -e '.providers.omniroute' "$CONFIG_FILE" >/dev/null 2>&1; then
+        jq '.providers.omniroute = {
             "name": "OmniRoute",
-            "options": {
+            "package": "aisdk:@ai-sdk/openai-compatible",
+            "settings": {
               "baseURL": "http://localhost:20128/v1",
               "apiKey": "{env:OMNIROUTE_API_KEY}",
               "timeout": 120000,
@@ -269,18 +269,18 @@ function omniroute_provider_config()
               },
               "auto/best-coding": {
                 "name": "Auto Best Coding",
-                "tool_call": true,
-                "reasoning": true,
-                "attachment": true,
-                "temperature": true,
-                "interleaved": true,
-                "limit": {
-                  "context": 200000(200k) or 1000000(1M)
-                  "output": 60000(200k) or 300000(1M)
-                },
-                "modalities": {
+                "capabilities": {
+                  "tools": true,
+                  "temperature": true,
+                  "reasoning": {
+                    "supported": true
+                  },
                   "input": ["text", "pdf", "image"],
                   "output": ["text"]
+                },
+                "limit": {
+                  "context": 1000000,
+                  "output": 300000
                 }
               }
             }
@@ -291,14 +291,14 @@ function omniroute_provider_config()
     read -p "Do you want to configure omniroute MCP server? (y/N) " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-        if ! jq -e '.mcp.omniroute' "$CONFIG_FILE" >/dev/null 2>&1; then
-            jq '.mcp.omniroute = {
+        if ! jq -e '.mcp.servers.omniroute' "$CONFIG_FILE" >/dev/null 2>&1; then
+            jq '.mcp.servers.omniroute = {
                 "type": "remote",
                 "url": "http://localhost:20128/api/mcp/sse",
                 "headers": {
-                    "Authorization": "Bearer omniroute_management_key"
+                    "Authorization": "Bearer <omniroute_management_key>"
                 },
-                "enabled": false
+                "disabled": true
             }' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
             mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
             echo "Added omniroute MCP server to $CONFIG_FILE"
@@ -413,8 +413,8 @@ function install_codebase_memory()
     sudo cp $HOME/.local/bin/codebase-memory-mcp /usr/local/bin/
     sudo chown root:root /usr/local/bin/codebase-memory-mcp
     sudo chmod 777 /usr/local/bin/codebase-memory-mcp
-    if jq -e '.mcp."codebase-memory-mcp"' "$CONFIG_FILE" >/dev/null 2>&1; then
-        jq 'del(.mcp."codebase-memory-mcp")' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
+    if jq -e '.mcp.servers."codebase-memory-mcp" or .mcp."codebase-memory-mcp"' "$CONFIG_FILE" >/dev/null 2>&1; then
+        jq 'del(.mcp.servers."codebase-memory-mcp", .mcp."codebase-memory-mcp")' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
         mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
         mv -f $CONFIG_DIR/AGENTS.md $CONFIG_DIR/codebase_memory/
         mv -f $CONFIG_DIR/agents/codebase-memory* $CONFIG_DIR/codebase_memory/agents/
@@ -476,9 +476,9 @@ function install_caveman()
     echo "Install caveman..."
     npx -y github:JuliusBrussee/caveman -- --only opencode
     if ! grep -q '"cavecrew-builder"' "$CONFIG_FILE" 2>/dev/null; then
-        jq '.agent["cavecrew-builder"] = {"mode": "subagent"} |
-            .agent["cavecrew-investigator"] = {"mode": "subagent"} |
-            .agent["cavecrew-reviewer"] = {"mode": "subagent"}' \
+        jq '.agents["cavecrew-builder"] = {"mode": "subagent"} |
+            .agents["cavecrew-investigator"] = {"mode": "subagent"} |
+            .agents["cavecrew-reviewer"] = {"mode": "subagent"}' \
         "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
         mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
     fi
@@ -647,7 +647,7 @@ function item_installed()
         have officecli && ITEM_CMD=officecli
         ;;
     caveman)
-        jq -e '.agent["cavecrew-builder"]' "$CONFIG_FILE" >/dev/null 2>&1
+        jq -e '.agents["cavecrew-builder"]' "$CONFIG_FILE" >/dev/null 2>&1
         ;;
     graphify)
         have graphify && ITEM_CMD=graphify

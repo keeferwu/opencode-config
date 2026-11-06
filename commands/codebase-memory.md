@@ -19,26 +19,28 @@ Only run if the project root contains `AGENTS.md` or `.opencode/AGENTS.md`. Skip
    - If not found: `sudo npm install -g codebase-memory-mcp`
 
 2. **Ensure codebase-memory-mcp server is configured**:
-   - Read `.opencode/opencode.json`.
-   - If `.opencode/opencode.json` not exists in the project root, create it with:
+   - Read `.opencode/opencode.json[c]`.
+   - If it does not exist in the project root, create it with:
      ```json
      {
        "$schema": "https://opencode.ai/config.json"
      }
      ```
-   - If `mcp` field is missing in `.opencode/opencode.json`, add:
+   - If `mcp` or `mcp.servers` is missing, add:
      ```json
      "mcp": {
-        "codebase-memory-mcp": {
-           "enabled": true,
-           "type": "local",
-           "command": [
-              "codebase-memory-mcp"
-           ]
+        "servers": {
+           "codebase-memory-mcp": {
+              "type": "local",
+              "command": [
+                 "codebase-memory-mcp"
+              ],
+              "disabled": false
+           }
         }
      }
      ```
-   - If `mcp` already exists but lacks `codebase-memory-mcp`, merge into the existing `mcp` object
+   - If `mcp.servers` already exists but lacks `codebase-memory-mcp`, merge into the existing `mcp.servers` object
 
 3. **Sync codebase memory config**:
    - Sync `~/.config/opencode/codebase_memory` directory to `.opencode/` in the current project using:
@@ -118,5 +120,5 @@ Only run if the project root contains `AGENTS.md` or `.opencode/AGENTS.md`. Skip
    - After completion, the subagent returns the execution result (success/failure + output) to the main agent
 
 6. **Report status**:
-   - Show a summary of what was done (`.opencode/opencode.json` created/modified, sync result, `.cbmignore` created, index result)
-   - Remind the user to restart opencode to pick up the new configuration
+   - Show a summary of what was done (`.opencode/opencode.json[c]` created/modified, sync result, `.cbmignore` created, index result)
+   - Config reloads automatically; tell the user to run `/reload` only if the new MCP server does not appear
