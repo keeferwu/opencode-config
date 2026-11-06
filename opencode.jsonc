@@ -26,9 +26,6 @@
     { "action": "shell", "resource": "git push", "effect": "deny" }
   ],
   "agents": {
-    "code-simplifier": {
-      "mode": "subagent"
-    },
     "lang-translation": {
       "mode": "subagent"
     }
