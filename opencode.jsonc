@@ -47,7 +47,14 @@
           "Authorization": "Bearer {env:ANYSEARCH_API_KEY}",
           "X-Anysearch-Client": "mcp/1.0.0"
         },
-        "oauth": false,
+        "disabled": false
+      },
+      "exa": {
+        "type": "remote",
+        "url": "https://mcp.exa.ai/mcp",
+        "headers": {
+          "x-api-key": "{env:EXA_API_KEY}"
+        },
         "disabled": true
       },
       "gh_grep": {
