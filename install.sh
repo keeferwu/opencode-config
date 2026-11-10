@@ -333,7 +333,6 @@ function default_config_install()
         echo "Install global config to $CONFIG_DIR"
         rsync -av  --include='cli.json' \
             --include='opencode.jsonc' \
-            --include='dcp.jsonc' \
             --include='agents' \
             --include='commands' \
             --include='rules' \
@@ -341,8 +340,6 @@ function default_config_install()
             --include='codebase_memory' \
             --exclude='*' ./  $CONFIG_DIR
     else
-        rm -rf "$CONFIG_DIR/dcp.jsonc"
-        ln -s "$PWD/dcp.jsonc" "$CONFIG_DIR/dcp.jsonc"
         rm -rf "$CONFIG_DIR/cli.json"
         ln -s "$PWD/cli.json" "$CONFIG_DIR/cli.json"
         rm -rf "$CONFIG_DIR/rules"

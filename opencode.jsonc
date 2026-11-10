@@ -2,7 +2,6 @@
   "$schema": "https://opencode.ai/config.json",
   "share": "manual",
   "update": "disable",
-  "default_agent": "build",
   "lsp": true,
   "instructions": [
     "CONTRIBUTING.md",
@@ -71,7 +70,6 @@
   },
   "plugins": [
     "opencode-user-timeline",
-    "opencode-sessions-sidebar",
-    "@tarquinen/opencode-dcp@latest"
+    "opencode-sessions-sidebar"
   ]
 }
