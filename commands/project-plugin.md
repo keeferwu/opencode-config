@@ -21,13 +21,14 @@ When the user runs this command (`/project-plugin`), follow these rules:
    - `uninstall <plugin>`: Uninstall plugin.
 3. **`<plugin>`** — The plugin reference, resolve aliases first. Accepted forms:
    - Aliases:
+     - `graphify` → `graphify local plugin`
+     - `context-mode` → `context-mode`
+     - `omo-slim` → `oh-my-opencode-slim`
      - `ponytail` → `@dietrichgebert/ponytail`
      - `superpowers` → `superpowers@git+https://github.com/obra/superpowers.git`
-     - `context-mode` → `context-mode`
-     - `graphify` → `graphify local plugin`
    - Forms after resolution:
      - `graphify` — local plugin (special handling).
-     - `<name>` — unscoped npm package, e.g. `context-mode`.
+     - `<name>` — unscoped npm package, e.g. `context-mode`, `oh-my-opencode-slim`.
      - `@<org>/<repo>` — scoped plugin, e.g. `@dietrichgebert/ponytail`.
      - `<name>@<spec>` — named plugin with version or git spec, e.g. `superpowers@git+https://github.com/obra/superpowers.git`.
 
@@ -43,13 +44,14 @@ graphify install --project --platform opencode
 Local plugin do not need to be explicitly declared, so remove `.opencode/plugins/graphify.js` from `.opencode/opencode.json[c]` plugins array.
 Move the graphify section from `AGENTS.md` to `.opencode/AGENTS.md`. If `.opencode/AGENTS.md` is exists before moving, append to the end of file.
 
-For `<name>`, `@<org>/<repo>`, `<name>@<spec>`, and other npm package plugins:
+For `<name>`, `@<org>/<repo>`, `<name>@<spec>` form plugins:
 Add the resolved reference as an entry of the `plugins` array in `.opencode/opencode.json[c]`. If the file does not exist, create it:
 ```jsonc
 {
   "$schema": "https://opencode.ai/config.json",
   "plugins": [
     "context-mode",
+    "oh-my-opencode-slim",
     "@dietrichgebert/ponytail",
     "superpowers@git+https://github.com/obra/superpowers.git"
   ]
