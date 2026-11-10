@@ -118,17 +118,6 @@ function install_opencode()
     ./setup-server.sh
 }
 
-function install_omo_native()
-{
-    echo "Install oh-my-openagent..."
-    sudo apt install gh -y
-    sudo npm i -g --allow-scripts=@ast-grep/cli @ast-grep/cli
-    bunx oh-my-openagent install --platform=native
-    if [ -f "$HOME/.bun/bin/omo" ]; then
-        $HOME/.bun/bin/omo doctor
-    fi
-}
-
 function install_jq()
 {
     if have jq; then
@@ -581,7 +570,6 @@ INSTALL_ITEMS=(
 "rtk|rtk|压缩命令输出, 节省 token"
 "codebase_memory|codebase-memory|代码图谱 MCP"
 "omo_slim|oh-my-opencode-slim|多模型 agent 编排插件"
-"omo_native|oh-my-openagent|多模型 agent 编排 (native)"
 "omniroute|OmniRoute|LLM 代理"
 "ocr|open-code-review|代码评审"
 "officecli|officecli|处理 docx/xlsx/pptx"
@@ -621,9 +609,6 @@ function item_installed()
         ;;
     codebase_memory)
         have codebase-memory-mcp && ITEM_CMD=codebase-memory-mcp
-        ;;
-    omo_native)
-        have omo && ITEM_CMD=omo
         ;;
     omo_slim)
         # 从插件安装目录判断(兼容 npm/ 与 packages/ 两种缓存布局及新旧包名)
@@ -697,9 +682,6 @@ function run_item()
         ;;
     codebase_memory)
         install_codebase_memory
-        ;;
-    omo_native)
-        install_omo_native
         ;;
     omo_slim)
         install_omo_slim
@@ -902,7 +884,6 @@ function print_help()
     echo "  --rtk:                   安装 rtk, 压缩命令输出以节省 token"
     echo "  --codebase-memory:       安装 codebase-memory-mcp, 提供代码图谱"
     echo "  --omo-slim:              安装 oh-my-opencode-slim, 多模型 agent 编排插件"
-    echo "  --omo-native:            安装 oh-my-openagent, 多模型 agent 编排 (native)"
     echo "  --omniroute:             安装 omniroute, 作为 LLM 代理"
     echo "  --ocr:                   安装 open-code-review, 用于代码评审"
     echo "  --officecli:             安装 officecli, 处理 docx/xlsx/pptx 文档"
@@ -927,9 +908,6 @@ function flag_to_key()
         ;;
     --codebase-memory)
         echo "codebase_memory"
-        ;;
-    --omo-native)
-        echo "omo_native"
         ;;
     --omo-slim)
         echo "omo_slim"
