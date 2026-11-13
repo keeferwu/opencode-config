@@ -185,7 +185,6 @@ function check_env()
     dep_line curl "curl"
     dep_line git "git"
     dep_line python3 "python3"
-    dep_line docker "docker"
 }
 
 function install_env()
@@ -411,20 +410,6 @@ function install_codebase_memory()
     fi
 }
 
-function install_markitdown()
-{
-    echo "Install markitdown docker..."
-    if ! have docker; then
-        echo "docker not found, please install docker first"
-        return 1
-    fi
-    git clone https://github.com/microsoft/markitdown
-    cd markitdown
-    docker build -t markitdown:latest .
-    cd - >/dev/null
-    rm -rf markitdown
-}
-
 function install_drawio()
 {
     echo "Install drawio desktop and skill..."
@@ -584,7 +569,6 @@ INSTALL_ITEMS=(
 "officecli|officecli|处理 docx/xlsx/pptx"
 "caveman|caveman|省 token 的精简工具集"
 "graphify|graphify|绘制代码知识图谱"
-"markitdown|markitdown|文件转 markdown (docker)"
 "drawio|drawio|绘制图表 (desktop + skill)"
 "cua|cua-driver|后台驱动桌面应用"
 "agentmemory|agentmemory|agent 记忆"
@@ -646,9 +630,6 @@ function item_installed()
     graphify)
         have graphify && ITEM_CMD=graphify
         ;;
-    markitdown)
-        [ -n "$(docker images -q markitdown:latest 2>/dev/null)" ]
-        ;;
     drawio)
         if have drawio; then
             ITEM_CMD=drawio
@@ -709,9 +690,6 @@ function run_item()
         ;;
     graphify)
         install_graphify
-        ;;
-    markitdown)
-        install_markitdown
         ;;
     drawio)
         install_drawio
@@ -898,7 +876,6 @@ function print_help()
     echo "  --officecli:             安装 officecli, 处理 docx/xlsx/pptx 文档"
     echo "  --caveman:               安装 caveman, 省 token 的精简工具集"
     echo "  --graphify:              安装 graphify, 绘制代码知识图谱"
-    echo "  --markitdown:            安装 markitdown docker, 把文件转 markdown"
     echo "  --drawio:                安装 drawio, 绘制图表"
     echo "  --cua:                   安装 cua-driver, 后台驱动桌面应用"
     echo "  --agentmemory:           安装 agentmemory, 为 agent 提供记忆"
@@ -935,9 +912,6 @@ function flag_to_key()
         ;;
     --graphify)
         echo "graphify"
-        ;;
-    --markitdown)
-        echo "markitdown"
         ;;
     --drawio)
         echo "drawio"
