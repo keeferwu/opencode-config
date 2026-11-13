@@ -1,6 +1,51 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+usage() {
+  cat <<'USAGE'
+Usage: setup-server.sh [--restart]
+
+  (no option)   Install/refresh the systemd unit, then enable and start it
+  --restart     Reload ~/.env and restart opencode-server.service only
+USAGE
+}
+
+MODE=install
+case "${1:-}" in
+  "") ;;
+  --restart) MODE=restart ;;
+  -h|--help) usage; exit 0 ;;
+  *) usage >&2; exit 2 ;;
+esac
+
+# --restart: reload ~/.env and restart the service
+if [ "$MODE" = restart ]; then
+  ENV_FILE="$HOME/.env"
+  [ -r "$ENV_FILE" ] || { echo "error: $ENV_FILE is missing or unreadable" >&2; exit 1; }
+
+  # Apply ~/.env to this shell (set -a exports every assignment)
+  set -a
+  . "$ENV_FILE"
+  set +a
+  echo "Loaded:   $ENV_FILE"
+
+  if ! systemctl --user restart opencode-server.service; then
+    echo "error: failed to restart opencode-server.service" >&2
+    exit 1
+  fi
+  for _ in {1..20}; do
+    systemctl --user is-active --quiet opencode-server.service && break
+    sleep 0.5
+  done
+  if ! systemctl --user is-active --quiet opencode-server.service; then
+    echo "error: opencode-server.service is not active" >&2
+    systemctl --user status opencode-server.service --no-pager | head -8 >&2 || true
+    exit 1
+  fi
+  echo "opencode-server.service restart success"
+  exit 0
+fi
+
 command -v opencode >/dev/null || { echo "opencode not found" >&2; exit 1; }
 
 DEFAULT_HOST="127.0.0.1"
@@ -38,6 +83,7 @@ ExecStart=${OPENCODE_BIN} serve --service
 WorkingDirectory=%h
 Restart=always
 RestartSec=3
+EnvironmentFile=%h/.env
 Environment=HOME=%h
 Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin:/bin
 

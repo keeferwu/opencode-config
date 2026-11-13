@@ -408,6 +408,11 @@ function set_env()
         return 0
     fi
 
+    # skip if the variable already exists in the .env file
+    if grep -q "^${var_name}=" "$env_file"; then
+        return 0
+    fi
+
     echo "$var_name=$var_value" >> "$env_file"
     echo "Added $var_name=$var_value to $env_file"
 }
@@ -598,16 +603,6 @@ function install_omo_slim()
 {
     echo "Install oh-my-opencode-slim..."
     bunx oh-my-opencode-slim@latest install
-    # 移除 $CONFIG_FILE 中的 plugin.oh-my-opencode-slim（插件由项目 plugins 目录加载）
-    if [ -f "${CONFIG_FILE}.bak" ]; then
-        mv "${CONFIG_FILE}.bak" "${CONFIG_FILE}"
-    else
-        if jq -e 'any(.plugin[]?; . == "oh-my-opencode-slim")' "$CONFIG_FILE" >/dev/null 2>&1; then
-            jq '.plugin -= ["oh-my-opencode-slim"]' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
-            mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
-            echo "Removed plugin.oh-my-opencode-slim from $CONFIG_FILE"
-        fi
-    fi
     # 把 omo-slim-profile.json 融合进已有的 oh-my-opencode-slim.json
     local src="$PWD/omo-slim-profile.json"
     local dst="$CONFIG_DIR/oh-my-opencode-slim.json"
@@ -617,9 +612,10 @@ function install_omo_slim()
             && echo "Merged omo-slim-profile.json into $dst"
     fi
     bunx oh-my-opencode-slim@latest doctor
+    # 默认情况下关闭slim
+    set_env OH_MY_OPENCODE_SLIM_DISABLE 1
     set_env OPENCODE_EXPERIMENTAL_BACKGROUND_SUBAGENTS true
     set_env OPENCODE_ENABLE_EXA 1
-    echo "In opencode run '/project-plugin install omo-slim' for project"
 }
 
 function install_officecli()

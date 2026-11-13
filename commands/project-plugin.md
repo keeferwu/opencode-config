@@ -23,12 +23,11 @@ When the user runs this command (`/project-plugin`), follow these rules:
    - Aliases:
      - `graphify` → `graphify local plugin`
      - `context-mode` → `context-mode`
-     - `omo-slim` → `oh-my-opencode-slim`
      - `ponytail` → `@dietrichgebert/ponytail`
      - `superpowers` → `superpowers@git+https://github.com/obra/superpowers.git`
    - Forms after resolution:
      - `graphify` — local plugin (special handling).
-     - `<name>` — unscoped npm package, e.g. `context-mode`, `oh-my-opencode-slim`.
+     - `<name>` — unscoped npm package, e.g. `context-mode`.
      - `@<org>/<repo>` — scoped plugin, e.g. `@dietrichgebert/ponytail`.
      - `<name>@<spec>` — named plugin with version or git spec, e.g. `superpowers@git+https://github.com/obra/superpowers.git`.
 
@@ -51,7 +50,6 @@ Add the resolved reference as an entry of the `plugins` array in `.opencode/open
   "$schema": "https://opencode.ai/config.json",
   "plugins": [
     "context-mode",
-    "oh-my-opencode-slim",
     "@dietrichgebert/ponytail",
     "superpowers@git+https://github.com/obra/superpowers.git"
   ]
