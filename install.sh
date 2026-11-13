@@ -572,7 +572,7 @@ INSTALL_ITEMS=(
 "drawio|drawio|绘制图表 (desktop + skill)"
 "cua|cua-driver|后台驱动桌面应用"
 "agentmemory|agentmemory|agent 记忆"
-"archify|archify|绘制架构/流程/时序图 skill"
+"archify|archify-skill|绘制架构/流程/时序图 skill"
 "book_to_skill|book-to-skill|书籍/文档转 skill"
 "browser_skill|browser-skill|接管已登录浏览器的自动化 skill"
 )
@@ -879,7 +879,7 @@ function print_help()
     echo "  --drawio:                安装 drawio, 绘制图表"
     echo "  --cua:                   安装 cua-driver, 后台驱动桌面应用"
     echo "  --agentmemory:           安装 agentmemory, 为 agent 提供记忆"
-    echo "  --archify:               安装 archify skill, 绘制架构/流程/时序图"
+    echo "  --archify-skill:         安装 archify skill, 绘制架构/流程/时序图"
     echo "  --book-to-skill:         安装 book-to-skill, 把书籍/文档转成 skill"
     echo "  --browser-skill:         安装 Tencent BrowserSkill, 复用浏览器登录态做自动化"
     echo ""
@@ -922,7 +922,7 @@ function flag_to_key()
     --agentmemory)
         echo "agentmemory"
         ;;
-    --archify)
+    --archify-skill)
         echo "archify"
         ;;
     --book-to-skill)
