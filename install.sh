@@ -484,6 +484,21 @@ function install_rtk()
     rtk init -g --opencode
 }
 
+function install_codegraph()
+{
+    echo "Install codegraph..."
+    sudo npm install -g @colbymchenry/codegraph --allow-scripts=@colbymchenry/codegraph
+    if command -v codegraph >/dev/null 2>&1; then
+        codegraph --version
+        echo ""
+        echo "为项目安装 codegraph MCP:"
+        echo "  codegraph install --target=opencode --location=local"
+        echo "为项目初始化 codegraph 数据:"
+        echo "  codegraph init"
+        echo ""
+    fi
+}
+
 function install_codebase_memory()
 {
     echo "Install codebase-memory-mcp..."
@@ -677,13 +692,14 @@ function install_browser_skill()
 # 注意: default_config_install 不是组件, 每次运行安装器都会自动执行
 INSTALL_ITEMS=(
 "rtk|rtk|压缩命令输出, 节省 token"
-"codebase_memory|codebase-memory|代码图谱 MCP"
+"codegraph|codegraph|代码图谱(适合单一代码库, 查询调用链与依赖)"
+"codebase_memory|codebase-memory|代码图谱(适合多语言混合代码库, 整理依赖关系)"
 "omo_slim|oh-my-opencode-slim|多模型 agent 编排插件"
-"omniroute|OmniRoute|LLM 代理"
-"ocr|open-code-review|代码评审"
+"omniroute|omniroute|LLM 网关统一管理APIKEY"
+"ocr|open-code-review|代码质量评审"
 "officecli|officecli|处理 docx/xlsx/pptx"
-"caveman|caveman|省 token 的精简工具集"
-"graphify|graphify|绘制代码知识图谱"
+"caveman|caveman|压缩上下文内容 节省token"
+"graphify|graphify|绘制代码知识图谱(包含项目文档和资料)"
 "drawio|drawio|绘制图表 (desktop + skill)"
 "cua|cua-driver|后台驱动桌面应用"
 "agentmemory|agentmemory|agent 记忆"
@@ -714,6 +730,9 @@ function item_installed()
     case "$1" in
     rtk)
         have rtk && ITEM_CMD=rtk
+        ;;
+    codegraph)
+        have codegraph && ITEM_CMD=codegraph
         ;;
     codebase_memory)
         have codebase-memory-mcp && ITEM_CMD=codebase-memory-mcp
@@ -784,6 +803,9 @@ function run_item()
     case "$key" in
     rtk)
         install_rtk
+        ;;
+    codegraph)
+        install_codegraph
         ;;
     codebase_memory)
         install_codebase_memory
@@ -984,13 +1006,14 @@ function print_help()
     echo ""
     echo "options:"
     echo "  --rtk:                   安装 rtk, 压缩命令输出以节省 token"
-    echo "  --codebase-memory:       安装 codebase-memory-mcp, 提供代码图谱"
+    echo "  --codegraph:             安装 codegraph, 生成代码图谱(适合单一代码库架构, 查询调用链与依赖)"
+    echo "  --codebase-memory:       安装 codebase-memory-mcp, 生成代码图谱(适合多语言混合代码库, 整理依赖关系)"
     echo "  --omo-slim:              安装 oh-my-opencode-slim, 多模型 agent 编排插件"
-    echo "  --omniroute:             安装 omniroute, 作为 LLM 代理"
+    echo "  --omniroute:             安装 omniroute, 用于LLM 网关统一管理APIKEY"
     echo "  --ocr:                   安装 open-code-review, 用于代码评审"
     echo "  --officecli:             安装 officecli, 处理 docx/xlsx/pptx 文档"
-    echo "  --caveman:               安装 caveman, 省 token 的精简工具集"
-    echo "  --graphify:              安装 graphify, 绘制代码知识图谱"
+    echo "  --caveman:               安装 caveman, 压缩上下文内容 节省token"
+    echo "  --graphify:              安装 graphify, 绘制代码知识图谱(包含项目文档和资料)"
     echo "  --drawio:                安装 drawio, 绘制图表"
     echo "  --cua:                   安装 cua-driver, 后台驱动桌面应用"
     echo "  --agentmemory:           安装 agentmemory, 为 agent 提供记忆"
@@ -1006,6 +1029,9 @@ function flag_to_key()
     case "$1" in
     --rtk)
         echo "rtk"
+        ;;
+    --codegraph)
+        echo "codegraph"
         ;;
     --codebase-memory)
         echo "codebase_memory"
