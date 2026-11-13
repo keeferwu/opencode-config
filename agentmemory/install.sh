@@ -76,9 +76,10 @@ if [ ! -f "$III_BIN" ]; then
     fi
 fi
 
-if [ ! -f "$SERVICE_FILE" ]; then
-    echo "Creating systemd service: $SERVICE_FILE"
-    sudo tee "$SERVICE_FILE" > /dev/null << EOF
+if command -v systemctl >/dev/null 2>&1 && [ -d /run/systemd/system ]; then
+    if [ ! -f "$SERVICE_FILE" ]; then
+        echo "Creating systemd service: $SERVICE_FILE"
+        sudo tee "$SERVICE_FILE" > /dev/null << EOF
 [Unit]
 Description=AgentMemory Server
 After=network-online.target
@@ -99,20 +100,23 @@ SyslogIdentifier=agentmemory
 [Install]
 WantedBy=multi-user.target
 EOF
-    sudo systemctl daemon-reload
-    sudo systemctl enable agentmemory.service
-    echo "Systemd service created and enabled"
-else
-    echo "Systemd service already exists: $SERVICE_FILE"
-fi
+        sudo systemctl daemon-reload
+        sudo systemctl enable agentmemory.service
+        echo "Systemd service created and enabled"
+    else
+        echo "Systemd service already exists: $SERVICE_FILE"
+    fi
 
-# 5. start or restart agentmemory service
-if systemctl is-active --quiet agentmemory.service; then
-    echo "Restarting agentmemory service..."
-    sudo systemctl restart agentmemory.service
+    # 5. start or restart agentmemory service
+    if systemctl is-active --quiet agentmemory.service; then
+        echo "Restarting agentmemory service..."
+        sudo systemctl restart agentmemory.service
+    else
+        echo "Starting agentmemory service..."
+        sudo systemctl start agentmemory.service
+    fi
 else
-    echo "Starting agentmemory service..."
-    sudo systemctl start agentmemory.service
+    echo "未检测到 systemd, 跳过服务注册与自启; 可手动运行 agentmemory"
 fi
 
 echo ""

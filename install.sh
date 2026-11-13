@@ -51,6 +51,22 @@ function rule()
     printf "%s\n" "------------------------------------------------------------"
 }
 
+# 容器里常以 root 运行且没有 sudo: 用同名函数兜底, 免去逐处改写
+if ! have sudo; then
+    if [ "$(id -u)" -eq 0 ]; then
+        sudo()
+        {
+            # 跳过 sudo 自身的选项(如 -E), 其余参数原样执行
+            while [ "${1#-}" != "$1" ]; do shift; done
+            "$@"
+        }
+        # 让 agentmemory/install.sh 等子脚本也能用上这个兜底
+        export -f sudo
+    else
+        echo "警告: 未找到 sudo 且当前不是 root, 需要提权的安装会失败" >&2
+    fi
+fi
+
 # ==================== 基础依赖 ====================
 
 function install_node()
@@ -114,29 +130,95 @@ function install_opencode()
     sudo mv opencode-completion /usr/share/bash-completion/completions/opencode
     sudo chown root:root /usr/share/bash-completion/completions/opencode
 
-    echo "Start opencode server when system setup..."
-    ./setup-server.sh
+    if have systemctl && [ -d /run/systemd/system ]; then
+        echo "Start opencode server when system setup..."
+        ./setup-server.sh
+    else
+        echo "未检测到 systemd, 跳过 opencode 服务自启配置"
+    fi
 }
 
-function install_jq()
+function install_tools()
 {
-    if have jq; then
-        echo "jq already installed, skipping."
-        return 0
+    # 通用包安装: 包名与命令名一致时直接复用, 逐个安装并跳过已安装的
+    local tool rc
+    local -a failed=()
+    if have apt; then
+        # 容器/minimal 镜像的索引为空, 整轮只刷新一次, 失败也继续尝试安装
+        sudo apt update || true
     fi
-    echo "Install jq..."
-    if command -v apt &>/dev/null; then
-        sudo apt install -y jq
-    elif command -v yum &>/dev/null; then
-        sudo yum install -y jq
-    elif command -v pacman &>/dev/null; then
-        sudo pacman -S --noconfirm jq
-    elif command -v brew &>/dev/null; then
-        brew install jq
-    else
-        echo "Cannot install jq: no supported package manager found"
+    for tool in "$@"; do
+        if have "$tool"; then
+            echo "$tool already installed, skipping."
+            continue
+        fi
+        echo "Install $tool..."
+        rc=0
+        if have apt; then
+            sudo apt install -y "$tool" || rc=1
+        elif have dnf; then
+            sudo dnf install -y "$tool" || rc=1
+        elif have yum; then
+            # EL7 的 jq 只在 EPEL 中, 先补上 epel-release
+            if [ "$tool" = jq ] && ! rpm -q epel-release >/dev/null 2>&1; then
+                sudo yum install -y epel-release || rc=1
+            fi
+            [ "$rc" -eq 0 ] && { sudo yum install -y "$tool" || rc=1; }
+        elif have pacman; then
+            sudo pacman -S --noconfirm --needed "$tool" || rc=1
+        elif have brew; then
+            brew install "$tool" || rc=1
+            if [ "$tool" = curl ]; then
+                # brew 的 curl 是 keg-only, 不会链接进 PATH
+                echo "Note: brew curl is keg-only, add it to PATH if needed:"
+                echo "  export PATH=\"$(brew --prefix)/opt/curl/bin:\$PATH\""
+            fi
+        else
+            echo "Cannot install $tool: no supported package manager found"
+            rc=1
+        fi
+        if [ "$rc" -ne 0 ]; then
+            failed+=("$tool")
+        fi
+    done
+    if [ "${#failed[@]}" -gt 0 ]; then
+        echo "Failed to install: ${failed[*]}"
         return 1
     fi
+}
+
+function install_python3()
+{
+    if have python3 && have pip; then
+        echo "python3 already installed, skipping."
+        return 0
+    fi
+    echo "Install python3..."
+    if have apt; then
+        # 容器/minimal 镜像的索引为空, 先刷新一次
+        sudo apt update || true
+        sudo apt install -y python3 python3-dev python3-pip || return 1
+    elif have dnf; then
+        sudo dnf install -y python3 python3-devel python3-pip || return 1
+    elif have yum; then
+        sudo yum install -y python3 python3-devel python3-pip || return 1
+    elif have pacman; then
+        sudo pacman -S --noconfirm python python-pip python-setuptools || return 1
+    elif have brew; then
+        brew install python3 || return 1
+    else
+        echo "Cannot install python3: no supported package manager found"
+        return 1
+    fi
+}
+
+function pip_supports_break_system_packages()
+{
+    # --break-system-packages 从 pip 23.0.1 开始支持
+    local ver
+    ver=$(pip --version 2>/dev/null | awk '{print $2}')
+    [ -n "$ver" ] || return 1
+    printf '%s\n%s\n' "$ver" "23.0.1" | sort -V -C -r
 }
 
 function install_uv_if_needed()
@@ -153,20 +235,21 @@ MISSING_DEPS=()
 
 function dep_line()
 {
-    # $1=command $2=label $3=core(可选, 缺失时是否可自动安装)
-    local cmd=$1 label=$2 core=$3 ver
+    # $1=command $2=label
+    local cmd=$1 label=$2 ver
     if have "$cmd"; then
         ver=$("$cmd" --version 2>/dev/null | head -n 1)
-        if [ "$cmd" = curl ]; then
+        case "$cmd" in
+        curl | pip)
+            # 只保留前两段, 避免带上路径等冗长描述
             ver=$(printf '%s\n' "$ver" | awk '{print $1, $2}')
-        fi
+            ;;
+        esac
         [ -z "$ver" ] && ver="已安装"
         printf "  %s✓%s %-12s %s\n" "$C_GREEN" "$C_OFF" "$label" "$ver"
     else
         printf "  %s·%s %-12s %s\n" "$C_YELLOW" "$C_OFF" "$label" "未安装"
-        if [ "$core" = "core" ]; then
-            MISSING_DEPS+=("$cmd")
-        fi
+        MISSING_DEPS+=("$cmd")
     fi
 }
 
@@ -175,16 +258,19 @@ function check_env()
     MISSING_DEPS=()
     echo ""
     echo "${C_BOLD}[环境检测]${C_OFF}"
-    dep_line node "nodejs" core
-    dep_line npm "npm" core
-    dep_line bun "bun" core
-    dep_line opencode "opencode" core
-    dep_line jq "jq" core
-    rule
-    dep_line rsync "rsync"
+    # 系统工具优先检测/安装: node/npm/opencode 等安装脚本依赖 curl/git
+    dep_line jq "jq"
     dep_line curl "curl"
     dep_line git "git"
+    dep_line rsync "rsync"
+    dep_line tar "tar"
     dep_line python3 "python3"
+    dep_line pip "pip"
+    rule
+    dep_line node "nodejs"
+    dep_line npm "npm"
+    dep_line bun "bun"
+    dep_line opencode "opencode"
 }
 
 function install_env()
@@ -204,8 +290,11 @@ function install_env()
         opencode)
             install_opencode
             ;;
-        jq)
-            install_jq
+        python3 | pip)
+            install_python3
+            ;;
+        jq | curl | git | rsync | tar)
+            install_tools "$cmd"
             ;;
         *)
             echo "No installer for $cmd, skipping."
@@ -413,11 +502,23 @@ function install_codebase_memory()
 function install_drawio()
 {
     echo "Install drawio desktop and skill..."
-    npx skills add Agents365-ai/drawio-skill -g -y --skill drawio-skill --agent opencode
-    if have apt; then
-        sudo apt install -y xvfb
+    if have snap; then
+        sudo snap install drawio
+    else
+        echo "未找到 snap, 跳过 drawio 桌面版安装"
+        return 1
     fi
-    sudo snap install drawio
+    if have apt; then
+        sudo apt update || true
+        sudo apt install -y xvfb
+    elif have dnf; then
+        sudo dnf install -y xorg-x11-server-Xvfb
+    elif have yum; then
+        sudo yum install -y xorg-x11-server-Xvfb
+    elif have pacman; then
+        sudo pacman -S --noconfirm --needed xorg-server-xvfb
+    fi
+    npx skills add Agents365-ai/drawio-skill -g -y --skill drawio-skill --agent opencode
 }
 
 function install_graphify()
@@ -425,7 +526,11 @@ function install_graphify()
     echo "Install graphify..."
     # base Python 3.10+
     if python3 -c 'import sys; sys.exit(0 if sys.version_info > (3, 9) else 1)'; then
-        pip install --break-system-packages graphifyy
+        if pip_supports_break_system_packages; then
+            pip install --break-system-packages graphifyy
+        else
+            pip install graphifyy
+        fi
     else
         install_uv_if_needed
         # use uv env
@@ -520,7 +625,17 @@ function install_omo_slim()
 function install_officecli()
 {
     echo "Install officecli..."
-    sudo apt update && sudo apt install -y libicu-dev
+    if have apt; then
+        # libicu 是 officecli(.NET) 的运行时依赖
+        sudo apt update || true
+        sudo apt install -y libicu-dev
+    elif have dnf; then
+        sudo dnf install -y libicu
+    elif have yum; then
+        sudo yum install -y libicu
+    elif have pacman; then
+        sudo pacman -S --noconfirm --needed icu
+    fi
     sudo npm install -g @officecli/officecli --allow-scripts=@officecli/officecli
     if command -v officecli >/dev/null 2>&1; then
         officecli install codex  # install skill to ~/.agents/skills
@@ -532,7 +647,11 @@ function install_book_to_skill()
     echo "Install book-to-skill..."
     npx skills add virgiliojr94/book-to-skill -g -y --skill book-to-skill --agent opencode
     if python3 -c 'import sys; sys.exit(0 if sys.version_info > (3, 9) else 1)'; then
-        pip install --break-system-packages pypdf docling
+        if pip_supports_break_system_packages; then
+            pip install --break-system-packages pypdf docling
+        else
+            pip install pypdf docling
+        fi
     else
         install_uv_if_needed
         # use uv env
@@ -860,7 +979,7 @@ function print_help()
     echo "用法:"
     echo "  ./install.sh                 进入交互式安装列表"
     echo "  ./install.sh --list          仅打印安装列表与当前状态"
-    echo "  ./install.sh --env           只检查并安装基础依赖 (nodejs/npm/bun/opencode/jq)"
+    echo "  ./install.sh --env           检查并安装基础依赖"
     echo "  ./install.sh --<component>   安装指定组件, 可组合多个"
     echo ""
     echo "每次运行都会先检测基础依赖, 并同步默认配置:"
