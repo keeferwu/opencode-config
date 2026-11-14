@@ -493,8 +493,6 @@ function install_codegraph()
         echo ""
         echo "为项目安装 codegraph MCP:"
         echo "  codegraph install --target=opencode --location=local"
-        echo "为项目初始化 codegraph 数据:"
-        echo "  codegraph init"
         echo ""
     fi
 }
@@ -546,15 +544,56 @@ function install_graphify()
     echo "Install graphify..."
     # base Python 3.10+
     if python3 -c 'import sys; sys.exit(0 if sys.version_info > (3, 9) else 1)'; then
+        local rc=0
         if pip_supports_break_system_packages; then
-            pip install --break-system-packages graphifyy
+            pip install --break-system-packages graphifyy || rc=1
         else
-            pip install graphifyy
+            pip install graphifyy || rc=1
+        fi
+        if [ "$rc" -ne 0 ]; then
+            # system site-packages not writable: fall back to an isolated user install
+            install_uv_if_needed
+            uv tool install --python 3.11 graphifyy || return 1
         fi
     else
         install_uv_if_needed
         # use uv env
         uv tool install --python 3.11 graphifyy
+    fi
+    if command -v graphify >/dev/null 2>&1; then
+        echo ""
+        echo "在 opencode 中注册 graphify skill:"
+        echo "  graphify install --platform opencode --project  # 仅当前项目"
+        echo ""
+    fi
+}
+
+function install_speckit()
+{
+    echo "Install speckit..."
+    # requires Python 3.11+
+    if python3 -c 'import sys; sys.exit(0 if sys.version_info > (3, 10) else 1)'; then
+        local rc=0
+        if pip_supports_break_system_packages; then
+            pip install --break-system-packages specify-cli || rc=1
+        else
+            pip install specify-cli || rc=1
+        fi
+        if [ "$rc" -ne 0 ]; then
+            # system site-packages not writable: fall back to an isolated user install
+            install_uv_if_needed
+            uv tool install --python 3.11 specify-cli || return 1
+        fi
+    else
+        install_uv_if_needed
+        # use uv env
+        uv tool install --python 3.11 specify-cli
+    fi
+    if command -v specify >/dev/null 2>&1; then
+        echo ""
+        echo "在项目中初始化 speckit:"
+        echo "  specify init <new-project> --integration opencode   # 新项目"
+        echo ""
     fi
 }
 
@@ -623,8 +662,6 @@ function install_openspec()
         echo ""
         echo "在项目中初始化 openspec:"
         echo "  openspec init --tools opencode"
-        echo "查看已安装的工具集成:"
-        echo "  openspec doctor"
         echo ""
     fi
 }
@@ -712,7 +749,8 @@ INSTALL_ITEMS=(
 "omo_slim|oh-my-opencode-slim|多模型 agent 编排插件"
 "omniroute|omniroute|LLM 网关统一管理APIKEY"
 "ocr|open-code-review|代码质量评审"
-"openspec|openspec|规范驱动开发(提案/规范/归档)"
+"openspec|openspec|规范驱动开发(旧项目:提案/规范/归档)"
+"speckit|speckit|规范驱动开发(新项目:规格→计划→任务→实现)"
 "officecli|officecli|处理 docx/xlsx/pptx"
 "caveman|caveman|压缩上下文内容 节省token"
 "graphify|graphify|绘制代码知识图谱(包含项目文档和资料)"
@@ -773,6 +811,9 @@ function item_installed()
         ;;
     openspec)
         have openspec && ITEM_CMD=openspec
+        ;;
+    speckit)
+        have specify && ITEM_CMD=specify
         ;;
     officecli)
         have officecli && ITEM_CMD=officecli
@@ -840,6 +881,9 @@ function run_item()
         ;;
     openspec)
         install_openspec
+        ;;
+    speckit)
+        install_speckit
         ;;
     officecli)
         install_officecli
@@ -1033,7 +1077,8 @@ function print_help()
     echo "  --omo-slim:              安装 oh-my-opencode-slim, 多模型 agent 编排插件"
     echo "  --omniroute:             安装 omniroute, 用于LLM 网关统一管理APIKEY"
     echo "  --ocr:                   安装 open-code-review, 用于代码评审"
-    echo "  --openspec:              安装 openspec, 规范驱动开发(提案/规范/归档)"
+    echo "  --openspec:              安装 openspec, 规范驱动开发(旧项目:提案/规范/归档)"
+    echo "  --speckit:               安装 speckit, 规范驱动开发(新项目:规格→计划→任务→实现)"
     echo "  --officecli:             安装 officecli, 处理 docx/xlsx/pptx 文档"
     echo "  --caveman:               安装 caveman, 压缩上下文内容 节省token"
     echo "  --graphify:              安装 graphify, 绘制代码知识图谱(包含项目文档和资料)"
@@ -1070,6 +1115,9 @@ function flag_to_key()
         ;;
     --openspec)
         echo "openspec"
+        ;;
+    --speckit)
+        echo "speckit"
         ;;
     --officecli)
         echo "officecli"
