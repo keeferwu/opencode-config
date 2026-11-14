@@ -614,6 +614,21 @@ function install_ocr()
     fi
 }
 
+function install_openspec()
+{
+    echo "Install openspec..."
+    sudo npm install -g @fission-ai/openspec
+    if command -v openspec >/dev/null 2>&1; then
+        openspec --version
+        echo ""
+        echo "在项目中初始化 openspec:"
+        echo "  openspec init --tools opencode"
+        echo "查看已安装的工具集成:"
+        echo "  openspec doctor"
+        echo ""
+    fi
+}
+
 function install_omo_slim()
 {
     echo "Install oh-my-opencode-slim..."
@@ -697,6 +712,7 @@ INSTALL_ITEMS=(
 "omo_slim|oh-my-opencode-slim|多模型 agent 编排插件"
 "omniroute|omniroute|LLM 网关统一管理APIKEY"
 "ocr|open-code-review|代码质量评审"
+"openspec|openspec|规范驱动开发(提案/规范/归档)"
 "officecli|officecli|处理 docx/xlsx/pptx"
 "caveman|caveman|压缩上下文内容 节省token"
 "graphify|graphify|绘制代码知识图谱(包含项目文档和资料)"
@@ -754,6 +770,9 @@ function item_installed()
         ;;
     ocr)
         have ocr && ITEM_CMD=ocr
+        ;;
+    openspec)
+        have openspec && ITEM_CMD=openspec
         ;;
     officecli)
         have officecli && ITEM_CMD=officecli
@@ -818,6 +837,9 @@ function run_item()
         ;;
     ocr)
         install_ocr
+        ;;
+    openspec)
+        install_openspec
         ;;
     officecli)
         install_officecli
@@ -1011,6 +1033,7 @@ function print_help()
     echo "  --omo-slim:              安装 oh-my-opencode-slim, 多模型 agent 编排插件"
     echo "  --omniroute:             安装 omniroute, 用于LLM 网关统一管理APIKEY"
     echo "  --ocr:                   安装 open-code-review, 用于代码评审"
+    echo "  --openspec:              安装 openspec, 规范驱动开发(提案/规范/归档)"
     echo "  --officecli:             安装 officecli, 处理 docx/xlsx/pptx 文档"
     echo "  --caveman:               安装 caveman, 压缩上下文内容 节省token"
     echo "  --graphify:              安装 graphify, 绘制代码知识图谱(包含项目文档和资料)"
@@ -1044,6 +1067,9 @@ function flag_to_key()
         ;;
     --ocr)
         echo "ocr"
+        ;;
+    --openspec)
+        echo "openspec"
         ;;
     --officecli)
         echo "officecli"
