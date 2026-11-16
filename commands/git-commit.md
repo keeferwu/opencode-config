@@ -14,20 +14,19 @@ When the user runs this command, execute the following workflow:
 
 1. **Set working directory**:
 
-- If `$ARGUMENTS` is provided, treat it as a directory path and set `GIT_CMD` to `git -C "$ARGUMENTS"`
-- If `$ARGUMENTS` is empty, set `GIT_CMD` to `git`
-- If `$ARGUMENTS` is provided but the directory does not exist, stop and inform the user
+- If a directory argument is given but is not an existing directory, stop and inform the user
+- Run every git command below as `git -C "$ARGUMENTS" ...` (when no argument is given this becomes `git -C ""`, which git treats as the current directory)
 
 2. **Analyze git status**:
 
-- Run `${GIT_CMD} status --porcelain` to check for changes
-- If no files are staged, list all changed (including untracked) files and ask user which to stage (or confirm `${GIT_CMD} add .`)
+- Run `git -C "$ARGUMENTS" status --porcelain` to check for changes
+- If no files are staged, list all changed (including untracked) files and ask user which to stage (or confirm `git -C "$ARGUMENTS" add .`)
 - If untracked files exist alongside staged files, list them and ask if user wants to stage any as well
 - If files are already staged, proceed with only those files
 
 3. **Analyze the changes**:
 
-- Run `${GIT_CMD} diff --cached` to see what will be committed
+- Run `git -C "$ARGUMENTS" diff --cached` to see what will be committed
 - Analyze the diff to determine the primary change type
 - Identify the main scope and purpose of the changes
 
@@ -72,7 +71,7 @@ When the user runs this command, execute the following workflow:
 
 7. **Present the message** to the user for approval before committing. Show the full message in a code block.
 
-8. **Commit** once approved: run `${GIT_CMD} commit -m "<subject>" -m "<body>"` (use multiple `-m` for multi-line messages).
+8. **Commit** once approved: run `git -C "$ARGUMENTS" commit -m "<subject>" -m "<body>"` (use multiple `-m` for multi-line messages).
 
 ## Conventional Commits Specification
 

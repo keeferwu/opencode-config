@@ -43,18 +43,17 @@ Only run if the project root contains `AGENTS.md` or `.opencode/AGENTS.md`. Skip
    - If `mcp.servers` already exists but lacks `codebase-memory-mcp`, merge into the existing `mcp.servers` object
 
 3. **Sync codebase memory config**:
-   - Sync `~/.config/opencode/codebase_memory` directory to `.opencode/` in the current project using:
+   - Ensure the destination `.opencode/` exists before syncing
+   - Sync the `agents/`, `plugins/`, and `skills/` directories (not `AGENTS.md`) into `.opencode/`:
      ```bash
      rsync -av --exclude='AGENTS.md' ~/.config/opencode/codebase_memory/ .opencode/
-     if [ -e ".opencode/AGENTS.md" ]; then
-        cat ~/.config/opencode/codebase_memory/AGENTS.md >> .opencode/AGENTS.md
-     else
-        cp ~/.config/opencode/codebase_memory/AGENTS.md .opencode/AGENTS.md
-     fi
      ```
-   - Ensure the destination `.opencode/` exists before syncing
-
-4. **Generate `.cbmignore` if file not exist**:
+   - Append the codebase-memory section to the project-root `AGENTS.md` when the `# Codebase Memory` section is missing:
+     ```bash
+     SRC=~/.config/opencode/codebase_memory/AGENTS.md
+     grep -q '# Codebase Memory' AGENTS.md 2>/dev/null || cat "$SRC" >> AGENTS.md
+     ```
+4. **Generate `.cbmignore` if it does not exist**:
    - Resolve the project root (git-aware; works without git):
      ```bash
      ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
@@ -65,8 +64,8 @@ Only run if the project root contains `AGENTS.md` or `.opencode/AGENTS.md`. Skip
      extension list:
      ```bash
      FLIST=$(mktemp); git ls-files --cached --others --exclude-standard > "$FLIST"   # non-git: rg --files > "$FLIST"
-     sed 's/.*\///' "$FLIST" | awk '{n=split($0,a,"."); print (n>1?tolower(a[n]):"(none)")}' | sort | uniq -c | sort -rn | head -40   # extensions
-     awk -F/ 'NF>1{print $1"/"$2; next} {print $1}' "$FLIST" | sort | uniq -c | sort -rn | head -20                              # top dirs
+     sed 's/.*\///' "$FLIST" | awk -F'[.]' '{print (NF>1 ? tolower($NF) : "(none)")}' | sort | uniq -c | sort -rn | head -40   # extensions
+     cut -d/ -f1,2 "$FLIST" | sort | uniq -c | sort -rn | head -20                                                            # top dirs
      tr '\n' '\0' < "$FLIST" | xargs -0 du -k 2>/dev/null | sort -rn | head -20                                                # large files
      ```
    - Write `$ROOT/.cbmignore` (gitignore syntax): keep whatever a developer would
@@ -102,8 +101,8 @@ Only run if the project root contains `AGENTS.md` or `.opencode/AGENTS.md`. Skip
 
 5. **Index codebase**:
    - Only after steps 1-4 are verified **and the user has confirmed the `.cbmignore`**,
-     dispatch a subagent to index the codebase
-   - Launch the subagent with a terminal timeout of 10min
+     dispatch a `general` subagent to index the codebase
+   - Instruct the subagent to run the indexer with `timeout: 600000` in its `shell` tool call (the `subagent` tool itself has no timeout parameter)
    - Have it run the indexer **throttled** so it can't starve the host: hard-cap memory with a
      cgroup v2 scope, deprioritize CPU with `nice`/`ionice`, and pass the tool a memory budget
      (best-effort — probes the exact cgroup props first and falls back to `nice` alone if
