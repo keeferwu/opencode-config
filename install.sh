@@ -650,7 +650,6 @@ function install_ocr()
         https://raw.githubusercontent.com/alibaba/open-code-review/main/plugins/open-code-review/opencode/open-code-review.ts \
         -o $CONFIG_DIR/plugins/open-code-review.ts
         ocr config provider          # 选择内置供应商或添加自定义供应商
-        ocr config model             # 为当前供应商选择模型
         ocr llm test                 # 测试连通性
     fi
 }
@@ -685,6 +684,7 @@ function install_omo_slim()
     set_env OH_MY_OPENCODE_SLIM_DISABLE 1
     set_env OPENCODE_EXPERIMENTAL_BACKGROUND_SUBAGENTS true
     set_env OPENCODE_ENABLE_EXA 1
+    echo "oh-my-opencode-slim default is disable, if you want enable should set OH_MY_OPENCODE_SLIM_DISABLE to 0 in ~/.env and restart system"
 }
 
 function install_officecli()
