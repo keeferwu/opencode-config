@@ -649,6 +649,7 @@ function install_ocr()
         curl -fsSL \
         https://raw.githubusercontent.com/alibaba/open-code-review/main/plugins/open-code-review/opencode/open-code-review.ts \
         -o $CONFIG_DIR/plugins/open-code-review.ts
+        npx -y skills add alibaba/open-code-review -g -y --skill open-code-review --agent opencode
         ocr config provider          # 选择内置供应商或添加自定义供应商
         ocr llm test                 # 测试连通性
     fi
