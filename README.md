@@ -60,6 +60,7 @@ cd ~/.opencode
 |15|`--archify-skill`|archify-skill|绘制架构/流程/时序图 skill|
 |16|`--book-to-skill`|book-to-skill|书籍/文档转 skill|
 |17|`--browser-skill`|browser-skill|接管已登录浏览器的自动化 skill|
+|18|`--plannotator`|plannotator|plan/代码评审 UI, 浏览器里标注|
 
 几个需要动手的地方:
 

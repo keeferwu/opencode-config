@@ -724,6 +724,32 @@ function install_book_to_skill()
     fi
 }
 
+function install_plannotator()
+{
+    echo "Install plannotator..."
+    # --minimal: 只装二进制, 不写 skills/hooks/各 agent 集成
+    curl -fsSL https://plannotator.ai/install.sh | bash -s -- --minimal
+    if ! have plannotator; then
+        echo "plannotator 不可用: 安装失败, 或 $HOME/.local/bin 不在 PATH 中"
+        return 1
+    fi
+    # --minimal 不装 agent-terminal 运行时, 单独补(annotate 模式的内置终端, 需要 node/npm)
+    plannotator install-runtime agent-terminal \
+        || echo "agent-terminal 运行时安装失败, annotate 模式将没有内置终端"
+
+    # 最后一步: 幂等写入 OpenCode 插件配置
+    jq --arg pkg "@plannotator/opencode" \
+       --arg latest "@plannotator/opencode@latest" \
+       --argjson opts '{"workflow":"plan-agent","planningAgents":["plan","orchestrator"]}' '
+        .plugin = (((.plugin // []) | map(select(
+            if type == "array" then (.[0] // "" | startswith($pkg) | not)
+            elif type == "string" then (startswith($pkg) | not)
+            else true end
+        ))) + [[$latest, $opts]])
+    ' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp" && mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE" \
+        && echo "Configured plannotator plugin in $CONFIG_FILE"
+}
+
 function install_browser_skill()
 {
     echo "Install browser-skill (Tencent BrowserSkill)..."
@@ -762,6 +788,7 @@ INSTALL_ITEMS=(
 "archify|archify-skill|绘制架构/流程/时序图 skill"
 "book_to_skill|book-to-skill|书籍/文档转 skill"
 "browser_skill|browser-skill|接管已登录浏览器的自动化 skill"
+"plannotator|plannotator|plan/代码评审 UI (浏览器标注)"
 )
 
 function item_meta()
@@ -852,6 +879,9 @@ function item_installed()
     browser_skill)
         have bsk && [ -f "$HOME/.agents/skills/browser-skill/SKILL.md" ] && ITEM_CMD=bsk
         ;;
+    plannotator)
+        have plannotator && ITEM_CMD=plannotator
+        ;;
     *)
         return 1
         ;;
@@ -913,6 +943,9 @@ function run_item()
         ;;
     browser_skill)
         install_browser_skill
+        ;;
+    plannotator)
+        install_plannotator
         ;;
     *)
         echo "Unknown item: $key"
@@ -1090,6 +1123,7 @@ function print_help()
     echo "  --archify-skill:         安装 archify skill, 绘制架构/流程/时序图"
     echo "  --book-to-skill:         安装 book-to-skill, 把书籍/文档转成 skill"
     echo "  --browser-skill:         安装 Tencent BrowserSkill, 复用浏览器登录态做自动化"
+    echo "  --plannotator:           安装 plannotator, plan/代码评审 UI(浏览器标注)"
     echo ""
 }
 
@@ -1147,6 +1181,9 @@ function flag_to_key()
         ;;
     --browser-skill)
         echo "browser_skill"
+        ;;
+    --plannotator)
+        echo "plannotator"
         ;;
     *)
         return 1
