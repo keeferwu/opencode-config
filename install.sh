@@ -608,6 +608,17 @@ function install_cua()
     fi
 }
 
+function install_rust_anything()
+{
+    echo "Install rust-anything..."
+    sudo npm install -g rust-anything
+    if command -v rust-anything >/dev/null 2>&1; then
+        # 测试注册 MCP server 与 skill (幂等, 会先备份已有的配置文件)
+        rust-anything setup --agent opencode
+        rust-anything setup --remove
+    fi
+}
+
 function install_caveman()
 {
     echo "Install caveman..."
@@ -782,6 +793,7 @@ INSTALL_ITEMS=(
 "speckit|speckit|规范驱动开发(新项目:规格→计划→任务→实现)"
 "officecli|officecli|处理 docx/xlsx/pptx"
 "caveman|caveman|压缩上下文内容 节省token"
+"rust_anything|rust-anything|把代码逐块重写成 Rust 并验证行为一致"
 "graphify|graphify|绘制代码知识图谱(包含项目文档和资料)"
 "drawio|drawio|绘制图表 (desktop + skill)"
 "cua|cua-driver|后台驱动桌面应用"
@@ -850,6 +862,9 @@ function item_installed()
         ;;
     caveman)
         jq -e '.agents["cavecrew-builder"]' "$CONFIG_FILE" >/dev/null 2>&1
+        ;;
+    rust_anything)
+        have rust-anything && ITEM_CMD=rust-anything
         ;;
     graphify)
         have graphify && ITEM_CMD=graphify
@@ -923,6 +938,9 @@ function run_item()
         ;;
     caveman)
         install_caveman
+        ;;
+    rust_anything)
+        install_rust_anything
         ;;
     graphify)
         install_graphify
@@ -1117,6 +1135,7 @@ function print_help()
     echo "  --speckit:               安装 speckit, 规范驱动开发(新项目:规格→计划→任务→实现)"
     echo "  --officecli:             安装 officecli, 处理 docx/xlsx/pptx 文档"
     echo "  --caveman:               安装 caveman, 压缩上下文内容 节省token"
+    echo "  --rust-anything:         安装 rust-anything, 把代码逐块重写成 Rust 并验证行为一致"
     echo "  --graphify:              安装 graphify, 绘制代码知识图谱(包含项目文档和资料)"
     echo "  --drawio:                安装 drawio, 绘制图表"
     echo "  --cua:                   安装 cua-driver, 后台驱动桌面应用"
@@ -1161,6 +1180,9 @@ function flag_to_key()
         ;;
     --caveman)
         echo "caveman"
+        ;;
+    --rust-anything)
+        echo "rust_anything"
         ;;
     --graphify)
         echo "graphify"

@@ -53,14 +53,15 @@ cd ~/.opencode
 |8|`--speckit`|speckit|规范驱动开发(新项目:规格→计划→任务→实现)|
 |9|`--officecli`|officecli|处理 docx/xlsx/pptx|
 |10|`--caveman`|caveman|压缩上下文内容, 节省 token|
-|11|`--graphify`|graphify|绘制代码知识图谱(包含项目文档和资料)|
-|12|`--drawio`|drawio|绘制图表 (desktop + skill)|
-|13|`--cua`|cua-driver|后台驱动桌面应用|
-|14|`--agentmemory`|agentmemory|agent 记忆|
-|15|`--archify-skill`|archify-skill|绘制架构/流程/时序图 skill|
-|16|`--book-to-skill`|book-to-skill|书籍/文档转 skill|
-|17|`--browser-skill`|browser-skill|接管已登录浏览器的自动化 skill|
-|18|`--plannotator`|plannotator|plan/代码评审 UI, 浏览器里标注|
+|11|`--rust-anything`|rust-anything|把代码逐块重写成 Rust 并验证行为一致|
+|12|`--graphify`|graphify|绘制代码知识图谱(包含项目文档和资料)|
+|13|`--drawio`|drawio|绘制图表 (desktop + skill)|
+|14|`--cua`|cua-driver|后台驱动桌面应用|
+|15|`--agentmemory`|agentmemory|agent 记忆|
+|16|`--archify-skill`|archify-skill|绘制架构/流程/时序图 skill|
+|17|`--book-to-skill`|book-to-skill|书籍/文档转 skill|
+|18|`--browser-skill`|browser-skill|接管已登录浏览器的自动化 skill|
+|19|`--plannotator`|plannotator|plan/代码评审 UI, 浏览器里标注|
 
 几个需要动手的地方:
 
