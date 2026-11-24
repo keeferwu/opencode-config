@@ -9,7 +9,8 @@
   "session": {
     "sidebar": "auto",
     "scrollbar": true,
-    "thinking": "show"
+    "thinking": "show",
+    "verbosity": "high"
   },
   "animations": true,
   "scroll": {
