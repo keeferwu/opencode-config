@@ -15,6 +15,8 @@ cd ~/.opencode
 ./install.sh --omo-slim --rtk   # 参数模式: 直接装指定组件, 可组合多个
 ```
 
+> 提示: 部分组件需从 GitHub 下载依赖, 若网络不稳定请开启代理工具(如 dev-sidecar 等)以保证 GitHub 连接稳定。
+
 ## 安装器做了什么
 
 每次运行 `./install.sh` 都会先做这两步, 它们不属于组件列表:

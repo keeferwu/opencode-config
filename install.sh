@@ -1024,6 +1024,9 @@ function print_menu()
     done
     rule
     echo "  a = 安装全部未安装组件    l = 刷新列表    q = 退出"
+    echo ""
+    echo "${C_YELLOW}提示:${C_OFF} 部分组件需从 GitHub 下载依赖, 若网络不稳定请开启代理工具"
+    echo "      (如 dev-sidecar 等) 以保证 GitHub 连接稳定."
 }
 
 function contains_index()
